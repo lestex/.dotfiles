@@ -1,0 +1,10 @@
+os: osx
+sudo: required
+
+before_script:
+# a little hack that lets travis think it has zsh shell
+- export SHELL=/bin/zsh
+
+script:
+- chmod +x mac-setup
+- yes | ./mac-setup
