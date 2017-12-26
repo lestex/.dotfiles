@@ -1,0 +1,106 @@
+#!/usr/bin/env bash
+
+# Exit on any individual command failure.
+set -e
+
+# Pretty colors.
+red='\033[0;31m'
+green='\033[0;32m'
+neutral='\033[0m'
+
+# Shared functions
+pretty_print() {
+  printf "\n%b\n" "$1"
+}
+
+pretty_print "${green}Starting ...${neutral}"
+
+# Oh my zsh installation
+pretty_print "Installing oh-my-zsh..."
+  curl -L http://install.ohmyz.sh | sh
+
+# Homebrew installation
+if ! command -v brew &>/dev/null; then
+  pretty_print "Installing Homebrew, an OSX package manager, follow the instructions..." 
+    ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+
+  if ! grep -qs "recommended by brew doctor" ~/.zshrc; then
+    pretty_print "Put Homebrew location earlier in PATH ..."
+      printf '\n# recommended by brew doctor\n' >> ~/.zshrc
+      printf 'export PATH="/usr/local/bin:$PATH"\n' >> ~/.zshrc
+      export PATH="/usr/local/bin:$PATH"
+  fi
+else
+  pretty_print "You already have Homebrew installed...good job!"
+fi
+
+pretty_print "Updating brew formulas"
+  brew update
+
+# Installing vim, will also install the following dependencies - perl, readline, libyaml, openssl, ruby, sqlite, gdbm, python
+# python2 into /usr/local/bin
+# ruby into /usr/local/bin/ruby
+# openssl into /usr/local/opt/openssl/bin
+# sqlite into /usr/local/opt/sqlite/bin
+# gdbm into /usr/local/opt/gdbm/bin
+pretty_print "Installing vim with Homebrew for latest version"
+  brew install vim
+
+# All commands will be installed with the prefix 'g' at
+# /usr/local/opt/coreutils/libexec/gnubin
+pretty_print "Installing GNU core utilities..."
+  brew install coreutils
+
+# uncomment if you want to add coreutils to PATH
+#printf 'export PATH="$(brew --prefix coreutils)/libexec/gnubin:$PATH"' >> ~/.zshrc
+#export PATH="$(brew --prefix coreutils)/libexec/gnubin:$PATH"
+
+pretty_print "Installing GNU find, locate, updatedb and xargs..."
+	brew install findutils
+
+# Show the list of apps to install
+apps=(
+  iterm2
+  skype
+  telegram
+  virtualbox
+  google-chrome
+  slack
+  vlc
+  visual-studio-code
+  moom
+)
+
+# ask if want to install
+pretty_print "Do you need this apps to be installed?${green}"
+for app in "${apps[@]}"
+do
+	printf "$app\n"
+done
+
+pretty_print "Type 'Y' or 'y' to proceed: ${neutral}"
+read line
+
+# install apps if hit 'yes'
+if [ "$line" = Y ] || [ "$line" = y ]; then
+	for app in "${apps[@]}"
+  do
+    brew cask install --appdir="/Applications" $app
+  done
+fi
+
+extensions=(
+  ms-python.python
+  lukehoban.go
+  mauve.terraform
+)
+
+# installing extensions
+for ext in "${extensions[@]}"
+do
+    code --install-extension $ext
+done
+
+# TODO Installing special software
+
+pretty_print "${green}We are done!...everything looks good!${neutral}"
