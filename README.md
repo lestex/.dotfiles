@@ -22,6 +22,8 @@ List of apps:
 - visual-studio-code
 - moom
 - vagrant
+- ansible
+- ansible-lint
 
 Vscode extensions:
 - ms-python.python
@@ -29,6 +31,7 @@ Vscode extensions:
 - mauve.terraform
 - bierner.markdown-preview-github-styles
 - bbenoist.vagrant
+- haaaad.ansible
 
 Run:
 
