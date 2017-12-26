@@ -8,3 +8,7 @@ before_script:
 script:
 - chmod +x mac-setup
 - yes | ./mac-setup
+
+branches:
+  only:
+    - master
