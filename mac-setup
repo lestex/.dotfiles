@@ -88,6 +88,9 @@ if [ "$line" = Y ] || [ "$line" = y ]; then
   do
     brew cask install --appdir="/Applications" $app
   done
+else
+  pretty_print "${red}Exiting...${neutral}"  
+  exit 1
 fi
 
 extensions=(
