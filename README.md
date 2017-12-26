@@ -27,6 +27,8 @@ Vscode extensions:
 - ms-python.python
 - lukehoban.go
 - mauve.terraform
+- bierner.markdown-preview-github-styles
+- bbenoist.vagrant
 
 Run:
 
