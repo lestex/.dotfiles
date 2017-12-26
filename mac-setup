@@ -89,7 +89,7 @@ if [ "$line" = Y ] || [ "$line" = y ]; then
     brew cask install --appdir="/Applications" $app
   done
 else
-  pretty_print "${red}Exiting...${neutral}"  
+  pretty_print "${red}Exiting...${neutral}"
   exit 1
 fi
 
@@ -99,14 +99,17 @@ extensions=(
   mauve.terraform
   bierner.markdown-preview-github-styles
   bbenoist.vagrant
+  haaaad.ansible
 )
 
-# installing extensions
+# Installing vscode extensions
 for ext in "${extensions[@]}"
 do
     code --install-extension $ext
 done
 
-# TODO Installing special software
+# Installing special software
+pretty_print "Installing ansible..."
+brew install ansible
 
 pretty_print "${green}We are done!...everything looks good!${neutral}"
