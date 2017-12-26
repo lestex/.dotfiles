@@ -69,6 +69,7 @@ apps=(
   vlc
   visual-studio-code
   moom
+  vagrant
 )
 
 # ask if want to install
