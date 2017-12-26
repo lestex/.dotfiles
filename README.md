@@ -32,9 +32,13 @@ Vscode extensions:
 
 Run:
 
-    chmod +x mac-setup
-    ./mac-setup
+    ➜ chmod +x mac-setup
+    ➜ ./mac-setup
+
+or
+
+    ➜ yes | bash <(curl -s https://raw.githubusercontent.com/lestex/mac-setup/master/mac-setup)
 
 To install coreutils and findutils to the PATH run:
 
-    printf 'export PATH="$(brew --prefix coreutils)/libexec/gnubin:$PATH"' >> ~/.zshrc
+    ➜ printf 'export PATH="$(brew --prefix coreutils)/libexec/gnubin:$PATH"' >> ~/.zshrc
