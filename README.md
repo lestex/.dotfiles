@@ -21,6 +21,7 @@ List of apps:
 - vlc
 - visual-studio-code
 - moom
+- vagrant
 
 Vscode extensions:
 - ms-python.python
