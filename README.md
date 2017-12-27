@@ -24,6 +24,7 @@ List of apps:
 - vagrant
 - ansible
 - ansible-lint
+- docker
 
 Vscode extensions:
 - ms-python.python
@@ -32,6 +33,7 @@ Vscode extensions:
 - bierner.markdown-preview-github-styles
 - bbenoist.vagrant
 - haaaad.ansible
+- PeterJausovec.vscode-docker
 
 Run:
 
