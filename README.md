@@ -34,6 +34,8 @@ Vscode extensions:
 - bbenoist.vagrant
 - haaaad.ansible
 - PeterJausovec.vscode-docker
+- ms-vscode.cpptools
+
 
 Run:
 
