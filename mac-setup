@@ -70,6 +70,7 @@ apps=(
   visual-studio-code
   moom
   vagrant
+  docker
 )
 
 # ask if want to install
@@ -111,6 +112,6 @@ done
 
 # Installing special software
 pretty_print "Installing ansible and ansible-lint..."
-brew install ansible ansible-lint docker
+brew install ansible ansible-lint
 
 pretty_print "${green}We are done!...everything looks good!${neutral}"
