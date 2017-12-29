@@ -102,6 +102,12 @@ extensions=(
   bbenoist.vagrant
   haaaad.ansible
   PeterJausovec.vscode-docker
+  misogi.ruby-rubocop
+  ms-python.python
+  rebornix.ruby
+  redhat.java
+  robertohuertasm.vscode-icons
+  timonwong.ansible-autocomplete
 )
 
 # Installing vscode extensions
