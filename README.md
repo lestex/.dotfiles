@@ -37,6 +37,12 @@ Vscode extensions:
 - haaaad.ansible
 - PeterJausovec.vscode-docker
 - ms-vscode.cpptools
+- misogi.ruby-rubocop
+- ms-python.python
+- rebornix.ruby
+- redhat.java
+- robertohuertasm.vscode-icons
+- timonwong.ansible-autocomplete
 
 
 Run:
