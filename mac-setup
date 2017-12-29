@@ -44,19 +44,19 @@ pretty_print "Updating brew formulas"
 # sqlite into /usr/local/opt/sqlite/bin
 # gdbm into /usr/local/opt/gdbm/bin
 pretty_print "Installing vim with Homebrew for latest version"
-  brew install vim
+  brew install vim || brew upgrade vim
 
 # All commands will be installed with the prefix 'g' at
 # /usr/local/opt/coreutils/libexec/gnubin
 pretty_print "Installing GNU core utilities..."
-  brew install coreutils
+  brew install coreutils || brew upgrade coreutils
 
 # uncomment if you want to add coreutils to PATH
 #printf 'export PATH="$(brew --prefix coreutils)/libexec/gnubin:$PATH"' >> ~/.zshrc
 #export PATH="$(brew --prefix coreutils)/libexec/gnubin:$PATH"
 
 pretty_print "Installing GNU find, locate, updatedb and xargs..."
-	brew install findutils
+	brew install findutils || brew upgrade findutils
 
 # Show the list of apps to install
 apps=(
