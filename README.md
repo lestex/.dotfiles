@@ -25,6 +25,8 @@ List of apps:
 - ansible
 - ansible-lint
 - docker
+- watch 
+- htop
 
 Vscode extensions:
 - ms-python.python
