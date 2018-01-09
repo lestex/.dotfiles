@@ -59,7 +59,7 @@ pretty_print "Installing GNU find, locate, updatedb and xargs..."
 	brew install findutils || brew upgrade findutils
 
 # Show the list of apps to install
-apps=(
+cask_apps=(
   iterm2
   skype
   telegram
@@ -75,9 +75,9 @@ apps=(
 
 # ask if want to install
 pretty_print "Do you need this apps to be installed?${green}"
-for app in "${apps[@]}"
+for capp in "${cask_apps[@]}"
 do
-	printf "$app\n"
+	printf "$capp\n"
 done
 
 pretty_print "Type 'Y' or 'y' to proceed: ${neutral}"
@@ -85,9 +85,9 @@ read line
 
 # install apps if hit 'yes'
 if [ "$line" = Y ] || [ "$line" = y ]; then
-	for app in "${apps[@]}"
+	for capp in "${cask_apps[@]}"
   do
-    brew cask install --appdir="/Applications" $app
+    brew cask install --appdir="/Applications" $capp
   done
 else
   pretty_print "${red}Exiting...${neutral}"
@@ -116,8 +116,18 @@ do
     code --install-extension $ext
 done
 
-# Installing special software
+# Installing additional apps
+apps=(
+  ansible
+  ansible-lint
+  watch
+  htop
+)
+
 pretty_print "Installing additional software..."
-brew install ansible ansible-lint watch htop
+for app in "${apps[@]}"
+do
+    brew install $app || brew upgrade $app
+done
 
 pretty_print "${green}We are done!...everything looks good!${neutral}"
