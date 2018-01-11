@@ -134,6 +134,7 @@ do
 done
 
 # Install rvm
+curl -sSL https://rvm.io/mpapis.asc | gpg --import -
 curl -sSL https://get.rvm.io | bash -s stable
 
 pretty_print "${green}We are done!...everything looks good!${neutral}"
