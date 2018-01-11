@@ -122,6 +122,7 @@ apps=(
   ansible-lint
   watch
   htop
+  awscli
 )
 
 pretty_print "Installing additional software..."
@@ -129,5 +130,8 @@ for app in "${apps[@]}"
 do
     brew install $app || brew upgrade $app
 done
+
+# Install rvm
+curl -sSL https://get.rvm.io | bash -s stable
 
 pretty_print "${green}We are done!...everything looks good!${neutral}"

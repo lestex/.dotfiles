@@ -27,6 +27,7 @@ List of apps:
 - docker
 - watch 
 - htop
+- awscli
 
 Vscode extensions:
 - ms-python.python
@@ -44,6 +45,8 @@ Vscode extensions:
 - robertohuertasm.vscode-icons
 - timonwong.ansible-autocomplete
 
+Additional software:
+- [rvm](https://rvm.io)
 
 Run:
 
