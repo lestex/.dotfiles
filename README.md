@@ -28,6 +28,8 @@ List of apps:
 - watch 
 - htop
 - awscli
+- terraform
+- packer
 
 Vscode extensions:
 - ms-python.python

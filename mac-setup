@@ -123,6 +123,8 @@ apps=(
   watch
   htop
   awscli
+  terraform
+  packer
 )
 
 pretty_print "Installing additional software..."
