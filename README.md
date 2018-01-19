@@ -30,6 +30,7 @@ List of apps:
 - awscli
 - terraform
 - packer
+- google-cloud-sdk
 
 Vscode extensions:
 - ms-python.python

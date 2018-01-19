@@ -71,6 +71,7 @@ cask_apps=(
   moom
   vagrant
   docker
+  google-cloud-sdk
 )
 
 # ask if want to install
