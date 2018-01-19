@@ -31,6 +31,7 @@ List of apps:
 - terraform
 - packer
 - google-cloud-sdk
+- microsoft-teams
 
 Vscode extensions:
 - ms-python.python
