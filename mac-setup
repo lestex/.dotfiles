@@ -97,19 +97,26 @@ else
 fi
 
 extensions=(
-  ms-python.python
-  lukehoban.go
-  mauve.terraform
-  bierner.markdown-preview-github-styles
-  bbenoist.vagrant
-  haaaad.ansible
   PeterJausovec.vscode-docker
+  bbenoist.vagrant
+  bierner.markdown-preview-github-styles
+  castwide.solargraph
+  haaaad.ansible
+  jaysonsantos.vscode-flake8
+  mauve.terraform
   misogi.ruby-rubocop
   ms-python.python
-  rebornix.ruby
+  ms-vscode.cpptools
+  ms-vscode.Go
+  rebornix.Ruby
   redhat.java
   robertohuertasm.vscode-icons
+  secanis.jenkinsfile-support
   timonwong.ansible-autocomplete
+  vscjava.vscode-java-debug
+  vscjava.vscode-java-pack
+  vscjava.vscode-java-test
+  vscjava.vscode-maven
 )
 
 # Installing vscode extensions
