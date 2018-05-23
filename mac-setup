@@ -101,8 +101,7 @@ extensions=(
   bbenoist.vagrant
   bierner.markdown-preview-github-styles
   castwide.solargraph
-  haaaad.ansible
-  jaysonsantos.vscode-flake8
+  haaaad.ansible  
   mauve.terraform
   misogi.ruby-rubocop
   ms-python.python
