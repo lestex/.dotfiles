@@ -70,7 +70,6 @@ cask_apps=(
   vagrant
   docker
   google-cloud-sdk
-  microsoft-teams
   virtualbox
 )
 
