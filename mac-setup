@@ -56,30 +56,29 @@ pretty_print "Installing GNU core utilities..."
 #export PATH="$(brew --prefix coreutils)/libexec/gnubin:$PATH"
 
 pretty_print "Installing GNU find, locate, updatedb and xargs..."
-	brew install findutils || brew upgrade findutils
+  brew install findutils || brew upgrade findutils
 
 # Show the list of apps to install
 cask_apps=(
   iterm2
   skype
-  telegram
-  virtualbox
+  tunnelblick
   google-chrome
   slack
   vlc
   visual-studio-code
-  moom
   vagrant
   docker
   google-cloud-sdk
   microsoft-teams
+  virtualbox
 )
 
 # ask if want to install
 pretty_print "Do you need this apps to be installed?${green}"
 for capp in "${cask_apps[@]}"
 do
-	printf "$capp\n"
+  printf "$capp\n"
 done
 
 pretty_print "Type 'Y' or 'y' to proceed: ${neutral}"
@@ -87,7 +86,7 @@ read line
 
 # install apps if hit 'yes'
 if [ "$line" = Y ] || [ "$line" = y ]; then
-	for capp in "${cask_apps[@]}"
+  for capp in "${cask_apps[@]}"
   do
     brew cask install --appdir="/Applications" $capp
   done
@@ -121,7 +120,7 @@ extensions=(
 # Installing vscode extensions
 for ext in "${extensions[@]}"
 do
-    code --install-extension $ext
+  code --install-extension $ext
 done
 
 # Installing additional apps
@@ -138,7 +137,7 @@ apps=(
 pretty_print "Installing additional software..."
 for app in "${apps[@]}"
 do
-    brew install $app || brew upgrade $app
+  brew install $app || brew upgrade $app
 done
 
 # Install rvm
