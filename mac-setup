@@ -124,6 +124,7 @@ done
 
 # Installing additional apps
 apps=(
+  gpg
   ansible
   ansible-lint
   watch
