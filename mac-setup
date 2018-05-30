@@ -130,6 +130,7 @@ apps=(
   watch
   htop
   awscli
+  pyenv
   terraform
   packer
 )
