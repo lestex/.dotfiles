@@ -70,7 +70,6 @@ cask_apps=(
   vagrant
   docker
   google-cloud-sdk
-  virtualbox
 )
 
 # ask if want to install
@@ -93,6 +92,9 @@ else
   pretty_print "${red}Exiting...${neutral}"
   exit 1
 fi
+
+# install virtualbox
+brew cask zap virtualbox --force
 
 extensions=(
   PeterJausovec.vscode-docker
@@ -125,11 +127,8 @@ done
 # Installing additional apps
 apps=(
   gpg
-  ansible
-  ansible-lint
   watch
   htop
-  awscli
   pyenv
   terraform
   packer
@@ -144,5 +143,8 @@ done
 # Install rvm
 curl -sSL https://rvm.io/mpapis.asc | gpg --import -
 curl -sSL https://get.rvm.io | bash -s stable
+
+# Install python packages
+pip3 install ansible ansible-lint awscli
 
 pretty_print "${green}We are done!...everything looks good!${neutral}"
