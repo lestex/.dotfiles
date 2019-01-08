@@ -20,7 +20,6 @@ List of apps:
 - slack
 - vlc
 - visual-studio-code
-- moom
 - vagrant
 - ansible
 - ansible-lint
