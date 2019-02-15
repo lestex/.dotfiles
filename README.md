@@ -46,6 +46,7 @@ List of applications:
 - microsoft-teams
 
 Vscode extensions:
+
 Refer to the [code](https://github.com/leandevops/mac-setup/blob/master/mac-setup#L101-L132) for a list.
 
 Additional software:
