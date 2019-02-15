@@ -35,7 +35,7 @@ else
 fi
 
 pretty_print "Updating brew formulas"
-  brew update
+  brew update &>/dev/null
 
 # Installing vim, will also install the following dependencies - perl, readline, libyaml, openssl, ruby, sqlite, gdbm, python
 # python2 into /usr/local/bin
@@ -74,9 +74,9 @@ cask_apps=(
 
 # ask if want to install
 pretty_print "Do you need this apps to be installed?${green}"
-for capp in "${cask_apps[@]}"
+for cask_app in "${cask_apps[@]}"
 do
-  printf "$capp\n"
+  printf "$cask_app\n"
 done
 
 pretty_print "Type 'Y' or 'y' to proceed: ${neutral}"
@@ -84,9 +84,9 @@ read line
 
 # install apps if hit 'yes'
 if [ "$line" = Y ] || [ "$line" = y ]; then
-  for capp in "${cask_apps[@]}"
+  for cask_app in "${cask_apps[@]}"
   do
-    brew cask install --appdir="/Applications" $capp
+    brew cask install --appdir="/Applications" $cask_app
   done
 else
   pretty_print "${red}Exiting...${neutral}"
@@ -96,6 +96,7 @@ fi
 # install virtualbox
 brew cask zap virtualbox --force
 
+# The list of vs code extensions
 extensions=(
   PeterJausovec.vscode-docker
   bbenoist.vagrant
@@ -130,6 +131,7 @@ apps=(
   watch
   htop
   pyenv
+  pipenv
   terraform
   packer
 )
@@ -140,14 +142,14 @@ do
   brew install $app || brew upgrade $app
 done
 
+# Install python packages
+pip3 install ansible ansible-lint awscli
+
 # Install rvm
 gpg --keyserver hkp://pool.sks-keyservers.net \
     --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 \
     7D2BAF1CF37B13E2069D6956105BD0E739499BDB
 curl -sSL https://rvm.io/mpapis.asc | gpg --import -
 curl -sSL https://get.rvm.io | bash -s stable
-
-# Install python packages
-pip3 install ansible ansible-lint awscli
 
 pretty_print "${green}We are done!...everything looks good!${neutral}"
