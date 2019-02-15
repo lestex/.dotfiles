@@ -42,7 +42,6 @@ Vscode extensions:
 - formulahendry.code-runner
 - gerane.theme-monokai-cobalt
 - haaaad.ansible
-- jaysonsantos.vscode-flake8
 - magicstack.magicpython
 - mauve.terraform
 - misogi.ruby-rubocop
