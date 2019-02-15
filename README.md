@@ -1,5 +1,5 @@
-## mac-setup
-### a simple script that installs a software on your mac
+## mac-setup - a script that installs a software on your mac
+[![Maintained by Leandevops.io](https://img.shields.io/badge/maintained%20by-leandevops-green.svg)]
 [![Build Status](https://travis-ci.org/lestex/mac-setup.svg?branch=master)](https://travis-ci.org/lestex/mac-setup)
 
 The script installs the following software:
