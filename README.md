@@ -7,9 +7,9 @@ The script installs the following software:
 Prerequisites
 - [brew](https://brew.sh/)
 - [oh-my-zsh](https://github.com/robbyrussell/oh-my-zsh)
-- vim
-- coreutils
-- findutils
+- [vim](https://www.vim.org/)
+- [coreutils](https://www.gnu.org/software/coreutils/)
+- [findutils](https://www.gnu.org/software/findutils/)
 
 List of apps:
 - iterm2
@@ -33,20 +33,25 @@ List of apps:
 - microsoft-teams
 
 Vscode extensions:
-- ms-python.python
-- lukehoban.go
-- mauve.terraform
-- bierner.markdown-preview-github-styles
-- bbenoist.vagrant
-- haaaad.ansible
 - PeterJausovec.vscode-docker
-- ms-vscode.cpptools
+- bbenoist.vagrant
+- bierner.markdown-preview-github-styles
+- castwide.solargraph
+- haaaad.ansible  
+- mauve.terraform
 - misogi.ruby-rubocop
 - ms-python.python
-- rebornix.ruby
+- ms-vscode.cpptools
+- ms-vscode.Go
+- rebornix.Ruby
 - redhat.java
 - robertohuertasm.vscode-icons
+- secanis.jenkinsfile-support
 - timonwong.ansible-autocomplete
+- vscjava.vscode-java-debug
+- vscjava.vscode-java-pack
+- vscjava.vscode-java-test
+- vscjava.vscode-maven
 
 Additional software:
 - [rvm](https://rvm.io)
