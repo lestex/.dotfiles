@@ -46,7 +46,6 @@ Vscode extensions:
 - mauve.terraform
 - misogi.ruby-rubocop
 - ms-mssql.mssql
-- ms-python.python-20
 - ms-vscode.go
 - peterjausovec.vscode-docker
 - pivotal.vscode-spring-boot
