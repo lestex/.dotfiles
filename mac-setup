@@ -99,25 +99,39 @@ brew cask zap virtualbox --force
 
 # The list of vs code extensions
 extensions=(
-  PeterJausovec.vscode-docker
   bbenoist.vagrant
   bierner.markdown-preview-github-styles
   castwide.solargraph
-  haaaad.ansible  
+  coolbear.systemd-unit-file
+  danields761.dracula-theme-from-intellij-pythoned
+  dsznajder.es7-react-js-snippets
+  formulahendry.code-runner
+  gerane.theme-monokai-cobalt
+  haaaad.ansible
+  jaysonsantos.vscode-flake8
+  magicstack.magicpython
   mauve.terraform
   misogi.ruby-rubocop
-  ms-python.python
-  ms-vscode.cpptools
-  ms-vscode.Go
-  rebornix.Ruby
+  ms-mssql.mssql
+  ms-python.python-20
+  ms-vscode.go
+  peterjausovec.vscode-docker
+  pivotal.vscode-spring-boot
+  pkief.material-icon-theme
+  rebornix.ruby
   redhat.java
   robertohuertasm.vscode-icons
   secanis.jenkinsfile-support
   timonwong.ansible-autocomplete
   vscjava.vscode-java-debug
+  vscjava.vscode-java-dependency
   vscjava.vscode-java-pack
   vscjava.vscode-java-test
   vscjava.vscode-maven
+  vscjava.vscode-spring-boot-dashboard
+  vscjava.vscode-spring-initializr
+  wholroyd.jinja
+  zhuangtongfa.material-theme
 )
 
 # Installing vscode extensions
