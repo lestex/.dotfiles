@@ -70,6 +70,7 @@ cask_apps=(
   vagrant
   docker
   google-cloud-sdk
+  telegram
 )
 
 # ask if want to install
