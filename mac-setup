@@ -107,8 +107,7 @@ extensions=(
   dsznajder.es7-react-js-snippets
   formulahendry.code-runner
   gerane.theme-monokai-cobalt
-  haaaad.ansible
-  jaysonsantos.vscode-flake8
+  haaaad.ansible  
   magicstack.magicpython
   mauve.terraform
   misogi.ruby-rubocop
