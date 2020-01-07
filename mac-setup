@@ -139,6 +139,6 @@ curl -sSL https://rvm.io/mpapis.asc | gpg --import -
 curl -sSL https://get.rvm.io | bash -s stable
 
 # install virtualbox
-brew cask install virtualbox --force
+brew cask zap virtualbox --force
 
 pretty_print "${green}We are done!...everything looks good!${neutral}"
