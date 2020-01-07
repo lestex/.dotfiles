@@ -59,10 +59,10 @@ pretty_print "Installing GNU find, locate, updatedb and xargs..."
   brew install findutils || brew upgrade findutils
 
 # Show the list of apps to install
+# tunnelblick
 cask_apps=(
   iterm2
   skype
-  tunnelblick
   google-chrome
   slack
   vlc
@@ -96,37 +96,12 @@ fi
 
 # The list of vs code extensions
 extensions=(
-  bbenoist.vagrant
-  bierner.markdown-preview-github-styles
-  castwide.solargraph
-  coolbear.systemd-unit-file
-  danields761.dracula-theme-from-intellij-pythoned
-  dsznajder.es7-react-js-snippets
-  formulahendry.code-runner
-  gerane.theme-monokai-cobalt
-  haaaad.ansible  
+  danields761.dracula-theme-from-intellij-pythoned 
   magicstack.magicpython
   mauve.terraform
   misogi.ruby-rubocop
-  ms-mssql.mssql
   ms-vscode.go
-  peterjausovec.vscode-docker
-  pivotal.vscode-spring-boot
-  pkief.material-icon-theme
-  rebornix.ruby
-  redhat.java
-  robertohuertasm.vscode-icons
-  secanis.jenkinsfile-support
-  timonwong.ansible-autocomplete
-  vscjava.vscode-java-debug
-  vscjava.vscode-java-dependency
-  vscjava.vscode-java-pack
-  vscjava.vscode-java-test
-  vscjava.vscode-maven
-  vscjava.vscode-spring-boot-dashboard
-  vscjava.vscode-spring-initializr
   wholroyd.jinja
-  zhuangtongfa.material-theme
 )
 
 # Installing vscode extensions
@@ -164,6 +139,6 @@ curl -sSL https://rvm.io/mpapis.asc | gpg --import -
 curl -sSL https://get.rvm.io | bash -s stable
 
 # install virtualbox
-brew cask zap virtualbox --force
+brew cask install virtualbox --force
 
 pretty_print "${green}We are done!...everything looks good!${neutral}"
