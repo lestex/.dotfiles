@@ -71,6 +71,7 @@ cask_apps=(
   docker
   google-cloud-sdk
   telegram
+  authy
 )
 
 # ask if want to install
