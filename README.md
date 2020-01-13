@@ -1,7 +1,6 @@
 ## mac-setup - a script that installs a software on your mac
 [![Maintained by Leandevops.io](https://img.shields.io/badge/maintained%20by-leandevops-green.svg)](https://img.shields.io/badge/maintained%20by-leandevops-green.svg)
-[![Build Status](https://www.travis-ci.org/leandevops/env-setup.svg?branch=master)](https://www.travis-ci.org/leandevops/env-setup)
-
+[![Build Status](https://travis-ci.org/lestex/env-setup.svg?branch=master)](https://travis-ci.org/lestex/env-setup)
 Run:
 
     ➜ chmod +x mac-setup
