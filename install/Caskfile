@@ -1,0 +1,28 @@
+tap "homebrew/cask"
+tap "homebrew/cask-drivers"
+tap "homebrew/cask-fonts"
+tap "homebrew/cask-versions"
+
+# common
+cask "authy"
+cask "bitwarden"
+cask "daisydisk"
+cask "dropbox"
+cask "google-chrome"
+cask "iterm2"
+cask "macpass"
+cask "vlc"
+
+# development tools
+cask "docker"
+cask "google-cloud-sdk"
+cask "vagrant"
+cask "virtualbox"
+cask "visual-studio-code"
+
+# messaging
+cask "microsoft-teams"
+cask "skype"
+cask "slack"
+cask "telegram"
+cask "whatsapp"
