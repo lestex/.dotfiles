@@ -17,4 +17,4 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Run script
-      run: ./mac-setup
+      run: yes | ./mac-setup
