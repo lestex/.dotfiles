@@ -16,8 +16,12 @@ pretty_print() {
 pretty_print "${green}Starting ...${neutral}"
 
 # Oh my zsh installation
-pretty_print "Installing oh-my-zsh..."
+if [ ! -d "$HOME/.oh-my-zsh" ]; then
+  pretty_print "Installing oh-my-zsh..."
   curl -L http://install.ohmyz.sh | sh
+else
+  pretty_print "oh-my-zsh is already installed, skipping ..."
+fi
 
 # Homebrew installation
 if ! command -v brew &>/dev/null; then
@@ -88,7 +92,7 @@ read line
 if [ "$line" = Y ] || [ "$line" = y ]; then
   for cask_app in "${cask_apps[@]}"
   do
-    brew cask install --appdir="/Applications" $cask_app
+    brew install --cask $cask_app
   done
 else
   pretty_print "${red}Exiting...${neutral}"
@@ -99,16 +103,18 @@ fi
 extensions=(
   danields761.dracula-theme-from-intellij-pythoned 
   magicstack.magicpython
-  mauve.terraform
-  misogi.ruby-rubocop
-  ms-vscode.go
-  wholroyd.jinja
+  golang.go
+  hashicorp.terraform
+  ms-python.python
+  ms-python.vscode-pylance
+  ms-toolsai.jupyter
+  tomaciazek.ansible
 )
 
 # Installing vscode extensions
 for ext in "${extensions[@]}"
 do
-  code --install-extension $ext
+  code --install-extension --force $ext
 done
 
 # Installing additional apps
@@ -131,15 +137,7 @@ done
 # Install python packages
 pip3 install ansible ansible-lint awscli
 
-# Install rvm
-gpg --keyserver hkp://ipv4.pool.sks-keyservers.net \
-    --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 \
-                7D2BAF1CF37B13E2069D6956105BD0E739499BDB
-
-curl -sSL https://rvm.io/mpapis.asc | gpg --import -
-curl -sSL https://get.rvm.io | bash -s stable
-
 # install virtualbox
-brew cask zap virtualbox --force
+brew install virtualbox || brew upgrade virtualbox
 
 pretty_print "${green}We are done!...everything looks good!${neutral}"
