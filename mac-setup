@@ -76,6 +76,7 @@ cask_apps=(
   google-cloud-sdk
   telegram
   authy
+  whatsapp
 )
 
 # ask if want to install
