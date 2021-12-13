@@ -28,9 +28,8 @@ run_install() {
 }
 
 if [ -d "$TARGET" ]; then
-  echo "Directory $TARGET exists. Skipping..."
-  echo "You can 'cd' in $TARGET and run 'git pull'"
-  exit 1
+  echo "Directory $TARGET exists. Pulling new changes..."
+  cd $TARGET && git pull
 else
   run_install
 fi
