@@ -4,16 +4,9 @@
 
 Run:
 
-    ➜ chmod +x mac-setup
+    ➜ bash <(curl -s https://raw.githubusercontent.com/lestex/mac-setup/master/install.sh)
+    ➜ cd .dotfiles
     ➜ ./mac-setup
-
-or
-
-    ➜ yes | bash <(curl -s https://raw.githubusercontent.com/lestex/mac-setup/master/mac-setup)
-
-To install coreutils and findutils to the PATH run:
-
-    ➜ printf 'export PATH="$(brew --prefix coreutils)/libexec/gnubin:$PATH"' >> ~/.zshrc
 
 The script installs the following software:
 
