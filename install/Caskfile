@@ -4,13 +4,11 @@ tap "homebrew/cask-fonts"
 tap "homebrew/cask-versions"
 
 # common
+cask "iterm2"
 cask "authy"
 cask "bitwarden"
 cask "daisydisk"
-cask "dropbox"
 cask "google-chrome"
-cask "iterm2"
-cask "macpass"
 cask "vlc"
 
 # development tools
@@ -25,4 +23,4 @@ cask "microsoft-teams"
 cask "skype"
 cask "slack"
 cask "telegram"
-cask "whatsapp"
+cask "homebrew/cask-versions/whatsapp-beta"
