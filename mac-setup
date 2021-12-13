@@ -140,5 +140,6 @@ pip3 install ansible ansible-lint awscli
 
 # install virtualbox
 brew install virtualbox || brew upgrade virtualbox
+brew install homebrew/cask-versions/whatsapp-beta || brew upgrade homebrew/cask-versions/whatsapp-beta
 
 pretty_print "${green}We are done!...everything looks good!${neutral}"
