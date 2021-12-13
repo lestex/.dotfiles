@@ -41,99 +41,15 @@ fi
 pretty_print "Updating brew formulas"
   brew update &>/dev/null
 
-# Installing vim, will also install the following dependencies - perl, readline, libyaml, openssl, ruby, sqlite, gdbm, python
-# python2 into /usr/local/bin
-# ruby into /usr/local/bin/ruby
-# openssl into /usr/local/opt/openssl/bin
-# sqlite into /usr/local/opt/sqlite/bin
-# gdbm into /usr/local/opt/gdbm/bin
-pretty_print "Installing vim with Homebrew for latest version"
-  brew install vim || brew upgrade vim
-
-# All commands will be installed with the prefix 'g' at
-# /usr/local/opt/coreutils/libexec/gnubin
-pretty_print "Installing GNU core utilities..."
-  brew install coreutils || brew upgrade coreutils
-
-# uncomment if you want to add coreutils to PATH
-#printf 'export PATH="$(brew --prefix coreutils)/libexec/gnubin:$PATH"' >> ~/.zshrc
-#export PATH="$(brew --prefix coreutils)/libexec/gnubin:$PATH"
-
-pretty_print "Installing GNU find, locate, updatedb and xargs..."
-  brew install findutils || brew upgrade findutils
-
-# Show the list of apps to install
-# tunnelblick
-cask_apps=(
-  iterm2
-  skype
-  google-chrome
-  slack
-  vlc
-  visual-studio-code
-  vagrant
-  docker
-  google-cloud-sdk
-  telegram
-  authy
-)
-
-# ask if want to install
-pretty_print "Do you need this apps to be installed?${green}"
-for cask_app in "${cask_apps[@]}"
-do
-  printf "$cask_app\n"
-done
-
-pretty_print "Type 'Y' or 'y' to proceed: ${neutral}"
-read line
-
-# install apps if hit 'yes'
-if [ "$line" = Y ] || [ "$line" = y ]; then
-  for cask_app in "${cask_apps[@]}"
-  do
-    brew install --cask $cask_app
-  done
-else
-  pretty_print "${red}Exiting...${neutral}"
-  exit 1
-fi
+make all
 
 # The list of vs code extensions
-extensions=(
-  danields761.dracula-theme-from-intellij-pythoned 
-  magicstack.magicpython
-  golang.go
-  hashicorp.terraform
-  ms-python.python
-  ms-python.vscode-pylance
-  ms-toolsai.jupyter
-  tomaciazek.ansible
-)
+extensions=$(cat install/Codefile)
 
 # Installing vscode extensions
 for ext in "${extensions[@]}"
 do
   code --install-extension --force $ext
-done
-
-# Installing additional apps
-apps=(
-  gpg
-  watch
-  htop
-  pyenv
-  pipenv
-  terraform
-  packer
-  virtualbox
-  homebrew/cask-versions/whatsapp-beta
-)
-
-pretty_print "Installing additional software..."
-for app in "${apps[@]}"
-do
-  brew install $app || brew upgrade $app
 done
 
 # Install python packages
