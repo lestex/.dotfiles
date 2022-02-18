@@ -6,6 +6,7 @@ tap "homebrew/cask-versions"
 # common
 cask "iterm2"
 cask "authy"
+cask "alacritty"
 cask "bitwarden"
 cask "daisydisk"
 cask "google-chrome"
@@ -20,7 +21,6 @@ cask "visual-studio-code"
 
 # messaging
 cask "microsoft-teams"
-cask "skype"
 cask "slack"
 cask "telegram"
 cask "homebrew/cask-versions/whatsapp-beta"
