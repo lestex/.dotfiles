@@ -57,7 +57,7 @@ pip3 install ansible ansible-lint awscli
 
 pretty_print "Copying configs to .configs directory"
 mkdir -p ~/.config
-cp -R .configs/* ~/.config
+cp -R .config/* ~/.config
 
 pretty_print "Installing fonts"
 cd ~/Library/Fonts && { 
