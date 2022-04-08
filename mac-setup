@@ -55,4 +55,6 @@ done
 # Install python packages
 pip3 install ansible ansible-lint awscli
 
+pretty_print "Copying configs to .configs directory"
+cp -R .configs ~/.configs
 pretty_print "${green}We are done!...everything looks good!${neutral}"
