@@ -7,8 +7,8 @@ selection:
 # Window customizations
 window:
   dimensions:
-    columns: 159
-    lines: 46
+    columns: 168
+    lines: 51
   padding:
     x: 12
     y: 12
@@ -25,9 +25,9 @@ window:
 # Fonts
 font:
   normal:
-    family: 'MesloLGS NF'
+    family: 'Liga SFMono Nerd Font'
     style: Regular
-  size: 16.0
+  size: 15.0
   use_thin_strokes: true
   offset:
     x: 0

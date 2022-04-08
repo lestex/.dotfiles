@@ -59,6 +59,7 @@ cp -R .config/* ~/.config
 
 pretty_print "Installing fonts"
 cp fonts/*.ttf /Users/$USER/Library/Fonts
+cp fonts/*.otf /Users/$USER/Library/Fonts
 
 pretty_print "Installing powerlevel10k"
 [ ! -d ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k ] && \
