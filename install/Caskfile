@@ -4,7 +4,6 @@ tap "homebrew/cask-fonts"
 tap "homebrew/cask-versions"
 
 # common
-cask "iterm2"
 cask "authy"
 cask "alacritty"
 cask "bitwarden"
