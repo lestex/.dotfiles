@@ -10,6 +10,7 @@ brew "tree"
 brew "vim"
 brew "ssh-copy-id"
 brew "telnet"
+brew "tmux"
 
 # development tools
 brew "git"
