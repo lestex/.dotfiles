@@ -63,9 +63,10 @@ pretty_print "Installing fonts"
 cp fonts/*.ttf /Users/$USER/Library/Fonts
 
 pretty_print "Installing powerlevel10k"
-git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k
+[ ! -d ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k ] && \
+  git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k
 
-cp zsh/.zshrc /Users/$USER
-cp zsh/.p10k.zsh /Users/$USER
+cp .config/zsh/.zshrc /Users/$USER/.zshrc
+cp .config/zsh/.p10k.zsh /Users/$USER/.p10k.zsh
 
 pretty_print "${green}We are done!...everything looks good!${neutral}"

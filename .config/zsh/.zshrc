@@ -107,7 +107,7 @@ export PATH="/usr/local/sbin:$PATH"
 
 # pyenv settings
 eval "$(pyenv init -)"
-echo 'eval "$(pyenv init --path)"' >> ~/.zprofile
+echo 'eval "$(pyenv init --path)"' > ~/.zprofile
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
