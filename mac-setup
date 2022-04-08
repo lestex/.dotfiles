@@ -60,12 +60,6 @@ mkdir -p ~/.config
 cp -R .config/* ~/.config
 
 pretty_print "Installing fonts"
-cd ~/Library/Fonts && { 
-    curl -s 'https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Regular.ttf' --output 'MesloLGS NF Regular.ttf'
-    curl -s 'https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Bold.ttf' --output 'MesloLGS NF Bold.ttf'
-    curl -s 'https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Italic.ttf' --output 'MesloLGS NF Italic.ttf'
-    curl -s 'https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Bold%20Italic.ttf' --output 'MesloLGS NF Bold Italic.ttf'
-    cd -; 
-}
+cp fonts/*.ttf ~/Library/Fonts/
 
 pretty_print "${green}We are done!...everything looks good!${neutral}"
