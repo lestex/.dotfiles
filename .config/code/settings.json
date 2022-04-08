@@ -1,5 +1,6 @@
 {
   "workbench.colorTheme": "Default Dark+",
   "git.confirmSync": false,
-  "window.zoomLevel": 0.9
+  "window.zoomLevel": 0.9,
+  "terminal.integrated.fontFamily": "Liga SFMono Nerd Font"
 }
