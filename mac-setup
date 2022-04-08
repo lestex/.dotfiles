@@ -67,4 +67,7 @@ pretty_print "Installing powerlevel10k"
 cp .config/zsh/.zshrc /Users/$USER/.zshrc
 cp .config/zsh/.p10k.zsh /Users/$USER/.p10k.zsh
 
+pretty_print "Configuring vscode"
+cp .config/code/settings.json /Users/lestex/Library/Application\ Support/Code/User/settings.json
+
 pretty_print "${green}We are done!...everything looks good!${neutral}"
