@@ -3,7 +3,7 @@
 
 Run:
 
-    ➜ bash <(curl -s https://raw.githubusercontent.com/lestex/mac-setup/master/install.sh)
+    ➜ bash <(curl -s https://raw.githubusercontent.com/lestex/dotfiles/master/install.sh)
     ➜ cd .dotfiles
     ➜ ./mac-setup
 
