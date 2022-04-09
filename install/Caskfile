@@ -14,8 +14,6 @@ cask "vlc"
 # development tools
 cask "docker"
 cask "google-cloud-sdk"
-# cask "vagrant"
-# cask "virtualbox"
 cask "visual-studio-code"
 
 # messaging
