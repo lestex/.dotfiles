@@ -1,7 +1,7 @@
 editorconfig.editorconfig
 bbenoist.vagrant
 golang.go
-hashicorp.terraform
+4ops.terraform
 magicstack.magicpython
 ms-azuretools.vscode-docker
 ms-python.python
@@ -10,3 +10,5 @@ ms-vscode-remote.remote-containers
 pkief.material-icon-theme
 wholroyd.jinja
 redhat.ansible
+GoogleCloudTools.cloudcode
+GitHub.github-vscode-theme
