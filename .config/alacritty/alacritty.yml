@@ -57,25 +57,43 @@ hints:
 
 # Key bindings
 key_bindings:
-  # - { key: Return,          mods: Command,                    action: ToggleSimpleFullscreen }
-  - { key: Q, mods: Command, action: Quit }
-  - { key: N, mods: Command, action: SpawnNewInstance }
-  - {
-      key: F,
-      mods: Command|Control,
-      action: ToggleFullscreen
-    }
-  - { key: T, mods: Command, chars: "\x02c" }
-  - { key: Equals,   mods: Command, action: IncreaseFontSize }
-  - { key: Minus,    mods: Command, action: DecreaseFontSize }
-  - { key: Tab,      mods: Shift,   chars: "\x1b[Z" }
-    # navigate command line with Control + (->,  <-)
-  - { key: Right, mods: Alt, chars: "\x1BF" }
-  - { key: Left,  mods: Alt, chars: "\x1BB" }
-  - { key: Left,  mods: Command, chars: "\x1bOH", mode: AppCursor } # Home
-  - { key: Right, mods: Command, chars: "\x1bOF", mode: AppCursor } # End
-  - { key: Back,  mods: Command, chars: "\x15"     } # Delete line
-  - { key: Back,  mods: Alt,     chars: "\x1b\x7f" } # Delete word
+  - { key: Return,    mods: Command,        action: ToggleSimpleFullscreen }
+  - { key: Q,         mods: Command,        action: Quit }
+  # - { key: N, mods: Command, action: SpawnNewInstance }
+  - { key: Minus,     mods: Command,        action: DecreaseFontSize }
+  - { key: Equals,    mods: Command,        action: IncreaseFontSize }
+  # - { key: Tab,      mods: Shift,   chars: "\x1b[Z" }
+  - { key: Right,     mods: Alt,            chars: "\x1BF" } # navigate command line words right
+  - { key: Left,      mods: Alt,            chars: "\x1BB" } # navigate command line words left
+  - { key: Left,      mods: Command,        chars: "\x1bOH", mode: AppCursor } # Home
+  - { key: Right,     mods: Command,        chars: "\x1bOF", mode: AppCursor } # End
+  - { key: Back,      mods: Command,        chars: "\x15" } # Delete line
+  # TMUX shortcuts
+  - { key: T,         mods: Command,        chars: "\x02c" } # new tab
+  # - { key: D,     mods: Command,       chars: "\x02\x76" } 
+  - { key: K,         mods: Command,        chars: "\x02\x73" }
+  - { key: W,         mods: Command,        chars: "\x02\x78" }
+  # Select window 1-9
+  - { key: Key1,      mods: Command,        chars: "\x02\x31" }
+  - { key: Key2,      mods: Command,        chars: "\x02\x32" }
+  - { key: Key3,      mods: Command,        chars: "\x02\x33" }
+  - { key: Key4,      mods: Command,        chars: "\x02\x34" }
+  - { key: Key5,      mods: Command,        chars: "\x02\x35" }
+  - { key: Key6,      mods: Command,        chars: "\x02\x36" }
+  - { key: Key7,      mods: Command,        chars: "\x02\x37" }
+  - { key: Key8,      mods: Command,        chars: "\x02\x38" }
+  - { key: Key9,      mods: Command,        chars: "\x02\x39" }
+  - { key: Comma,     mods: Command,        chars: "\x02\x2c" } # rename the current tmux window
+  - { key: LBracket,  mods: Command|Shift,  chars: "\x02\x70" } # change to the previous tmux window
+  - { key: RBracket,  mods: Command|Shift,  chars: "\x02\x6e" } # change to the next tmux window
+  - { key: N,         mods: Command|Shift,  chars: "\x02\x25" } # split the current pane into two, left and right
+  - { key: N,         mods: Command,        chars: "\x02\x22" } # split the current pane into two, top and bottom.
+  - { key: L,         mods: Command,        chars: "\x02\x4c" } # last session
+  - { key: Semicolon, mods: Command,        chars: "\x02\x3a" } # Run tmux command
+  - { key: Left,      mods: Command|Shift,  chars: "\x02\x1b\x5b\x44" } # Switch pane left
+  - { key: Right,     mods: Command|Shift,  chars: "\x02\x1b\x5b\x43" } # Switch pane right
+  - { key: Up,        mods: Command|Shift,  chars: "\x02\x1b\x5b\x41" } # Switch pane up
+  - { key: Down,      mods: Command|Shift,  chars: "\x02\x1b\x5b\x42" } # Switch pane down
 
 colors:
   name: Ashes (dark)
