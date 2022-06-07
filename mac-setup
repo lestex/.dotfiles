@@ -64,12 +64,8 @@ cp fonts/*.otf /Users/$USER/Library/Fonts
 pretty_print "Installing icons"
 cp icons/Alacritty.icns /Applications/Alacritty.app/Contents/Resources/alacritty.icns
 
-pretty_print "Installing powerlevel10k"
-[ ! -d ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k ] && \
-  git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k
-
+pretty_print "Changing zshrc config"
 cp .config/zsh/.zshrc /Users/$USER/.zshrc
-cp .config/zsh/.p10k.zsh /Users/$USER/.p10k.zsh
 
 pretty_print "Configuring vscode"
 cp .config/code/settings.json /Users/$USER/Library/Application\ Support/Code/User/settings.json

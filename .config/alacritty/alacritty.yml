@@ -27,6 +27,12 @@ font:
   normal:
     family: 'Liga SFMono Nerd Font'
     style: Regular
+  bold:
+    family: 'Liga SFMono Nerd Font'
+    style: Bold
+  italic:
+    family: 'Liga SFMono Nerd Font'
+    style: Italic
   size: 15.0
   use_thin_strokes: true
   offset:

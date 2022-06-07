@@ -10,6 +10,8 @@ cask "bitwarden"
 cask "daisydisk"
 cask "google-chrome"
 cask "vlc"
+cask "rectangle"
+cask "mpv"
 
 # development tools
 cask "docker"
