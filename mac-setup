@@ -61,6 +61,9 @@ pretty_print "Installing fonts"
 cp fonts/*.ttf /Users/$USER/Library/Fonts
 cp fonts/*.otf /Users/$USER/Library/Fonts
 
+pretty_print "Installing icons"
+cp icons/Alacritty.icns /Applications/Alacritty.app/Contents/Resources/alacritty.icns
+
 pretty_print "Installing powerlevel10k"
 [ ! -d ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k ] && \
   git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k
