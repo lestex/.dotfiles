@@ -51,7 +51,11 @@ do
 done
 
 # Install python packages
-pip3 install ansible ansible-lint awscli
+pip3 install ansible ansible-lint
+
+# Install terraform
+tfenv install 0.13.7
+tfenv use 0.13.7
 
 pretty_print "Copying configs to .configs directory"
 mkdir -p ~/.config
