@@ -66,6 +66,7 @@ export ZSH="$HOME/.oh-my-zsh"
 plugins=(
   git
   brew
+  terraform
 )
 
 source $ZSH/oh-my-zsh.sh
@@ -105,3 +106,6 @@ eval "$(pyenv init -)"
 echo 'eval "$(pyenv init --path)"' > ~/.zprofile
 
 eval "$(starship init zsh)"
+
+# Completion for zsh
+source "/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.zsh.inc"
