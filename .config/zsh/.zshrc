@@ -67,6 +67,7 @@ plugins=(
   git
   brew
   terraform
+  kubectl
   zsh-autosuggestions
   zsh-syntax-highlighting
 )
