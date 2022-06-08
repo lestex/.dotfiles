@@ -67,6 +67,7 @@ plugins=(
   git
   brew
   terraform
+  zsh-autosuggestions
 )
 
 source $ZSH/oh-my-zsh.sh
