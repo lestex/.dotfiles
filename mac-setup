@@ -68,6 +68,13 @@ cp fonts/*.otf /Users/$USER/Library/Fonts
 pretty_print "Installing icons"
 cp icons/Alacritty.icns /Applications/Alacritty.app/Contents/Resources/alacritty.icns
 
+pretty_print "Configuring plugins for zsh"
+[ ! -d ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions ] && \
+  git clone --depth=1 https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
+
+[ ! -d ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting ] && \
+  git clone --depth=1 https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
+
 pretty_print "Changing zshrc config"
 cp .config/zsh/.zshrc /Users/$USER/.zshrc
 
