@@ -1,18 +1,17 @@
 # Inserts a blank line between shell prompts
 add_newline = false
 
-# Use custom format
-format = """
-[$all](bold green)
-[└─$character](bold green)"""
-
-# move the rest of the prompt to the right
-right_format = """
-$battery$time
-"""
-
 # Wait 10 milliseconds for starship to check files under the current directory.
 scan_timeout = 1000
+command_timeout	= 2000
+
+# Use custom format
+format = """
+[$all](bold green)$fill$battery$time
+[└─$character](bold green)"""
+
+[fill]
+symbol = " "
 
 # makes prompt a single line
 [line_break]
@@ -53,10 +52,10 @@ style = "bg:#FF4400 fg:#333333"
 style = "bg:blue fg:black"
 read_only = ""
 read_only_style = "bg:#FF6E79 fg:#EEEEEE"
-truncation_length = 2
+truncation_length = 3
 truncate_to_repo = true
 truncation_symbol = "…"
-format = "([ (bg:#FF6E79 fg:#A6A6A6)$read_only(bg:#A6A6A6 fg:#FF6E79) ]($read_only_style))[ (bg:#545B68 fg:#A6A6A6)$path (bg:#A6A6A6 fg:#545B68)]($style)"
+format = "([ $read_only ]($read_only_style))[ $path ]($style)"
 
 [directory.substitutions]
 "~/Documents" = ""
@@ -65,7 +64,7 @@ format = "([ (bg:#FF6E79 fg:#A6A6A6)$read_only(bg:#A6A6A6 fg:#FF6E79) ]($read_on
 "~/Pictures" = " "
 "~/projects" = " "
 "~" = " "
-"/" = "  "
+"/" = "/"
 
 [git_branch]
 #symbol = " "
@@ -74,7 +73,6 @@ style = "black bg:green"
 truncation_length = 15
 truncation_symbol = "…"
 format = "[ $symbol$branch ]($style)"
-
 
 [git_commit]
 # disabled = true
@@ -134,13 +132,13 @@ style = "bg:#3371E3 fg:#EEEEEE"
 format = '[ $symbol $context(\($namespace\)) (bg:#A6A6A6 fg:#3371E3)]($style)'
 
 [time]
-disabled = true
+disabled = false
 style = "bg:#b4bbc8 fg:#111111"
 use_12hr = false
 time_format = "%H:%M"
 utc_time_offset = "local"
-time_range = "20:00:00-06:00:00"
-format = "[[](bg:#b4bbc8 fg:#A6A6A6) $time[](bg:#A6A6A6 fg:#b4bbc8)]($style)"
+#time_range = "20:00:00-06:00:00"
+format = "[ $time ]($style)"
 
 [memory_usage]
 format = "$symbol[${ram_pct}]($style) "
