@@ -50,9 +50,6 @@ do
   code --install-extension $ext
 done
 
-# Install python packages
-pip3 install ansible ansible-lint
-
 # Install terraform
 tfenv install 0.13.7
 tfenv use 0.13.7
@@ -81,7 +78,13 @@ cp .config/zsh/.zshrc /Users/$USER/.zshrc
 pretty_print "Configuring vscode"
 cp .config/code/settings.json /Users/$USER/Library/Application\ Support/Code/User/settings.json
 
-mkdir -p ~/.config/vifm/colors
-git clone https://github.com/vifm/vifm-colors ~/.config/vifm/colors
+if [ ! -d $HOME/.config/vifm/colors ];
+then
+  mkdir -p ~/.config/vifm/colors
+  git clone https://github.com/vifm/vifm-colors ~/.config/vifm/colors
+fi
+
+# Install python
+pyenv install 3.10.4
 
 pretty_print "${green}We are done!...everything looks good!${neutral}"
