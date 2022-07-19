@@ -19,7 +19,7 @@ disabled = true
 
 [character]
 success_symbol = "[▶](green)"
-error_symbol = "[▶](fg:#FF9900) "
+error_symbol = "[▶](fg:#FF9900)"
 
 [username]
 disabled = true
