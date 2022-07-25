@@ -111,7 +111,7 @@ eval "$(pyenv init -)"
 eval "$(starship init zsh)"
 
 # check the platform
-export PLATFORM=$(uname -a | awk '{ print $15 }')
+export PLATFORM=$(uname -m)
 
 # Completion for zsh
 if [[ $PLATFORM -eq 'arm64' ]]; then
