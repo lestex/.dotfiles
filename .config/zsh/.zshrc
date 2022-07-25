@@ -123,3 +123,6 @@ else
 fi
 
 export PATH="${PATH}:${HOME}/.krew/bin"
+
+# add alias for podman
+alias docker=podman
