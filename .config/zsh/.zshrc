@@ -107,12 +107,19 @@ export PATH="/usr/local/sbin:$PATH"
 
 # pyenv settings
 eval "$(pyenv init -)"
-echo 'eval "$(pyenv init --path)"' > ~/.zprofile
 
 eval "$(starship init zsh)"
 
+# check the platform
+export PLATFORM=$(uname -a | awk '{ print $15 }')
+
 # Completion for zsh
-source "/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.zsh.inc"
-source "/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/completion.zsh.inc"
+if [[ $PLATFORM -eq 'arm64' ]]; then
+  source "/opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.zsh.inc"
+  source "/opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/completion.zsh.inc"
+else
+  source "/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.zsh.inc"
+  source "/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/completion.zsh.inc"
+fi
 
 export PATH="${PATH}:${HOME}/.krew/bin"
