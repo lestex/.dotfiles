@@ -34,7 +34,6 @@ font:
     family: 'Liga SFMono Nerd Font'
     style: Italic
   size: 15.0
-  use_thin_strokes: true
   offset:
     x: 0
     y: 0
