@@ -68,6 +68,9 @@ cp fonts/*.otf /Users/$USER/Library/Fonts
 pretty_print "Installing icons"
 cp icons/Alacritty.icns /Applications/Alacritty.app/Contents/Resources/alacritty.icns
 
+# https://github.com/alacritty/alacritty/releases/tag/v0.11.0
+defaults write -g AppleFontSmoothing -int 2
+
 pretty_print "Configuring plugins for zsh"
 [ ! -d ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions ] && \
   git clone --depth=1 https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
