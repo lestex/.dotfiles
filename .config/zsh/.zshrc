@@ -99,7 +99,7 @@ source $ZSH/oh-my-zsh.sh
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
-alias kcb="kind create cluster --name basic --config .config/kind/cluster-basic.yaml"
+alias kcb="kind create cluster --name basic --config $HOME/.config/kind/cluster-basic.yaml"
 
 # recommended by brew doctor
 export PATH="/usr/local/bin:$PATH"
