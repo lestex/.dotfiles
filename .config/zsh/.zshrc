@@ -126,3 +126,8 @@ export PATH="${PATH}:${HOME}/.krew/bin"
 
 # add alias for podman
 alias docker=podman
+
+# set k9s config dir for mac
+if command -v k9s &>/dev/null; then
+  export K9SCONFIG=~/.config/k9s/
+fi
