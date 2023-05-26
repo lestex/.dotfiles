@@ -90,6 +90,12 @@ then
   git clone https://github.com/vifm/vifm-colors ~/.config/vifm/colors
 fi
 
+# Install tmux plugin manager
+if [ ! -d $HOME/.config/tmux/plugins ];
+then
+  git clone https://github.com/tmux-plugins/tpm ~/.config/tmux/plugins/tpm
+fi
+
 # Install python if not installed
 [ ! -d $HOME/.pyenv/versions/$PYTHON_VERSION ] && pyenv install 3.10.4
 
