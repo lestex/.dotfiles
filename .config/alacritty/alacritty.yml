@@ -75,7 +75,7 @@ key_bindings:
   - { key: Back,      mods: Command,        chars: "\x15" } # Delete line
   # TMUX shortcuts
   - { key: T,         mods: Command,        chars: "\x02c" } # new tab
-  # - { key: D,     mods: Command,       chars: "\x02\x76" } 
+  # - { key: D,     mods: Command,       chars: "\x02\x76" }
   - { key: K,         mods: Command,        chars: "\x02\x73" }
   - { key: W,         mods: Command,        chars: "\x02\x78" }
   # Select window 1-9
