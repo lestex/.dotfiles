@@ -107,17 +107,15 @@ untracked = "  ${count}"
 format = "([ $stashed$staged$modified$renamed$untracked$deleted$conflicted$ahead_behind ]($style))"
 
 [aws]
-disabled = false
+disabled = true
 symbol = "  "
-format = '[$symbol($profile )(\($region\) )]($style)'
+format = '[ $symbol($profile )(\($region\) )]($style)'
 
 [gcloud]
-disabled = false
-# symbol = "☁️ "
+disabled = true
 symbol = ' '
-# style = "bg:#1A73E8 fg:#EEEEEE"
-# format = '[$symbol($profile )(\($region\) )]($style)'
-format = '[$symbol($account )(\($project\) )]($style)'
+style = "bg:#1A73E8 fg:#EEEEEE"
+format = '[ $symbol($account )(\($project\) )]($style)'
 
 [ruby]
 # disabled = true
