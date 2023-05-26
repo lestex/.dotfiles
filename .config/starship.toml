@@ -7,7 +7,7 @@ command_timeout	= 2000
 
 # Use custom format
 format = """
-[$all](bold green)$fill$battery$time
+[$all](bold green)$fill$gcloud$aws$kubernetes$battery$time
 [└─$character](bold green)"""
 
 [fill]
@@ -105,7 +105,10 @@ modified = " 凜${count}"
 staged = "  ${count}"
 untracked = "  ${count}"
 format = "([ $stashed$staged$modified$renamed$untracked$deleted$conflicted$ahead_behind ]($style))"
- 
+
+[aws]
+disabled = true
+
 [ruby]
 # disabled = true
 symbol = " "
