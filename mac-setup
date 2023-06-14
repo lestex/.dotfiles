@@ -3,8 +3,8 @@
 # Exit on any individual command failure.
 set -e
 
-TERRAFORM_VERSION=1.2.5
-PYTHON_VERSION=3.10.4
+TERRAFORM_VERSION=1.5.0
+PYTHON_VERSION=3.11.4
 
 # Pretty colors.
 red='\033[0;31m'
@@ -97,6 +97,6 @@ then
 fi
 
 # Install python if not installed
-[ ! -d $HOME/.pyenv/versions/$PYTHON_VERSION ] && pyenv install 3.10.4
+[ ! -d $HOME/.pyenv/versions/$PYTHON_VERSION ] && pyenv install $PYTHON_VERSION
 
 pretty_print "${green}We are done!...everything looks good!${neutral}"
