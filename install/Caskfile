@@ -15,7 +15,7 @@ cask "mpv"
 cask "utm"
 
 # development tools
-cask "docker"
+cask "podman"
 cask "google-cloud-sdk"
 cask "visual-studio-code"
 
