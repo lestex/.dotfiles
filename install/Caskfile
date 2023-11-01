@@ -12,6 +12,7 @@ cask "google-chrome"
 cask "vlc"
 cask "rectangle"
 cask "mpv"
+cask "utm"
 
 # development tools
 cask "docker"
