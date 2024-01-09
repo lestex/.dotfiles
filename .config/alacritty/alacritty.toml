@@ -1,41 +1,15 @@
 live_config_reload = true
-theme = "Ashes.dark"
 
-[colors]
-author = "Chris Kempson"
-name = "Ashes (dark)"
-
-[colors.bright]
-black = "#747c84"
-blue = "#ae95c7"
-cyan = "#95aec7"
-green = "#95c7ae"
-magenta = "#c795ae"
-red = "#c7ae95"
-white = "#f3f4f5"
-yellow = "#aec795"
-
-[colors.cursor]
-cursor = "#c7ccd1"
-text = "#1c2023"
-
-[colors.normal]
-black = "#1c2023"
-blue = "#ae95c7"
-cyan = "#95aec7"
-green = "#95c7ae"
-magenta = "#c795ae"
-red = "#c7ae95"
-white = "#c7ccd1"
-yellow = "#aec795"
-
-[colors.primary]
-background = "#1c2023"
-foreground = "#c7ccd1"
+import = [
+    "~/.config/alacritty/themes/themes/ashes-dark.toml"
+]
 
 [cursor]
 style = "Block"
 unfocused_hollow = true
+
+[env]
+TERM = "xterm-256color"
 
 [font]
 size = 15.0
@@ -230,11 +204,11 @@ mods = "Command|Shift"
 [mouse]
 hide_when_typing = true
 
-[mouse.double_click]
-threshold = 300
+#[mouse.double_click]
+#threshold = 300
 
-[mouse.triple_click]
-threshold = 300
+#[mouse.triple_click]
+#threshold = 300
 
 [selection]
 save_to_clipboard = true
@@ -254,6 +228,6 @@ lines = 51
 x = 12
 y = 12
 
-[window.scrolling]
+[scrolling]
 history = 10000
 multiplier = 3
