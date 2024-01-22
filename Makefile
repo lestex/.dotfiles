@@ -2,7 +2,7 @@ SHELL = /bin/bash
 DOTFILES_DIR := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 OS := $(shell bin/is-supported bin/is-macos macos linux)
 PATH := $(DOTFILES_DIR)/bin:$(PATH)
-.DEFAULT_GOAL := help
+.DEFAULT_GOAL := all
 export XDG_CONFIG_HOME := $(HOME)/.config
 
 .PHONY: test
@@ -16,6 +16,8 @@ all: $(OS) ## check the OS
 
 linux: ## run linux specific tasks
 	@echo "on linux"
+	scripts/linux-pre
+	scripts/linux-install
 
 macos: ## run macos specific tasks
 	@echo "on mac"

@@ -1,0 +1,114 @@
+#!/usr/bin/env bash
+set -e
+
+# import pretty_print
+source scripts/common
+
+pretty_print "${green}Install apt software ...${neutral}"
+sudo apt update -y && sudo apt install -y \
+    zsh curl jq htop btop tree vim neovim vifm tmux gpg mpv wget \
+    apt-transport-https ca-certificates gnupg make \
+    build-essential libssl-dev tk-dev libbz2-dev libreadline-dev libffi-dev libsqlite3-dev liblzma-dev
+
+# Oh my zsh installation
+if [ ! -d "$HOME/.oh-my-zsh" ];
+then
+  pretty_print "${green}Installing oh-my-zsh...${neutral}"
+  curl -L http://install.ohmyz.sh | sh
+else
+  pretty_print "${yellow}oh-my-zsh is already installed, skipping ...${neutral}"
+fi
+
+# Oh my zsh zsh-autosuggestions
+if [ ! -d ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions ];
+then
+  pretty_print "${green}Installing zsh-autosuggestions...${neutral}"
+  git clone --depth=1 https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
+else
+  pretty_print "${yellow}zsh-autosuggestions is already installed, skipping ...${neutral}"
+fi
+
+if [ ! -d ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting ];
+then
+  pretty_print "${green}Installing zsh-syntax-highlighting...${neutral}"
+  git clone --depth=1 https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
+else
+  pretty_print "${yellow}zsh-syntax-highlighting is already installed, skipping ...${neutral}"
+fi
+
+# install rust
+curl https://sh.rustup.rs -sSf | bash -s -- -y
+
+# install starship
+cargo install starship --locked
+
+# brave browser
+sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
+echo "deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg] https://brave-browser-apt-release.s3.brave.com/ stable main" | sudo tee /etc/apt/sources.list.d/brave-browser-release.list
+
+# vscode
+wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg
+sudo install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg
+sudo sh -c 'echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list'
+rm -f packages.microsoft.gpg
+
+# google cloud sdk
+if [ ! -f "/usr/share/keyrings/cloud.google.gpg" ]; then
+  curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
+fi
+echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee /etc/apt/sources.list.d/google-cloud-sdk.list
+
+pretty_print "${green}Copying configs to .configs directory${neutral}"
+mkdir -p ~/.config
+cp -R .config/* ~/.config
+
+pretty_print "${green}Installing fonts${neutral}"
+mkdir -p $HOME/.local/share/fonts
+cp -r fonts/*.otf $HOME/.local/share/fonts
+cp -r fonts/*.ttf $HOME/.local/share/fonts
+fc-cache -f -v
+
+pretty_print "${green}Changing zshrc config${neutral}"
+cp .config/zsh/.zshrc-linux $HOME/.zshrc
+
+pretty_print "${green}Configuring vscode${neutral}"
+mkdir -p $HOME/.config/Code/User/
+cp .config/code/settings.json $HOME/.config/Code/User/settings.json
+
+if [ ! -d $HOME/.config/vifm/colors ];
+then
+  mkdir -p ~/.config/vifm/colors
+  git clone https://github.com/vifm/vifm-colors ~/.config/vifm/colors
+fi
+
+if [ ! -d $HOME/.config/tmux/plugins ];
+then
+  pretty_print "${green}Install tmux plugin manager${neutral}"
+  git clone https://github.com/tmux-plugins/tpm ~/.config/tmux/plugins/tpm
+fi
+
+if [ ! -d "$HOME/.pyenv" ];
+then
+  pretty_print "${green}Installing pyenv...${neutral}"
+  curl https://pyenv.run | bash
+else
+  pretty_print "${yellow}pyenv is already installed, skipping ...${neutral}"
+fi
+
+if [ ! -d "$HOME/.tfenv" ];
+then
+  pretty_print "${green}Installing tfenv...${neutral}"
+  git clone --depth=1 https://github.com/tfutils/tfenv.git ~/.tfenv
+else
+  pretty_print "${yellow}tfenv is already installed, skipping ...${neutral}"
+fi
+
+if [ ! -d "$HOME/.goenv" ];
+then
+  pretty_print "${green}Installing goenv...${neutral}"
+  git clone --depth=1 https://github.com/go-nv/goenv.git ~/.goenv
+else
+  pretty_print "${yellow}goenv is already installed, skipping ...${neutral}"
+fi
+
+pretty_print "${green}We are done!...everything looks good!${neutral}"
