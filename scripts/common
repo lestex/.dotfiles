@@ -1,0 +1,10 @@
+# Colors.
+red='\033[0;31m'
+green='\033[0;32m'
+neutral='\033[0m'
+yellow='\033[0;33m'
+
+# Shared functions
+pretty_print() {
+  printf "%b\n" "$1"
+}

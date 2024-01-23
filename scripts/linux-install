@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+set -e
+
+# import pretty_print
+source scripts/common
+
+TERRAFORM_VERSION=1.5.0
+PYTHON_VERSION=3.11.7
+GO_VERSION=1.21.6
+
+pretty_print "${green}Installing user packages ...${neutral}"
+sudo apt update -y && sudo apt install -y brave-browser code google-cloud-cli
+
+# Installing vscode extensions
+for ext in $(cat install/Codefile)
+do
+  pretty_print "Installing vscode extension: $ext"
+  code --install-extension $ext --force
+done
+
+# Install python if not installed
+$HOME/.pyenv/bin/pyenv -v
+if [ ! -d $HOME/.pyenv/versions/$PYTHON_VERSION ];
+then
+  pretty_print "${green}Installing python ...${neutral}"
+  $HOME/.pyenv/bin/pyenv install $PYTHON_VERSION
+else
+  pretty_print "${yellow}python $PYTHON_VERSION is already installed, skipping ...${neutral}"
+fi
+
+# Install tfenv
+$HOME/.tfenv/bin/tfenv -v
+if [ ! -d $HOME/.tfenv/versions/$TERRAFORM_VERSION ];
+then
+  pretty_print "${green}Installing terraform ...${neutral}"
+  $HOME/.tfenv/bin/tfenv install $TERRAFORM_VERSION
+else
+  pretty_print "${yellow}terraform $TERRAFORM_VERSION is already installed, skipping ...${neutral}"
+fi
+
+# Install go
+$HOME/.goenv/bin/goenv -v
+if [ ! -d $HOME/.goenv/versions/$GO_VERSION ];
+then
+  pretty_print "${green}Installing go ...${neutral}"
+  $HOME/.goenv/bin/goenv install $GO_VERSION
+else
+  pretty_print "${yellow}go $GO_VERSION is already installed, skipping ...${neutral}"
+fi
+
+# brew "awscli"
+# brew "packer"
+# brew "node"
+# brew "helm"
+# brew "watch"
+# brew "kind"
+# brew "podman"
+# brew "kubectx"
+# brew "krew"
+# brew "k9s"
+
+pretty_print "${green}We are done!...everything looks good!${neutral}"
