@@ -137,7 +137,7 @@ style = "bg:#3371E3 fg:#EEEEEE"
 format = '[ $symbol $context(\($namespace\)) (bg:#A6A6A6 fg:#3371E3)]($style)'
 
 [time]
-disabled = false
+disabled = true
 style = "bg:#b4bbc8 fg:#111111"
 use_12hr = false
 time_format = "%H:%M"
