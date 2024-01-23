@@ -61,6 +61,9 @@ echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.clou
 pretty_print "${green}Copying configs to .configs directory${neutral}"
 mkdir -p ~/.config
 cp -R .config/* ~/.config
+mv ~/.config/alacritty/alacritty-linux.toml ~/.config/alacritty/alacritty.toml
+mkdir -p ~/.config/alacritty/themes
+[ ! -d $HOME/.config/alacritty/themes ] && git clone --depth=1 https://github.com/alacritty/alacritty-theme ~/.config/alacritty/themes
 
 pretty_print "${green}Installing fonts${neutral}"
 mkdir -p $HOME/.local/share/fonts
