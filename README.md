@@ -41,7 +41,7 @@ Run:
 - k9s
 
 ## Casks
-# common
+### common
 - authy
 - alacritty
 - bitwarden
@@ -52,16 +52,16 @@ Run:
 - mpv
 - utm
 
-# development tools
+### development tools
 - google-cloud-sdk
 - visual-studio-code
 
-# messaging
+### messaging
 - slack
 - telegram
 - whatsapp-beta
 
-## VSCode extensions
+### VSCode extensions
 - editorconfig.editorconfig
 - bbenoist.vagrant
 - golang.go
