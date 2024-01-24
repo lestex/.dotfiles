@@ -1,4 +1,4 @@
-## mac-setup - a script that installs a software on your mac
+## mac-setup - a script that installs a software on your mac/linux (debian based)
 [![Maintained by Leandevops.io](https://img.shields.io/badge/maintained%20by-leandevops-green.svg)](https://leandevops.io)
 
 ## Installation
