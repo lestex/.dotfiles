@@ -1,21 +1,24 @@
 ## mac-setup - a script that installs a software on your mac
 [![Maintained by Leandevops.io](https://img.shields.io/badge/maintained%20by-leandevops-green.svg)](https://leandevops.io)
 
+## Installation
 Run:
+```sh
+➜ bash <(curl -s https://raw.githubusercontent.com/lestex/dotfiles/master/install.sh)
+➜ cd .dotfiles && make
+```
 
-    ➜ bash <(curl -s https://raw.githubusercontent.com/lestex/dotfiles/master/install.sh)
-    ➜ cd .dotfiles && make
-
-The script installs the following software:
-
-## Brews
+## Software Installed
 ### common
 - coreutils
 - findutils
 - jq
 - htop
+- btop
 - tree
 - vim
+- neovim
+- vifm
 - ssh-copy-id
 - telnet
 - tmux
@@ -23,43 +26,46 @@ The script installs the following software:
 ### development tools
 - git
 - pyenv
-- awscli
-- packer
-- terraform
+- tfenv
+- goenv
 - bitwarden-cli
-- go
-- pipenv
 - node
 - helm
 - gpg
 - watch
 - kind
+- podman
+- starship
+- kubectx
+- krew
+- k9s
 
 ## Casks
-### common
+# common
 - authy
 - alacritty
 - bitwarden
 - daisydisk
 - google-chrome
 - vlc
+- rectangle
+- mpv
+- utm
 
-### development tools
-- docker
+# development tools
 - google-cloud-sdk
 - visual-studio-code
 
-### messaging
-- microsoft-teams
+# messaging
 - slack
 - telegram
-- homebrew/cask-versions/whatsapp-beta
+- whatsapp-beta
 
 ## VSCode extensions
 - editorconfig.editorconfig
 - bbenoist.vagrant
 - golang.go
-- hashicorp.terraform
+- 4ops.terraform
 - magicstack.magicpython
 - ms-azuretools.vscode-docker
 - ms-python.python
@@ -68,3 +74,6 @@ The script installs the following software:
 - pkief.material-icon-theme
 - wholroyd.jinja
 - redhat.ansible
+- GoogleCloudTools.cloudcode
+- GitHub.github-vscode-theme
+- tamasfe.even-better-toml
