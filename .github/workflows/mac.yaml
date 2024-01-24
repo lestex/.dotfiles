@@ -3,7 +3,7 @@ name: mac CI
 on:
   pull_request:
     paths:
-    - 'mac-setup'
+    - 'scripts/mac-setup'
 
 jobs:
   build:
@@ -14,4 +14,4 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Run script
-      run: ./mac-setup
+      run: make

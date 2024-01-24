@@ -1,6 +1,3 @@
-tap "homebrew/bundle"
-tap "homebrew/core"
-
 # common
 brew "coreutils"
 brew "findutils"
@@ -17,12 +14,9 @@ brew "tmux"
 # development tools
 brew "git"
 brew "pyenv"
-brew "awscli"
-brew "packer"
 brew "tfenv"
+brew "goenv"
 brew "bitwarden-cli"
-brew "go"
-brew "poetry"
 brew "node"
 brew "helm"
 brew "gpg"

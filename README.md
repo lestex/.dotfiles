@@ -4,8 +4,7 @@
 Run:
 
     ➜ bash <(curl -s https://raw.githubusercontent.com/lestex/dotfiles/master/install.sh)
-    ➜ cd .dotfiles
-    ➜ ./mac-setup
+    ➜ cd .dotfiles && make
 
 The script installs the following software:
 

@@ -21,5 +21,4 @@ linux: ## run linux specific tasks
 
 macos: ## run macos specific tasks
 	@echo "on mac"
-	brew bundle --file install/Brewfile
-	brew bundle --file install/Caskfile
+	scripts/mac-setup

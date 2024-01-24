@@ -1,7 +1,7 @@
 live_config_reload = true
 
 import = [
-    "~/.config/alacritty/themes/themes/ashes-dark.toml"
+  "~/.config/alacritty/themes/themes/ashes_dark.toml"
 ]
 
 [cursor]
@@ -32,12 +32,11 @@ y = 0
 
 [[hints.enabled]]
 command = "open"
+hyperlinks = true
 post_processing = true
-regex = "(ipfs:|ipns:|magnet:|mailto:|gemini:|gopher:|https:|http:|news:|file:|git:|ssh:|ftp:)[^\u0000-\u001F\u007F-<>\"\\s{-}\\^⟨⟩`]+"
-
-[hints.enabled.mouse]
-enabled = true
-mods = "None"
+persist = false
+mouse.enabled = true
+regex = "(ipfs:|ipns:|magnet:|mailto:|gemini://|gopher://|https://|http://|news:|file:|git://|ssh:|ftp://)[^\u0000-\u001F\u007F-\u009F<>\"\\s{-}\\^⟨⟩`]+"
 
 [[keyboard.bindings]]
 action = "ToggleSimpleFullscreen"
@@ -203,12 +202,6 @@ mods = "Command|Shift"
 
 [mouse]
 hide_when_typing = true
-
-#[mouse.double_click]
-#threshold = 300
-
-#[mouse.triple_click]
-#threshold = 300
 
 [selection]
 save_to_clipboard = true

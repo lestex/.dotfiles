@@ -8,3 +8,7 @@ yellow='\033[0;33m'
 pretty_print() {
   printf "%b\n" "$1"
 }
+
+TERRAFORM_VERSION=1.4.6
+PYTHON_VERSION=3.11.7
+GO_VERSION=1.21.6

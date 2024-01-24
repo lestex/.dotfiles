@@ -1,5 +1,3 @@
-tap "homebrew/cask"
-tap "homebrew/cask-drivers"
 tap "homebrew/cask-fonts"
 tap "homebrew/cask-versions"
 
@@ -15,7 +13,6 @@ cask "mpv"
 cask "utm"
 
 # development tools
-cask "podman"
 cask "google-cloud-sdk"
 cask "visual-studio-code"
 

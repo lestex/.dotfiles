@@ -1,84 +1,68 @@
 #!/usr/bin/env bash
-
-# Exit on any individual command failure.
 set -e
 
-TERRAFORM_VERSION=1.5.0
-PYTHON_VERSION=3.11.4
-
-# Pretty colors.
-red='\033[0;31m'
-green='\033[0;32m'
-neutral='\033[0m'
-
-# Shared functions
-pretty_print() {
-  printf "\n%b\n" "$1"
-}
-
-pretty_print "${green}Starting ...${neutral}"
+# import pretty_print
+source scripts/common
 
 # Oh my zsh installation
 if [ ! -d "$HOME/.oh-my-zsh" ]; then
-  pretty_print "Installing oh-my-zsh..."
+  pretty_print "${green}Installing oh-my-zsh...${neutral}"
   curl -L http://install.ohmyz.sh | sh
 else
-  pretty_print "oh-my-zsh is already installed, skipping ..."
+  pretty_print "${yellow}oh-my-zsh is already installed, skipping ...${neutral}"
 fi
 
 # Homebrew installation
 if ! command -v brew &>/dev/null; then
-  pretty_print "Installing Homebrew, an OSX package manager, follow the instructions..."
-    ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-
-  if ! grep -qs "recommended by brew doctor" ~/.zshrc; then
-    pretty_print "Put Homebrew location earlier in PATH ..."
-      printf '\n# recommended by brew doctor\n' >> ~/.zshrc
-      printf 'export PATH="/usr/local/bin:$PATH"\n' >> ~/.zshrc
-      export PATH="/usr/local/bin:$PATH"
-  fi
+  pretty_print "${green}Installing Homebrew, an OSX package manager, follow the instructions...${neutral}"
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 else
-  pretty_print "You already have Homebrew installed...good job!"
+  pretty_print "${yellow}You already have Homebrew installed, skipping ...${neutral}"
 fi
 
-pretty_print "Updating brew formulas"
-  brew update &>/dev/null
+pretty_print "${green}Updating brew formulas${neutral}"
+brew update
 
-make all
+brew bundle --file install/Brewfile
+brew bundle --file install/Caskfile
 
 # Installing vscode extensions
 for ext in $(cat install/Codefile)
 do
   pretty_print "Installing vscode extension: $ext"
-  code --install-extension $ext
+  code --install-extension $ext --force
 done
 
 # Install terraform
 tfenv install $TERRAFORM_VERSION
 tfenv use $TERRAFORM_VERSION
 
-pretty_print "Copying configs to .configs directory"
+pretty_print "${green}Copying configs to .configs directory${neutral}"
 mkdir -p ~/.config
 cp -R .config/* ~/.config
 
-pretty_print "Installing fonts"
+pretty_print "${green}Installing fonts${neutral}"
+mkdir -p /Users/$USER/Library/Fonts
 cp fonts/*.ttf /Users/$USER/Library/Fonts
 cp fonts/*.otf /Users/$USER/Library/Fonts
 
-pretty_print "Installing icons"
+pretty_print "${green}Installing icons${neutral}"
 cp icons/Alacritty.icns /Applications/Alacritty.app/Contents/Resources/alacritty.icns
+
+mkdir -p ~/.config/alacritty/themes
+[ ! -d $HOME/.config/alacritty/themes ] && git clone --depth=1 https://github.com/alacritty/alacritty-theme ~/.config/alacritty/themes
 
 # https://github.com/alacritty/alacritty/releases/tag/v0.11.0
 defaults write -g AppleFontSmoothing -int 2
 
-pretty_print "Configuring plugins for zsh"
+pretty_print "${green}Configuring plugins for zsh${neutral}"
 [ ! -d ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions ] && \
   git clone --depth=1 https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
 
 [ ! -d ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting ] && \
   git clone --depth=1 https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
 
-pretty_print "Changing zshrc config"
+pretty_print "${green}Changing zshrc config${neutral}"
 cp .config/zsh/.zshrc /Users/$USER/.zshrc
 
 pretty_print "Configuring vscode"
@@ -93,7 +77,8 @@ fi
 # Install tmux plugin manager
 if [ ! -d $HOME/.config/tmux/plugins ];
 then
-  git clone https://github.com/tmux-plugins/tpm ~/.config/tmux/plugins/tpm
+  mkdir -p $HOME/.config/tmux/plugins/tpm
+  git clone https://github.com/tmux-plugins/tpm $HOME/.config/tmux/plugins/tpm
 fi
 
 # Install python if not installed
