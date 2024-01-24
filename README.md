@@ -41,7 +41,7 @@ Run:
 - k9s
 
 ## Casks
-### common
+# common
 - authy
 - alacritty
 - bitwarden
