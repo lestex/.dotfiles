@@ -131,3 +131,6 @@ alias docker=podman
 if command -v k9s &>/dev/null; then
   export K9SCONFIG=~/.config/k9s/
 fi
+
+export PATH="$HOME/.cargo/bin:$PATH"
+source "$HOME/.cargo/env"

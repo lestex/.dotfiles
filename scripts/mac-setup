@@ -33,6 +33,9 @@ do
   code --install-extension $ext --force
 done
 
+# install rust
+curl https://sh.rustup.rs -sSf | bash -s -- -y
+
 # Install terraform
 tfenv install $TERRAFORM_VERSION
 tfenv use $TERRAFORM_VERSION
