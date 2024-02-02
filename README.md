@@ -2,8 +2,8 @@
 [![Maintained by Leandevops.io](https://img.shields.io/badge/maintained%20by-leandevops-green.svg)](https://leandevops.io)
 
 ## Build
-![linux](https://github.com/lestex/.dotfiles/.github/workflows/linux.yaml/badge.svg)
-![macOS](https://github.com/lestex/.dotfiles/.github/workflows/mac.yaml/badge.svg)
+![linux](https://github.com/lestex/.dotfiles/actions/workflows/linux.yaml/badge.svg)
+![macOS](https://github.com/lestex/.dotfiles/actions/workflows/mac.yaml/badge.svg)
 
 ## Installation
 Run:
