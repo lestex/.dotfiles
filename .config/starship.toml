@@ -1,14 +1,28 @@
 # Inserts a blank line between shell prompts
 add_newline = false
 
-# Wait 10 milliseconds for starship to check files under the current directory.
+# # Wait 10 milliseconds for starship to check files under the current directory.
 scan_timeout = 1000
-command_timeout	= 2000
+command_timeout = 2000
 
 # Use custom format
 format = """
-[$all](bold green)$fill$gcloud$aws$kubernetes$battery$time
-[└─$character](bold green)"""
+[$all$kubernetes$cmd_duration](bold color_green)$fill$gcloud$aws$battery
+[└─$character](green)"""
+
+palette = 'ashes_dark'
+
+[palettes.ashes_dark]
+color_fg0 = '#c7ccd18'
+color_bg0 = '#1c2023'
+color_blue = '#ae95c7'
+color_cyan = '#95aec7'
+color_green = '#95c7ae'
+color_orange = '#d65d0e'
+color_purple = '#b16286'
+color_red = '#c7ae95'
+color_yellow = '#aec795'
+color_white = '#c7ccd1'
 
 [fill]
 symbol = " "
@@ -18,30 +32,23 @@ symbol = " "
 disabled = true
 
 [character]
-success_symbol = "[▶](green)"
-error_symbol = "[▶](fg:#FF9900)"
+disabled = false
+success_symbol = "[▶](fg:color_green)"
+error_symbol = "[▶](fg:color_red)"
 
 [username]
 disabled = true
 show_always = true
 style_root = "bold bg:#728da8 fg:#DE935F"
 style_user = "bg:#728da8 fg:#222A36"
-format = "[[](bg:#728da8 fg:#A6A6A6)$user[](bg:#A6A6A6 fg:#728da8)]($style)"
+format = "[(bg:#728da8 fg:#A6A6A6)$user(bg:#A6A6A6 fg:#728da8)]($style)"
 
 [cmd_duration]
 min_time = 10_000  # Show command duration over 10,000 milliseconds (= 10 sec)
 format = " took [$duration]($style)"
 
-# [env_var]
-# disabled = true
-# symbol = " "
-# style = "bg:#545B68 fg:#EEEEEE"
-# variable = "0"
-# default = "zsh"
-# format = "([ $symbol$env_value ]($style))"
-
 [battery]
-# disabled = true
+disabled = true
 format = "[ $symbol$percentage ]($style)"
 
 [[battery.display]]
@@ -50,15 +57,13 @@ style = "bg:#FF4400 fg:#333333"
 
 [directory]
 style = "bg:blue fg:black"
-read_only = ""
-read_only_style = "bg:#FF6E79 fg:#EEEEEE"
+format = "[ $path ]($style)"
 truncation_length = 3
-truncate_to_repo = true
-truncation_symbol = "…"
-format = "([ $read_only ]($read_only_style))[ $path ]($style)"
+truncation_symbol = "…/"
 
 [directory.substitutions]
 "~/Documents" = ""
+"~/Downloads" = " "
 "~/Music" = " "
 "~/Movies" = " "
 "~/Pictures" = " "
@@ -67,44 +72,15 @@ format = "([ $read_only ]($read_only_style))[ $path ]($style)"
 "/" = "/"
 
 [git_branch]
-#symbol = " "
-symbol = " " # alternate
-style = "black bg:green"
+symbol = " "
+style = "fg:black bg:color_green"
 truncation_length = 15
 truncation_symbol = "…"
 format = "[ $symbol$branch ]($style)"
 
-[git_commit]
-# disabled = true
-style = "bg:#E58F73 fg:#111111"
-commit_hash_length = 8
-# only_detached = true
-format = "[[](bg:#E58F73 fg:#A6A6A6)#$hash[](bg:#A6A6A6 fg:#E58F73)]($style)"
-
-[git_state]
-style = "bg:#E0B25D fg:111111"
-rebase = "rebasing"
-merge = "merging"
-revert = "reverting"
-cherry_pick = " picking"
-bisect = "bisecting"
-am = "am'ing"
-am_or_rebase = "am/rebase"
-format = '\([ $state($progress_current/$progress_total)]($style)\)'
-
 [git_status]
-style = "black bg:#E0B25D"
-stashed = " ${count}"
-ahead = "ﲗ ${count}"
-behind = "ﲔ ${count}"
-diverged = "李 ${ahead_count} ${behind_count}"
-conflicted = "${count}"
-deleted = " ${count}"
-renamed = "﫦${count}"
-modified = " 凜${count}"
-staged = "  ${count}"
-untracked = "  ${count}"
-format = "([ $stashed$staged$modified$renamed$untracked$deleted$conflicted$ahead_behind ]($style))"
+style = "fg:black bg:color_green"
+format = "([$all_status ]($style))"
 
 [aws]
 disabled = true
@@ -118,14 +94,13 @@ style = "bg:#1A73E8 fg:#EEEEEE"
 format = '[ $symbol($account )(\($project\) )]($style)'
 
 [ruby]
-# disabled = true
+disabled = false
 symbol = " "
-# symbol = " " # alternate
 style = "bg:#CC342D fg:#EEEEEE"
 format = "[ $symbol$version ]($style)"
 
 [helm]
-# disabled = true
+disabled = true
 symbol = "ﴱ "
 style = "blue"
 format = "[ $symbol$version ]($style)"
@@ -133,59 +108,42 @@ format = "[ $symbol$version ]($style)"
 [kubernetes]
 disabled = false
 symbol = "☸︎"
-style = "bg:#3371E3 fg:#EEEEEE"
-format = '[ $symbol $context(\($namespace\)) (bg:#A6A6A6 fg:#3371E3)]($style)'
+style = "bg:color_cyan fg:black"
+format = '[ $symbol $context(\($namespace\)) ]($style)'
 
-[time]
-disabled = true
-style = "bg:#b4bbc8 fg:#111111"
-use_12hr = false
-time_format = "%H:%M"
-utc_time_offset = "local"
-#time_range = "20:00:00-06:00:00"
-format = "[ $time ]($style)"
-
-[memory_usage]
-format = "$symbol[${ram_pct}]($style) "
-threshold = 70
-style = "bold dimmed white"
-disabled = true
+[c]
+symbol = " "
+style = "bg:color_blue"
+format = '[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)'
 
 [nodejs]
-# disabled = true
-symbol = " "
-style = "bg:#005F00 fg:#EEEEEE"
-format = "[ (bg:#005F00 fg:#A6A6A6)$symbol$version (bg:#A6A6A6 fg:#005F00)]($style)"
+symbol = ""
+style = "bg:color_red fg:black"
+format = "[ $symbol $version (bg:blue fg:black)]($style)"
+
+[package]
+disabled = true
+
+[rust]
+symbol = ""
+style = "bg:#eb7a34 fg:black"
+format = "[ $symbol $version (bg:blue fg:black)]($style)"
 
 [python]
-disabled = false
 symbol = " "
-style = "bg:#EBD45B fg:#111111"
+style = "bg:color_cyan fg:black"
 pyenv_version_name = true
 pyenv_prefix = "pyenv "
 python_binary = "python3"
-format = '[ (bg:#EBD45B fg:#A6A6A6)$symbol$pyenv_prefix$version (\[$virtualenv\] )(bg:#A6A6A6 fg:#EBD45B)]($style)'
+format = '[ $symbol$pyenv_prefix$version (\[$virtualenv\])]($style)'
 
 [golang]
 symbol = " "
-style = "bg:#7FD5EA fg:#111111"
-format = "[ (bg:#7FD5EA fg:#A6A6A6)$symbol$version (bg:#A6A6A6 fg:#7FD5EA)]($style)"
+style = "bg:color_green fg:black"
+format = "[ $symbol$version ]($style)"
 
 [terraform]
 disabled = false
 symbol = "行"
 style = "bg:#5836CD fg:#EEEEEE"
 format = '[ (bg:#5836CD fg:#A6A6A6)$symbol (bg:#A6A6A6 fg:#5836CD)]($style)'
-
-[package]
-# disabled = true
-symbol = " "
-style = "bg:#545B68 fg:#EEEEEE"
-display_private = false
-format = "[ (bg:#545B68 fg:#A6A6A6)$symbol$version (bg:#A6A6A6 fg:#545B68)]($style)"
-
-[status]
-# disabled = false
-symbol = ""
-style = "bg:#A6A6A6 fg:#FF6E79"
-format = "[$symbol$status]($style)"
