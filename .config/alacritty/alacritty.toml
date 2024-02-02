@@ -4,6 +4,8 @@ import = [
   "~/.config/alacritty/themes/themes/ashes_dark.toml"
 ]
 
+shell = "/opt/homebrew/bin/tmux"
+
 [cursor]
 style = "Block"
 unfocused_hollow = true
@@ -12,7 +14,7 @@ unfocused_hollow = true
 TERM = "xterm-256color"
 
 [font]
-size = 15.0
+size = 16.0
 
 [font.bold]
 family = "Liga SFMono Nerd Font"
@@ -39,11 +41,6 @@ mouse.enabled = true
 regex = "(ipfs:|ipns:|magnet:|mailto:|gemini://|gopher://|https://|http://|news:|file:|git://|ssh:|ftp://)[^\u0000-\u001F\u007F-\u009F<>\"\\s{-}\\^⟨⟩`]+"
 
 [[keyboard.bindings]]
-action = "ToggleSimpleFullscreen"
-key = "Return"
-mods = "Command"
-
-[[keyboard.bindings]]
 action = "Quit"
 key = "Q"
 mods = "Command"
@@ -58,48 +55,58 @@ action = "IncreaseFontSize"
 key = "Equals"
 mods = "Command"
 
+# move cursor one word right
 [[keyboard.bindings]]
 chars = "\u001BF"
 key = "Right"
 mods = "Alt"
 
+# move cursor one word left
 [[keyboard.bindings]]
 chars = "\u001BB"
 key = "Left"
 mods = "Alt"
 
+# move cursor to the beginning
 [[keyboard.bindings]]
 chars = "\u001BOH"
 key = "Left"
 mode = "AppCursor"
 mods = "Command"
 
+# move cursor to the end
 [[keyboard.bindings]]
 chars = "\u001BOF"
 key = "Right"
 mode = "AppCursor"
 mods = "Command"
 
+# delete line
 [[keyboard.bindings]]
 chars = "\u0015"
 key = "Back"
 mods = "Command"
 
+# TMUX
+# new tab
 [[keyboard.bindings]]
 chars = "\u0002c"
 key = "T"
 mods = "Command"
 
+# view tmux windows
 [[keyboard.bindings]]
 chars = "\u0002s"
 key = "K"
 mods = "Command"
 
+# close window
 [[keyboard.bindings]]
 chars = "\u0002x"
 key = "W"
 mods = "Command"
 
+# switch windows 1-9
 [[keyboard.bindings]]
 chars = "\u00021"
 key = "Key1"
@@ -145,36 +152,43 @@ chars = "\u00029"
 key = "Key9"
 mods = "Command"
 
+# rename the current tmux window
 [[keyboard.bindings]]
 chars = "\u0002,"
 key = "Comma"
 mods = "Command"
 
+# change to the previous tmux window
 [[keyboard.bindings]]
 chars = "\u0002p"
 key = "LBracket"
 mods = "Command|Shift"
 
+# change to the next tmux window
 [[keyboard.bindings]]
 chars = "\u0002n"
 key = "RBracket"
 mods = "Command|Shift"
 
+# split the current pane into two, left and right
 [[keyboard.bindings]]
 chars = "\u0002%"
 key = "N"
 mods = "Command|Shift"
 
+# split the current pane into two, top and bottom.
 [[keyboard.bindings]]
 chars = "\u0002\""
 key = "N"
 mods = "Command"
 
+# last session
 [[keyboard.bindings]]
 chars = "\u0002L"
 key = "L"
 mods = "Command"
 
+# Run tmux command
 [[keyboard.bindings]]
 chars = "\u0002:"
 key = "Semicolon"
@@ -214,13 +228,13 @@ dynamic_title = true
 opacity = 0.98
 
 [window.dimensions]
-columns = 168
-lines = 51
+columns = 260
+lines = 55
 
 [window.padding]
 x = 12
 y = 12
 
 [scrolling]
-history = 10000
+history = 100000
 multiplier = 3
