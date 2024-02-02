@@ -52,8 +52,10 @@ cp fonts/*.otf /Users/$USER/Library/Fonts
 pretty_print "${green}Installing icons${neutral}"
 cp icons/Alacritty.icns /Applications/Alacritty.app/Contents/Resources/alacritty.icns
 
-mkdir -p ~/.config/alacritty/themes
-[ ! -d $HOME/.config/alacritty/themes ] && git clone --depth=1 https://github.com/alacritty/alacritty-theme ~/.config/alacritty/themes
+if [ ! -d $HOME/.config/alacritty/themes ]; then
+  mkdir -p ~/.config/alacritty/themes
+  git clone --depth=1 https://github.com/alacritty/alacritty-theme ~/.config/alacritty/themes
+fi
 
 # https://github.com/alacritty/alacritty/releases/tag/v0.11.0
 defaults write -g AppleFontSmoothing -int 2
