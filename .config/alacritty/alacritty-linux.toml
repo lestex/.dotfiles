@@ -13,7 +13,7 @@ LIBGL_ALWAYS_SOFTWARE="1"
 TERM = "xterm-256color"
 
 [font]
-size = 16.0
+size = 15.0
 
 [font.bold]
 family = "Liga SFMono Nerd Font"
