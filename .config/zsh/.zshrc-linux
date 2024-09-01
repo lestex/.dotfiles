@@ -118,7 +118,5 @@ export GOENV_ROOT="$HOME/.goenv"
 export PATH="$GOENV_ROOT/bin:$PATH"
 eval "$(goenv init -)"
 
-eval "$(~/.rbenv/bin/rbenv init - zsh)"
-
 # Completion for zsh
 source "/usr/share/google-cloud-sdk/completion.zsh.inc"
