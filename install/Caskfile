@@ -16,4 +16,3 @@ cask "visual-studio-code"
 # messaging
 cask "slack"
 cask "telegram"
-cask "homebrew/cask-versions/whatsapp-beta"
