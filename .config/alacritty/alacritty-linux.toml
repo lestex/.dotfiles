@@ -1,4 +1,5 @@
 live_config_reload = true
+shell = "/usr/bin/tmux"
 
 import = [
   "~/.config/alacritty/themes/themes/ashes_dark.toml"
@@ -9,216 +10,7 @@ style = "Block"
 unfocused_hollow = true
 
 [env]
-LIBGL_ALWAYS_SOFTWARE="1"
 TERM = "xterm-256color"
-
-[font]
-size = 16.0
-
-[font.bold]
-family = "Liga SFMono Nerd Font"
-style = "Bold"
-
-[font.italic]
-family = "Liga SFMono Nerd Font"
-style = "Italic"
-
-[font.normal]
-family = "Liga SFMono Nerd Font"
-style = "Regular"
-
-[font.offset]
-x = 0
-y = 0
-
-[[hints.enabled]]
-command = "open"
-hyperlinks = true
-post_processing = true
-persist = false
-mouse.enabled = true
-regex = "(ipfs:|ipns:|magnet:|mailto:|gemini://|gopher://|https://|http://|news:|file:|git://|ssh:|ftp://)[^\u0000-\u001F\u007F-\u009F<>\"\\s{-}\\^⟨⟩`]+"
-
-[[keyboard.bindings]]
-action = "Quit"
-key = "Q"
-mods = "Command"
-
-[[keyboard.bindings]]
-action = "DecreaseFontSize"
-key = "Minus"
-mods = "Command"
-
-[[keyboard.bindings]]
-action = "IncreaseFontSize"
-key = "Equals"
-mods = "Command"
-
-# move cursor one word right
-[[keyboard.bindings]]
-chars = "\u001BF"
-key = "Right"
-mods = "Alt"
-
-# move cursor one word left
-[[keyboard.bindings]]
-chars = "\u001BB"
-key = "Left"
-mods = "Alt"
-
-# move cursor to the beginning
-[[keyboard.bindings]]
-chars = "\u001BOH"
-key = "Left"
-mode = "AppCursor"
-mods = "Command"
-
-# move cursor to the end
-[[keyboard.bindings]]
-chars = "\u001BOF"
-key = "Right"
-mode = "AppCursor"
-mods = "Command"
-
-# delete line
-[[keyboard.bindings]]
-chars = "\u0015"
-key = "Back"
-mods = "Command"
-
-# TMUX
-# new tab
-[[keyboard.bindings]]
-chars = "\u0002c"
-key = "T"
-mods = "Command"
-
-# view tmux windows
-[[keyboard.bindings]]
-chars = "\u0002s"
-key = "K"
-mods = "Command"
-
-# close window
-[[keyboard.bindings]]
-chars = "\u0002x"
-key = "W"
-mods = "Command"
-
-# switch windows 1-9
-[[keyboard.bindings]]
-chars = "\u00021"
-key = "Key1"
-mods = "Command"
-
-[[keyboard.bindings]]
-chars = "\u00022"
-key = "Key2"
-mods = "Command"
-
-[[keyboard.bindings]]
-chars = "\u00023"
-key = "Key3"
-mods = "Command"
-
-[[keyboard.bindings]]
-chars = "\u00024"
-key = "Key4"
-mods = "Command"
-
-[[keyboard.bindings]]
-chars = "\u00025"
-key = "Key5"
-mods = "Command"
-
-[[keyboard.bindings]]
-chars = "\u00026"
-key = "Key6"
-mods = "Command"
-
-[[keyboard.bindings]]
-chars = "\u00027"
-key = "Key7"
-mods = "Command"
-
-[[keyboard.bindings]]
-chars = "\u00028"
-key = "Key8"
-mods = "Command"
-
-[[keyboard.bindings]]
-chars = "\u00029"
-key = "Key9"
-mods = "Command"
-
-# rename the current tmux window
-[[keyboard.bindings]]
-chars = "\u0002,"
-key = "Comma"
-mods = "Command"
-
-# change to the previous tmux window
-[[keyboard.bindings]]
-chars = "\u0002p"
-key = "LBracket"
-mods = "Command|Shift"
-
-# change to the next tmux window
-[[keyboard.bindings]]
-chars = "\u0002n"
-key = "RBracket"
-mods = "Command|Shift"
-
-# split the current pane into two, left and right
-[[keyboard.bindings]]
-chars = "\u0002%"
-key = "N"
-mods = "Command|Shift"
-
-# split the current pane into two, top and bottom.
-[[keyboard.bindings]]
-chars = "\u0002\""
-key = "N"
-mods = "Command"
-
-# last session
-[[keyboard.bindings]]
-chars = "\u0002L"
-key = "L"
-mods = "Command"
-
-# Run tmux command
-[[keyboard.bindings]]
-chars = "\u0002:"
-key = "Semicolon"
-mods = "Command"
-
-[[keyboard.bindings]]
-chars = "\u0002\u001B[D"
-key = "Left"
-mods = "Command|Shift"
-
-[[keyboard.bindings]]
-chars = "\u0002\u001B[C"
-key = "Right"
-mods = "Command|Shift"
-
-[[keyboard.bindings]]
-chars = "\u0002\u001B[A"
-key = "Up"
-mods = "Command|Shift"
-
-[[keyboard.bindings]]
-chars = "\u0002\u001B[B"
-key = "Down"
-mods = "Command|Shift"
-
-[mouse]
-hide_when_typing = true
-
-[selection]
-save_to_clipboard = true
-semantic_escape_chars = ",│`|:\"' ()[]{}<>\t"
 
 [window]
 decorations = "none"
@@ -237,3 +29,58 @@ y = 12
 [scrolling]
 history = 100000
 multiplier = 3
+
+[selection]
+save_to_clipboard = true
+semantic_escape_chars = ",│`|:\"' ()[]{}<>\t"
+
+[font]
+size = 15.0
+
+[font.bold]
+family = "Liga SFMono Nerd Font"
+style = "Bold"
+
+[font.italic]
+family = "Liga SFMono Nerd Font"
+style = "Italic"
+
+[font.normal]
+family = "Liga SFMono Nerd Font"
+style = "Regular"
+
+[font.offset]
+x = 0
+y = 0
+
+# move cursor one word right
+[[keyboard.bindings]]
+chars = "\u001BF"
+key = "Right"
+mods = "Alt"
+
+# move cursor one word left
+[[keyboard.bindings]]
+chars = "\u001BB"
+key = "Left"
+mods = "Alt"
+
+# move cursor to the beginning
+[[keyboard.bindings]]
+chars = "\u001BOH"
+key = "Left"
+mode = "AppCursor"
+mods = "Control"
+
+# move cursor to the end
+[[keyboard.bindings]]
+chars = "\u001BOF"
+key = "Right"
+mode = "AppCursor"
+mods = "Control"
+
+# delete line
+[[keyboard.bindings]]
+chars = "\u0015"
+key = "Back"
+mods = "Control"

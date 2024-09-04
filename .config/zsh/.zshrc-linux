@@ -99,12 +99,7 @@ source $ZSH/oh-my-zsh.sh
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
-alias kcb="kind create cluster --name basic --config $HOME/.config/kind/cluster-basic.yaml"
-
-# recommended by brew doctor
-export PATH="/usr/local/bin:$PATH"
-export PATH="/usr/local/sbin:$PATH"
-export PATH="$HOME/.cargo/bin:$PATH"
+# alias kcb="kind create cluster --name basic --config $HOME/.config/kind/cluster-basic.yaml"
 
 # pyenv settings
 export PYENV_ROOT="$HOME/.pyenv"
@@ -117,8 +112,6 @@ export PATH="$HOME/.tfenv/bin:$PATH"
 export GOENV_ROOT="$HOME/.goenv"
 export PATH="$GOENV_ROOT/bin:$PATH"
 eval "$(goenv init -)"
-
-eval "$(~/.rbenv/bin/rbenv init - zsh)"
 
 # Completion for zsh
 source "/usr/share/google-cloud-sdk/completion.zsh.inc"

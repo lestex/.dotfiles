@@ -6,7 +6,7 @@ source scripts/common
 
 pretty_print "${green}Install apt software ...${neutral}"
 sudo apt update -y && sudo apt install -y \
-    zsh curl jq htop btop tree vim neovim vifm tmux gpg mpv wget \
+    zsh curl jq htop btop tree vim neovim vifm tmux gpg mpv wget alacritty cmake \
     apt-transport-https ca-certificates gnupg make \
     build-essential libssl-dev tk-dev libbz2-dev libreadline-dev libffi-dev libsqlite3-dev liblzma-dev
 
@@ -36,12 +36,6 @@ else
   pretty_print "${yellow}zsh-syntax-highlighting is already installed, skipping ...${neutral}"
 fi
 
-# install rust
-curl https://sh.rustup.rs -sSf | bash -s -- -y
-
-# install starship
-cargo install starship --locked
-
 # brave browser
 sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
 echo "deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg] https://brave-browser-apt-release.s3.brave.com/ stable main" | sudo tee /etc/apt/sources.list.d/brave-browser-release.list
@@ -57,6 +51,12 @@ if [ ! -f "/usr/share/keyrings/cloud.google.gpg" ]; then
   curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
 fi
 echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee /etc/apt/sources.list.d/google-cloud-sdk.list
+
+# google chrome
+if [ ! -f "/usr/share/keyrings/chrome-keyring.gpg" ]; then
+wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo gpg --dearmour -o /usr/share/keyrings/chrome-keyring.gpg
+fi
+echo "deb [arch=amd64 signed-by=/usr/share/keyrings/chrome-keyring.gpg] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google.list
 
 pretty_print "${green}Copying configs to .configs directory${neutral}"
 mkdir -p ~/.config
@@ -115,5 +115,9 @@ then
 else
   pretty_print "${yellow}goenv is already installed, skipping ...${neutral}"
 fi
+
+# install starship
+pretty_print "${green}Installing starship...${neutral}"
+cargo install starship --locked
 
 pretty_print "${green}We are done!...everything looks good!${neutral}"
