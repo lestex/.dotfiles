@@ -226,6 +226,7 @@ decorations = "none"
 dynamic_padding = false
 dynamic_title = true
 opacity = 0.98
+blur = true
 
 [window.dimensions]
 columns = 260

@@ -1,5 +1,4 @@
 # common
-cask "authy"
 cask "alacritty"
 cask "bitwarden"
 cask "daisydisk"
@@ -7,7 +6,9 @@ cask "google-chrome"
 cask "vlc"
 cask "rectangle"
 cask "mpv"
-cask "utm"
+
+# fonts
+font-jetbrains-mono-nerd-font
 
 # development tools
 cask "google-cloud-sdk"
