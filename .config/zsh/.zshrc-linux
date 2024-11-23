@@ -106,6 +106,11 @@ export PYENV_ROOT="$HOME/.pyenv"
 [[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
 eval "$(pyenv init -)"
 
+# cargo bin
+export CARGO_ROOT="$HOME/.cargo"
+[[ -d $CARGO_ROOT/bin ]] && export PATH="$CARGO_ROOT/bin:$PATH"
+eval "$($CARGO_ROOT/bin/starship init zsh)"
+
 eval "$(starship init zsh)"
 export PATH="$HOME/.tfenv/bin:$PATH"
 

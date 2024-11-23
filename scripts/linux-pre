@@ -7,7 +7,7 @@ source scripts/common
 pretty_print "${green}Install apt software ...${neutral}"
 sudo apt update -y && sudo apt install -y \
     zsh curl jq htop btop tree vim neovim vifm tmux gpg mpv wget alacritty cmake \
-    apt-transport-https ca-certificates gnupg make \
+    apt-transport-https ca-certificates gnupg make rust-all \
     build-essential libssl-dev tk-dev libbz2-dev libreadline-dev libffi-dev libsqlite3-dev liblzma-dev
 
 # Oh my zsh installation
@@ -27,6 +27,10 @@ then
 else
   pretty_print "${yellow}zsh-autosuggestions is already installed, skipping ...${neutral}"
 fi
+
+# install starship
+pretty_print "${green}Installing starship...${neutral}"
+cargo install starship --locked
 
 if [ ! -d ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting ];
 then
@@ -115,9 +119,4 @@ then
 else
   pretty_print "${yellow}goenv is already installed, skipping ...${neutral}"
 fi
-
-# install starship
-pretty_print "${green}Installing starship...${neutral}"
-cargo install starship --locked
-
 pretty_print "${green}We are done!...everything looks good!${neutral}"
