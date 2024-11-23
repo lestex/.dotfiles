@@ -28,6 +28,10 @@ else
   pretty_print "${yellow}zsh-autosuggestions is already installed, skipping ...${neutral}"
 fi
 
+# install starship
+pretty_print "${green}Installing starship...${neutral}"
+cargo install starship --locked
+
 if [ ! -d ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting ];
 then
   pretty_print "${green}Installing zsh-syntax-highlighting...${neutral}"
@@ -115,9 +119,4 @@ then
 else
   pretty_print "${yellow}goenv is already installed, skipping ...${neutral}"
 fi
-
-# install starship
-pretty_print "${green}Installing starship...${neutral}"
-cargo install starship --locked
-
 pretty_print "${green}We are done!...everything looks good!${neutral}"
