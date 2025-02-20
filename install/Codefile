@@ -1,4 +1,4 @@
-editorconfig.editorconfig
+EditorConfig.EditorConfig
 HashiCorp.terraform
 ms-azuretools.vscode-docker
 ms-python.python
@@ -7,3 +7,4 @@ GoogleCloudTools.cloudcode
 GitHub.github-vscode-theme
 tamasfe.even-better-toml
 rust-lang.rust-analyzer
+golang.go

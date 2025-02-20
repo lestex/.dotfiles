@@ -34,7 +34,7 @@ do
 done
 
 # install rust
-# curl https://sh.rustup.rs -sSf | bash -s -- -y
+curl https://sh.rustup.rs -sSf | bash -s -- -y
 
 # Install terraform
 tfenv install $TERRAFORM_VERSION
