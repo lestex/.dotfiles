@@ -7,9 +7,6 @@ cask "vlc"
 cask "rectangle"
 cask "mpv"
 
-# fonts
-font-jetbrains-mono-nerd-font
-
 # development tools
 cask "google-cloud-sdk"
 cask "visual-studio-code"

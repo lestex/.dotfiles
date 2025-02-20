@@ -1,14 +1,8 @@
 editorconfig.editorconfig
-golang.go
-4ops.terraform
-magicstack.magicpython
+HashiCorp.terraform
 ms-azuretools.vscode-docker
 ms-python.python
 ms-python.vscode-pylance
-ms-vscode-remote.remote-containers
-pkief.material-icon-theme
-wholroyd.jinja
-redhat.ansible
 GoogleCloudTools.cloudcode
 GitHub.github-vscode-theme
 tamasfe.even-better-toml

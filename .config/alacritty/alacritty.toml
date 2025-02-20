@@ -1,10 +1,3 @@
-live_config_reload = true
-
-import = [
-  "~/.config/alacritty/themes/themes/ashes_dark.toml"
-]
-
-shell = "/opt/homebrew/bin/tmux"
 
 [cursor]
 style = "Block"
@@ -87,132 +80,7 @@ chars = "\u0015"
 key = "Back"
 mods = "Command"
 
-# TMUX
-# new tab
-[[keyboard.bindings]]
-chars = "\u0002c"
-key = "T"
-mods = "Command"
 
-# view tmux windows
-[[keyboard.bindings]]
-chars = "\u0002s"
-key = "K"
-mods = "Command"
-
-# close window
-[[keyboard.bindings]]
-chars = "\u0002x"
-key = "W"
-mods = "Command"
-
-# switch windows 1-9
-[[keyboard.bindings]]
-chars = "\u00021"
-key = "Key1"
-mods = "Command"
-
-[[keyboard.bindings]]
-chars = "\u00022"
-key = "Key2"
-mods = "Command"
-
-[[keyboard.bindings]]
-chars = "\u00023"
-key = "Key3"
-mods = "Command"
-
-[[keyboard.bindings]]
-chars = "\u00024"
-key = "Key4"
-mods = "Command"
-
-[[keyboard.bindings]]
-chars = "\u00025"
-key = "Key5"
-mods = "Command"
-
-[[keyboard.bindings]]
-chars = "\u00026"
-key = "Key6"
-mods = "Command"
-
-[[keyboard.bindings]]
-chars = "\u00027"
-key = "Key7"
-mods = "Command"
-
-[[keyboard.bindings]]
-chars = "\u00028"
-key = "Key8"
-mods = "Command"
-
-[[keyboard.bindings]]
-chars = "\u00029"
-key = "Key9"
-mods = "Command"
-
-# rename the current tmux window
-[[keyboard.bindings]]
-chars = "\u0002,"
-key = "Comma"
-mods = "Command"
-
-# change to the previous tmux window
-[[keyboard.bindings]]
-chars = "\u0002p"
-key = "LBracket"
-mods = "Command|Shift"
-
-# change to the next tmux window
-[[keyboard.bindings]]
-chars = "\u0002n"
-key = "RBracket"
-mods = "Command|Shift"
-
-# split the current pane into two, left and right
-[[keyboard.bindings]]
-chars = "\u0002%"
-key = "N"
-mods = "Command|Shift"
-
-# split the current pane into two, top and bottom.
-[[keyboard.bindings]]
-chars = "\u0002\""
-key = "N"
-mods = "Command"
-
-# last session
-[[keyboard.bindings]]
-chars = "\u0002L"
-key = "L"
-mods = "Command"
-
-# Run tmux command
-[[keyboard.bindings]]
-chars = "\u0002:"
-key = "Semicolon"
-mods = "Command"
-
-[[keyboard.bindings]]
-chars = "\u0002\u001B[D"
-key = "Left"
-mods = "Command|Shift"
-
-[[keyboard.bindings]]
-chars = "\u0002\u001B[C"
-key = "Right"
-mods = "Command|Shift"
-
-[[keyboard.bindings]]
-chars = "\u0002\u001B[A"
-key = "Up"
-mods = "Command|Shift"
-
-[[keyboard.bindings]]
-chars = "\u0002\u001B[B"
-key = "Down"
-mods = "Command|Shift"
 
 [mouse]
 hide_when_typing = true
@@ -239,3 +107,14 @@ y = 12
 [scrolling]
 history = 100000
 multiplier = 3
+
+[general]
+live_config_reload = true
+
+import = [
+  "~/.config/alacritty/themes/themes/ashes_dark.toml"
+]
+
+[terminal]
+
+shell = "/opt/homebrew/bin/tmux"
