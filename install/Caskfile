@@ -1,5 +1,6 @@
 # common
 cask "alacritty"
+cask "ghostty"
 cask "bitwarden"
 cask "daisydisk"
 cask "google-chrome"

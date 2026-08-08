@@ -1,0 +1,9 @@
+window-decoration = none
+window-padding-x = 10
+window-padding-y = 10
+font-size = 16
+font-thicken = true
+
+initial-command = "/opt/homebrew/bin/tmux"
+command = "/opt/homebrew/bin/tmux"
+mouse-shift-capture = true

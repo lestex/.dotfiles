@@ -108,8 +108,6 @@ export PATH="/usr/local/sbin:$PATH"
 # pyenv settings
 eval "$(pyenv init -)"
 
-eval "$(starship init zsh)"
-
 # check the platform
 export PLATFORM=$(uname -m)
 
@@ -125,7 +123,7 @@ fi
 export PATH="${PATH}:${HOME}/.krew/bin"
 
 # add alias for podman
-alias docker=podman
+# alias docker=podman
 
 # set k9s config dir for mac
 if command -v k9s &>/dev/null; then
@@ -134,3 +132,10 @@ fi
 
 export PATH="$HOME/.cargo/bin:$PATH"
 source "$HOME/.cargo/env"
+
+# goenv
+export GOENV_ROOT="$HOME/.goenv"
+export PATH="$GOENV_ROOT/bin:$PATH"
+eval "$(goenv init -)"
+
+eval "$(oh-my-posh init zsh --config ~/.config/ohmyposh/zen.toml)"
