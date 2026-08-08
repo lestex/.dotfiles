@@ -8,6 +8,11 @@ on:
     - 'install/**'
     - '.config/**'
 
+# a new push to the same PR cancels the run still in flight
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
 
