@@ -1,3 +1,6 @@
+# taps
+tap "jandedobbeleer/oh-my-posh"
+
 # common
 brew "coreutils"
 brew "findutils"

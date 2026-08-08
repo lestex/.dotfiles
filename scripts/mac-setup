@@ -23,6 +23,16 @@ fi
 pretty_print "${green}Updating brew formulas${neutral}"
 brew update
 
+# oh-my-posh ships from a third-party tap, and Homebrew 6 refuses to load
+# formulae from untrusted taps (HOMEBREW_REQUIRE_TAP_TRUST defaults to true).
+# The trust store lives under $XDG_CONFIG_HOME, which the Makefile overrides, so
+# a manual `brew trust` from an interactive shell does not apply here.
+pretty_print "${green}Tapping and trusting oh-my-posh${neutral}"
+brew tap jandedobbeleer/oh-my-posh
+if brew trust --help &>/dev/null; then
+  brew trust --tap jandedobbeleer/oh-my-posh
+fi
+
 brew bundle --file install/Brewfile
 brew bundle --file install/Caskfile
 
@@ -43,6 +53,10 @@ tfenv use $TERRAFORM_VERSION
 pretty_print "${green}Copying configs to .configs directory${neutral}"
 mkdir -p ~/.config
 cp -R .config/* ~/.config
+
+# Ghostty needs an absolute path for `command` (GUI launches inherit no shell
+# PATH) and the Homebrew prefix differs between Apple Silicon and Intel.
+sed -i '' "s|@BREW_PREFIX@|$(brew --prefix)|g" ~/.config/ghostty/config
 
 pretty_print "${green}Installing fonts${neutral}"
 mkdir -p /Users/$USER/Library/Fonts

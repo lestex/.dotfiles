@@ -15,7 +15,7 @@ make macos    # force the macOS path
 make linux    # force the Linux path
 ```
 
-There is no lint/test tooling. CI (`.github/workflows/{mac,linux}.yaml`) simply runs `make` on `macos-latest` / `ubuntu-24.04`, so **running `make` on the target OS is the test**. Both workflows are path-filtered — mac CI only fires on changes to `scripts/mac-setup` or `.config/**`, linux CI only on `scripts/linux-*` or `.config/**`. Changes to `install/*` files therefore do not trigger CI. `tests/` is an empty placeholder (`.keep`).
+There is no lint/test tooling. CI (`.github/workflows/{mac,linux}.yaml`) simply runs `make` on `macos-latest` / `ubuntu-24.04`, so **running `make` on the target OS is the test**. Both workflows are path-filtered. Mac CI fires on `scripts/mac-setup`, `scripts/common`, `install/**`, `.config/**`; linux CI only on `scripts/linux-*` or `.config/**` — so a change confined to `install/**` or `scripts/common` still does not trigger linux CI. `tests/` is an empty placeholder (`.keep`).
 
 Scripts must be run from the repo root — they do `source scripts/common` with a relative path. Use `make`, not `./scripts/...` from elsewhere.
 
@@ -27,6 +27,8 @@ Scripts must be run from the repo root — they do `source scripts/common` with 
 
 **macOS = one phase.** `scripts/mac-setup` installs oh-my-zsh + Homebrew, then `brew bundle` against `install/Brewfile` (formulae) and `install/Caskfile` (casks), then loops `install/Codefile` through `code --install-extension`, then rust/tfenv/pyenv, then copies configs, fonts, and the Alacritty icon.
 
+**Third-party taps need explicit trust.** Homebrew 6 refuses to load formulae from non-official taps unless they are trusted (`HOMEBREW_REQUIRE_TAP_TRUST` defaults to `true`), and the trust store is `$XDG_CONFIG_HOME/homebrew/trust.json` — which the Makefile repoints at `~/.config`, so a developer's manual `brew trust` (stored in `~/.homebrew/trust.json`) does *not* apply under `make`. `mac-setup` therefore taps and trusts `jandedobbeleer/oh-my-posh` itself before `brew bundle`. Any future tapped formula needs the same treatment or both `make` and CI will fail.
+
 **Linux = two phases**, because apt repos must be registered before their packages exist:
 - `scripts/linux-pre` — apt base packages, oh-my-zsh + zsh plugins, starship via cargo, registers third-party apt repos (Brave, VS Code, google-cloud-sdk, Chrome), copies configs/fonts, clones `pyenv`/`tfenv`/`goenv`.
 - `scripts/linux-install` — installs the packages from those newly added repos, VS Code extensions, and the pinned python/terraform/go versions via the `*env` tools invoked by absolute path (they are not on `PATH` yet in a non-interactive shell).
@@ -37,6 +39,7 @@ Linux has no equivalent of Brewfile/Caskfile — its package list is hardcoded i
 - Editing `~/.config/...` does not flow back to the repo. Edit the repo file, then re-run `make`.
 - Re-running `make` overwrites local tweaks under `~/.config` and `~/.zshrc`.
 - Directories cloned into `~/.config` by the scripts (alacritty themes, vifm colors, tmux tpm) are guarded by existence checks and are not tracked here.
+- One file is templated rather than copied verbatim: `.config/ghostty/config` holds a `@BREW_PREFIX@` placeholder that `mac-setup` rewrites with `sed` after the copy, because Ghostty needs an absolute `command` path (GUI launches inherit no shell `PATH`) and the Homebrew prefix differs by architecture.
 
 **Per-OS config variants.** Two files ship both variants and the script picks one:
 - `.config/zsh/.zshrc` (mac) vs `.zshrc-linux` — the Linux one wires `PYENV_ROOT`/`GOENV_ROOT`/`CARGO_ROOT`/tfenv onto `PATH` explicitly and uses the distro gcloud completion path; the mac one relies on Homebrew paths and branches on `uname -m` for the gcloud Caskroom prefix. Keep both in sync when adding shell config.
