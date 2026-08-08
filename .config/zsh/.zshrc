@@ -111,14 +111,12 @@ eval "$(pyenv init -)"
 # check the platform
 export PLATFORM=$(uname -m)
 
-# Completion for zsh
-if [[ $PLATFORM -eq 'arm64' ]]; then
-  source "/opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.zsh.inc"
-  source "/opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/completion.zsh.inc"
-else
-  source "/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.zsh.inc"
-  source "/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/completion.zsh.inc"
-fi
+# Completion for zsh. The cask was renamed google-cloud-sdk -> gcloud-cli; the
+# old Caskroom path only still resolves on machines that were migrated, not on
+# fresh installs. $HOMEBREW_PREFIX also covers arm64 vs Intel without branching.
+GCLOUD_SDK="${HOMEBREW_PREFIX:-$(brew --prefix)}/Caskroom/gcloud-cli/latest/google-cloud-sdk"
+[[ -f "$GCLOUD_SDK/path.zsh.inc" ]] && source "$GCLOUD_SDK/path.zsh.inc"
+[[ -f "$GCLOUD_SDK/completion.zsh.inc" ]] && source "$GCLOUD_SDK/completion.zsh.inc"
 
 export PATH="${PATH}:${HOME}/.krew/bin"
 

@@ -10,6 +10,8 @@ brew "btop"
 brew "tree"
 brew "neovim"
 brew "vifm"
+# the mpv cask (stolendata-mpv) is deprecated and disabled from 2026-09-01
+brew "mpv"
 brew "ssh-copy-id"
 brew "telnet"
 brew "tmux"
