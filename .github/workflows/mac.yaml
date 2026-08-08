@@ -4,7 +4,14 @@ on:
   pull_request:
     paths:
     - 'scripts/mac-setup'
+    - 'scripts/common'
+    - 'install/**'
     - '.config/**'
+
+# a new push to the same PR cancels the run still in flight
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -12,7 +19,7 @@ jobs:
     runs-on: macos-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Run script
       run: make

@@ -108,24 +108,20 @@ export PATH="/usr/local/sbin:$PATH"
 # pyenv settings
 eval "$(pyenv init -)"
 
-eval "$(starship init zsh)"
-
 # check the platform
 export PLATFORM=$(uname -m)
 
-# Completion for zsh
-if [[ $PLATFORM -eq 'arm64' ]]; then
-  source "/opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.zsh.inc"
-  source "/opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/completion.zsh.inc"
-else
-  source "/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.zsh.inc"
-  source "/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/completion.zsh.inc"
-fi
+# Completion for zsh. The cask was renamed google-cloud-sdk -> gcloud-cli; the
+# old Caskroom path only still resolves on machines that were migrated, not on
+# fresh installs. $HOMEBREW_PREFIX also covers arm64 vs Intel without branching.
+GCLOUD_SDK="${HOMEBREW_PREFIX:-$(brew --prefix)}/Caskroom/gcloud-cli/latest/google-cloud-sdk"
+[[ -f "$GCLOUD_SDK/path.zsh.inc" ]] && source "$GCLOUD_SDK/path.zsh.inc"
+[[ -f "$GCLOUD_SDK/completion.zsh.inc" ]] && source "$GCLOUD_SDK/completion.zsh.inc"
 
 export PATH="${PATH}:${HOME}/.krew/bin"
 
 # add alias for podman
-alias docker=podman
+# alias docker=podman
 
 # set k9s config dir for mac
 if command -v k9s &>/dev/null; then
@@ -134,3 +130,10 @@ fi
 
 export PATH="$HOME/.cargo/bin:$PATH"
 source "$HOME/.cargo/env"
+
+# goenv
+export GOENV_ROOT="$HOME/.goenv"
+export PATH="$GOENV_ROOT/bin:$PATH"
+eval "$(goenv init -)"
+
+eval "$(oh-my-posh init zsh --config ~/.config/ohmyposh/zen.toml)"

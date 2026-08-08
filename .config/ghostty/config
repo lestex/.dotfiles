@@ -1,0 +1,12 @@
+window-decoration = none
+window-padding-x = 10
+window-padding-y = 10
+font-size = 16
+font-thicken = true
+
+# @BREW_PREFIX@ is substituted by scripts/mac-setup on install. Ghostty needs an
+# absolute path here (GUI launches inherit no shell PATH) and the Homebrew
+# prefix differs between Apple Silicon and Intel.
+initial-command = "@BREW_PREFIX@/bin/tmux"
+command = "@BREW_PREFIX@/bin/tmux"
+mouse-shift-capture = true

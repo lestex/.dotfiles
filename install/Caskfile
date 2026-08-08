@@ -1,14 +1,14 @@
 # common
 cask "alacritty"
+cask "ghostty"
 cask "bitwarden"
 cask "daisydisk"
 cask "google-chrome"
 cask "vlc"
 cask "rectangle"
-cask "mpv"
 
 # development tools
-cask "google-cloud-sdk"
+cask "gcloud-cli"
 cask "visual-studio-code"
 
 # messaging
