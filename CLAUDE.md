@@ -15,7 +15,7 @@ make macos    # force the macOS path
 make linux    # force the Linux path
 ```
 
-There is no lint/test tooling. CI (`.github/workflows/{mac,linux}.yaml`) simply runs `make` on `macos-latest` / `ubuntu-24.04`, so **running `make` on the target OS is the test**. Both workflows are path-filtered. Mac CI fires on `scripts/mac-setup`, `scripts/common`, `install/**`, `.config/**`; linux CI only on `scripts/linux-*` or `.config/**` — so a change confined to `install/**` or `scripts/common` still does not trigger linux CI. `tests/` is an empty placeholder (`.keep`).
+There is no lint/test tooling. CI (`.github/workflows/{mac,linux}.yaml`) simply runs `make` on `macos-latest` / `ubuntu-24.04`, so **running `make` on the target OS is the test**. The repo is maintained for macOS: mac CI runs on pull requests touching `scripts/mac-setup`, `scripts/common`, `install/**`, `.config/**`, `Makefile`, `bin/**` or its own workflow file, while linux CI is `workflow_dispatch` only (run it by hand from the Actions tab; the Linux scripts are kept but not exercised on every change). `tests/` is an empty placeholder (`.keep`).
 
 Scripts must be run from the repo root — they do `source scripts/common` with a relative path. Use `make`, not `./scripts/...` from elsewhere.
 
@@ -25,7 +25,7 @@ Scripts must be run from the repo root — they do `source scripts/common` with 
 
 **`scripts/common`** is sourced by every script and is the single source of truth for the pinned toolchain versions (`TERRAFORM_VERSION`, `PYTHON_VERSION`, `GO_VERSION`) plus the color vars and `pretty_print`. Bump versions here, not in the individual scripts.
 
-**macOS = one phase.** `scripts/mac-setup` installs oh-my-zsh + Homebrew, then `brew bundle` against `install/Brewfile` (formulae) and `install/Caskfile` (casks), then loops `install/Codefile` through `code --install-extension`, then rust/tfenv/pyenv, then copies configs, fonts, and the Alacritty icon.
+**macOS = one phase.** `scripts/mac-setup` installs oh-my-zsh + Homebrew, then `brew bundle` against `install/Brewfile` (formulae) and `install/Caskfile` (casks), then loops `install/Codefile` through `code --install-extension`, then rust/tfenv/pyenv, then copies configs and fonts. After a fresh Homebrew install it `eval`s `brew shellenv` itself, because the installer does not put `brew` on the running script's `PATH` (and `/opt/homebrew/bin` is not on it by default on Apple Silicon); CI runners ship with brew, so CI never exercises that branch.
 
 **Third-party taps need explicit trust.** Homebrew 6 refuses to load formulae from non-official taps unless they are trusted (`HOMEBREW_REQUIRE_TAP_TRUST` defaults to `true`), and the trust store is `$XDG_CONFIG_HOME/homebrew/trust.json` — which the Makefile repoints at `~/.config`, so a developer's manual `brew trust` (stored in `~/.homebrew/trust.json`) does *not* apply under `make`. `mac-setup` therefore taps and trusts `jandedobbeleer/oh-my-posh` itself before `brew bundle`. Any future tapped formula needs the same treatment or both `make` and CI will fail.
 
@@ -38,7 +38,7 @@ Linux has no equivalent of Brewfile/Caskfile — its package list is hardcoded i
 **Configs are copied, not symlinked.** `cp -R .config/* ~/.config`, `.config/zsh/.zshrc` → `~/.zshrc`, VS Code settings → the OS-specific application-support path. Consequences:
 - Editing `~/.config/...` does not flow back to the repo. Edit the repo file, then re-run `make`.
 - Re-running `make` overwrites local tweaks under `~/.config` and `~/.zshrc`.
-- Directories cloned into `~/.config` by the scripts (alacritty themes, vifm colors, tmux tpm) are guarded by existence checks and are not tracked here.
+- Directories cloned into `~/.config` by the scripts (vifm colors, tmux tpm) are guarded by existence checks and are not tracked here.
 - One file is templated rather than copied verbatim: `.config/ghostty/config` holds a `@BREW_PREFIX@` placeholder that `mac-setup` rewrites with `sed` after the copy, because Ghostty needs an absolute `command` path (GUI launches inherit no shell `PATH`) and the Homebrew prefix differs by architecture.
 
 **Per-OS config variants.** Two files ship both variants and the script picks one:

@@ -7,6 +7,9 @@ on:
     - 'scripts/common'
     - 'install/**'
     - '.config/**'
+    - 'Makefile'
+    - 'bin/**'
+    - '.github/workflows/mac.yaml'
 
 # a new push to the same PR cancels the run still in flight
 concurrency:
@@ -19,7 +22,7 @@ jobs:
     runs-on: macos-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: Run script
       run: make

@@ -16,6 +16,14 @@ fi
 if ! command -v brew &>/dev/null; then
   pretty_print "${green}Installing Homebrew, an OSX package manager, follow the instructions...${neutral}"
   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  # The installer does not put brew on this script's PATH, and on Apple Silicon
+  # /opt/homebrew/bin is not on it by default, so `brew update` below would fail.
+  for brew_bin in /opt/homebrew/bin/brew /usr/local/bin/brew; do
+    if [ -x "$brew_bin" ]; then
+      eval "$("$brew_bin" shellenv)"
+      break
+    fi
+  done
 else
   pretty_print "${yellow}You already have Homebrew installed, skipping ...${neutral}"
 fi
@@ -62,14 +70,6 @@ pretty_print "${green}Installing fonts${neutral}"
 mkdir -p /Users/$USER/Library/Fonts
 cp fonts/*.ttf /Users/$USER/Library/Fonts
 cp fonts/*.otf /Users/$USER/Library/Fonts
-
-pretty_print "${green}Installing icons${neutral}"
-cp icons/Alacritty.icns /Applications/Alacritty.app/Contents/Resources/alacritty.icns
-
-if [ ! -d $HOME/.config/alacritty/themes ]; then
-  mkdir -p ~/.config/alacritty/themes
-  git clone --depth=1 https://github.com/alacritty/alacritty-theme ~/.config/alacritty/themes
-fi
 
 # https://github.com/alacritty/alacritty/releases/tag/v0.11.0
 defaults write -g AppleFontSmoothing -int 2
