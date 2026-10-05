@@ -11,6 +11,13 @@ bash <(curl -fsSL https://raw.githubusercontent.com/lestex/.dotfiles/master/inst
 ```
 This downloads the repo into `~/.dotfiles` and sets the Mac up. Re-run it (or `./install.sh` from a checkout) to update; it is safe to run again.
 
+The setup is split into independent steps in `scripts/steps/`; run only some of them by name:
+```sh
+./install.sh --list           # homebrew, packages, alacritty, shell, languages, vscode, configs, fonts, themes
+./install.sh configs themes   # just these, in this order
+scripts/steps/80-fonts.sh     # or one step directly, from any directory
+```
+
 - `DOTFILES_DIR` changes where the repo is downloaded (default `~/.dotfiles`).
 - `DOTFILES_REPO` installs from a fork.
 - Configs are **copied**, not symlinked: edit them in the repo and re-run the installer. Re-running overwrites local edits under `~/.config` and `~/.zshrc`.

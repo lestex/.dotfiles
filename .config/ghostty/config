@@ -42,7 +42,7 @@ mouse-scroll-multiplier = 0.95
 # not detect them under tmux with this set; plain drag still selects in tmux.
 mouse-shift-capture = true
 
-# @BREW_PREFIX@ is substituted by scripts/mac-setup on install. Ghostty needs an
+# @BREW_PREFIX@ is substituted by scripts/steps/70-configs on install. Ghostty needs an
 # absolute path here (GUI launches inherit no shell PATH) and the Homebrew
 # prefix differs between Apple Silicon and Intel.
 initial-command = "@BREW_PREFIX@/bin/tmux"

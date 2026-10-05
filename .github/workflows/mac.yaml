@@ -3,8 +3,7 @@ name: mac CI
 on:
   pull_request:
     paths:
-    - 'scripts/mac-setup'
-    - 'scripts/common'
+    - 'scripts/**'
     - 'install/**'
     - 'local/**'
     - 'tests/**'

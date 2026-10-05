@@ -1,3 +1,14 @@
+# Sourced by every step in scripts/steps/. Makes a step runnable on its own,
+# from anywhere: it moves to the repo root, points XDG_CONFIG_HOME at ~/.config
+# and puts Homebrew on PATH when it is installed. Also the single source of the
+# pinned versions below.
+
+DOTFILES_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+cd "$DOTFILES_ROOT"
+
+# Homebrew's tap trust store and other XDG config live in ~/.config.
+export XDG_CONFIG_HOME="$HOME/.config"
+
 # Colors.
 red='\033[0;31m'
 green='\033[0;32m'
@@ -9,17 +20,40 @@ pretty_print() {
   printf "%b\n" "$1"
 }
 
+# The Homebrew installer does not put brew on the running script's PATH, and on
+# Apple Silicon /opt/homebrew/bin is not on it by default.
+load_brew_env() {
+  local brew_bin
+  command -v brew >/dev/null 2>&1 && return 0
+  for brew_bin in /opt/homebrew/bin/brew /usr/local/bin/brew; do
+    if [ -x "$brew_bin" ]; then
+      eval "$("$brew_bin" shellenv)"
+      return 0
+    fi
+  done
+  return 1
+}
+load_brew_env || true
+
+# Steps after 10-homebrew need it.
+require_brew() {
+  load_brew_env || {
+    pretty_print "${red}Homebrew is not installed; run: ./install.sh homebrew${neutral}"
+    exit 1
+  }
+}
+
 TERRAFORM_VERSION=1.9.5
 PYTHON_VERSION=3.12.5
 GO_VERSION=1.22.6
 
 # Alacritty has no Homebrew formula and its cask was disabled (unsigned, fails
-# Gatekeeper), so mac-setup installs the official release DMG pinned here.
+# Gatekeeper), so steps/30-alacritty installs the official release DMG pinned here.
 ALACRITTY_VERSION=0.17.0
 ALACRITTY_DMG_SHA256=ad8d7de35fb38e43184776cac6dfee05ca325caa0b6639a06a55e54e4b026620
 
-# theme-switcher's engine (palettes, templates, renderer), fetched by mac-setup
-# with `theme-switcher engine install`. A full commit SHA, since a tag can move;
-# bump it deliberately, and CI runs tests/theme-switcher-test.sh against it.
-# Currently the v4.0.4 release.
+# theme-switcher's engine (palettes, templates, renderer), fetched by
+# steps/90-themes with `theme-switcher engine install`. A full commit SHA, since
+# a tag can move; bump it deliberately, and CI runs tests/theme-switcher-test.sh
+# against it. Currently the v4.0.4 release.
 THEME_ENGINE_REF=c668141e9c42b13c80c9ca4ea108e11708c5e8a5
