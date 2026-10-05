@@ -97,15 +97,13 @@ sed -i '' "s|@BREW_PREFIX@|$(brew --prefix)|g" ~/.config/ghostty/config ~/.confi
 pretty_print "${green}Installing theme-switcher${neutral}"
 mkdir -p ~/.local/bin
 cp local/bin/theme-switcher ~/.local/bin/theme-switcher
-THEME_SWITCHER_ENGINE=${THEME_SWITCHER_ENGINE:-$HOME/projects/self/omarchy/omarchy}
-if [ ! -d "$THEME_SWITCHER_ENGINE/themes" ]; then
-  pretty_print "${yellow}No theme engine at $THEME_SWITCHER_ENGINE, skipping theme setup ...${neutral}"
+if ! ~/.local/bin/theme-switcher list >/dev/null 2>&1; then
+  pretty_print "${yellow}No theme engine checkout found, skipping theme setup ...${neutral}"
 elif [ -f ~/.local/state/theme-switcher/current/theme.name ]; then
   pretty_print "${yellow}Theme $(cat ~/.local/state/theme-switcher/current/theme.name) already set, skipping ...${neutral}"
 else
   # Generate the files only: no desktop change or terminal repaint during setup.
-  THEME_SWITCHER_ENGINE="$THEME_SWITCHER_ENGINE" THEME_SWITCHER_NO_DESKTOP=1 THEME_SWITCHER_TERMINALS="" \
-    ~/.local/bin/theme-switcher set tokyo-night
+  THEME_SWITCHER_NO_DESKTOP=1 THEME_SWITCHER_TERMINALS="" ~/.local/bin/theme-switcher set tokyo-night
 fi
 
 pretty_print "${green}Installing fonts${neutral}"

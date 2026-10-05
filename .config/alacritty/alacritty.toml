@@ -60,7 +60,7 @@ chars = "\u0015"
 key = "Back"
 mods = "Command"
 
-# Omarchy defaults, shared with Ghostty and kitty: Shift/Ctrl+Insert paste/copy,
+# Shared with Ghostty and kitty: Shift/Ctrl+Insert paste/copy,
 # and Shift+Return / Alt+Shift+Return as CSI-u so TUIs and tmux can tell them apart.
 [[keyboard.bindings]]
 action = "Paste"

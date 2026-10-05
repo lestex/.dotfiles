@@ -17,8 +17,6 @@
 set -euo pipefail
 
 STATE_DIR="$HOME/.local/state/font-switcher/current"
-# Omarchy's terminals use 9pt, sized for Linux display scaling; 14pt reads the
-# same on a Mac.
 DEFAULT_SIZE=14
 
 die() {

@@ -9,12 +9,15 @@ set -euo pipefail
 
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 COMMAND="$ROOT/local/bin/theme-switcher"
-export THEME_SWITCHER_ENGINE=${THEME_SWITCHER_ENGINE:-$HOME/projects/self/omarchy/omarchy}
 
-if [[ $(uname) != "Darwin" || ! -d $THEME_SWITCHER_ENGINE/themes ]]; then
-  echo "skip - needs macOS and a theme engine checkout at \$THEME_SWITCHER_ENGINE"
+if [[ $(uname) != "Darwin" ]] || ! "$COMMAND" list >/dev/null 2>&1; then
+  echo "skip - needs macOS and a theme engine checkout (see THEME_SWITCHER_ENGINE in $COMMAND)"
   exit 0
 fi
+
+# Resolve the engine against the real HOME before switching to a throwaway one.
+THEME_SWITCHER_ENGINE=$("$COMMAND" engine)
+export THEME_SWITCHER_ENGINE
 
 tmp=$(mktemp -d)
 cleanup() {
@@ -50,7 +53,7 @@ done
 grep -q '^background = #1a1b26$' "$state/theme/ghostty.conf" || fail "ghostty.conf carries the palette background"
 ! grep -rIqE '\{\{[^}]*\}\}' "$state/theme" || fail "no placeholder survives rendering"
 [[ ! -e $state/theme/backgrounds ]] || fail "backgrounds are not copied into the state dir"
-[[ ! -e $home/.local/state/omarchy && ! -e $home/.config/omarchy ]] || fail "the engine writes nothing outside theme-switcher's own dirs"
+[[ $(ls "$home/.local/state") == "theme-switcher" && ! -e $home/.config ]] || fail "the engine writes nothing outside theme-switcher's own dirs" "$(ls "$home/.local/state" "$home/.config" 2>&1)"
 first=$(head -n 1 "$state/background")
 [[ $first == "$home/.local/share/theme-switcher/tokyo-night/backgrounds/"* && -f $first ]] || fail "set picks an imported background" "$first"
 [[ $(cat "$tmp/desktop") == "$home/.cache/theme-switcher/desktop/"*.png ]] || fail "a webp background reaches the desktop as png" "$(cat "$tmp/desktop")"

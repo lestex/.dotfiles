@@ -16,6 +16,7 @@
 #   theme-switcher bg set <path>        use an image as the background
 #   theme-switcher bg none              solid theme background color
 #   theme-switcher bg import [theme]    copy the engine's backgrounds into ~/.local/share
+#   theme-switcher engine               path of the theme engine checkout in use
 #
 # State:
 #   ~/.local/state/theme-switcher/current/theme/        generated configs (terminals include these)
@@ -26,7 +27,7 @@
 #   ~/.config/theme-switcher/themed/*.tpl               your own templates
 #
 # Environment:
-#   THEME_SWITCHER_ENGINE         engine checkout (default ~/projects/self/omarchy/omarchy)
+#   THEME_SWITCHER_ENGINE         engine checkout (default ~/projects/self/<engine>/<engine>)
 #   THEME_SWITCHER_NO_DESKTOP=1   skip setting the macOS desktop picture
 #   THEME_SWITCHER_TERMINALS      process names to repaint (default "ghostty alacritty kitty"; empty = none)
 
@@ -41,7 +42,14 @@ fi
 
 set -euo pipefail
 
-ENGINE_PATH=${THEME_SWITCHER_ENGINE:-$HOME/projects/self/omarchy/omarchy}
+# The engine's own name. Its scripts are <name>-theme-*, it reads <NAME>_PATH, and
+# its renderer stages under ~/.local/state/<name> and ~/.config/<name>; this is
+# the one place that name appears.
+ENGINE_NAME=omarchy
+ENGINE_PATH=${THEME_SWITCHER_ENGINE:-$HOME/projects/self/$ENGINE_NAME/$ENGINE_NAME}
+ENGINE_COLOR="$ENGINE_NAME-theme-color"
+ENGINE_OSC="$ENGINE_NAME-theme-osc"
+ENGINE_RENDER="$ENGINE_NAME-theme-set-templates"
 STATE_DIR="$HOME/.local/state/theme-switcher/current"
 THEME_DIR="$STATE_DIR/theme"
 NEXT_THEME_DIR="$STATE_DIR/next-theme"
@@ -61,7 +69,7 @@ die() {
 }
 
 require_engine() {
-  [[ -f $ENGINE_PATH/bin/omarchy-theme-set-templates ]] ||
+  [[ -f $ENGINE_PATH/bin/$ENGINE_RENDER ]] ||
     die "no theme engine at $ENGINE_PATH (set THEME_SWITCHER_ENGINE)"
 }
 
@@ -79,17 +87,17 @@ engine() {
   if [[ -z $ENGINE_SHIMS ]]; then
     ENGINE_SHIMS=$(mktemp -d)
     local name
-    for name in omarchy-theme-color omarchy-theme-osc omarchy-theme-set-templates; do
+    for name in "$ENGINE_COLOR" "$ENGINE_OSC" "$ENGINE_RENDER"; do
       printf '#!/bin/sh\nexec "%s" "%s/bin/%s" "$@"\n' "$BASH" "$ENGINE_PATH" "$name" >"$ENGINE_SHIMS/$name"
       chmod +x "$ENGINE_SHIMS/$name"
     done
 
-    mkdir -p "$ENGINE_SHIMS/home/.local/state/omarchy/current" "$ENGINE_SHIMS/home/.config/omarchy"
-    ln -s "$NEXT_THEME_DIR" "$ENGINE_SHIMS/home/.local/state/omarchy/current/next-theme"
-    ln -s "$USER_TEMPLATES_DIR" "$ENGINE_SHIMS/home/.config/omarchy/themed"
+    mkdir -p "$ENGINE_SHIMS/home/.local/state/$ENGINE_NAME/current" "$ENGINE_SHIMS/home/.config/$ENGINE_NAME"
+    ln -s "$NEXT_THEME_DIR" "$ENGINE_SHIMS/home/.local/state/$ENGINE_NAME/current/next-theme"
+    ln -s "$USER_TEMPLATES_DIR" "$ENGINE_SHIMS/home/.config/$ENGINE_NAME/themed"
   fi
 
-  HOME="$ENGINE_SHIMS/home" OMARCHY_PATH="$ENGINE_PATH" PATH="$ENGINE_SHIMS:$PATH" \
+  env HOME="$ENGINE_SHIMS/home" "${ENGINE_NAME^^}_PATH=$ENGINE_PATH" PATH="$ENGINE_SHIMS:$PATH" \
     "$ENGINE_SHIMS/$command" "$@"
 }
 
@@ -251,7 +259,7 @@ apply_desktop() {
       fi
     fi
   else
-    image=$(solid_background "$(engine omarchy-theme-color --file "$THEME_DIR/colors.toml" background)") || return 0
+    image=$(solid_background "$(engine "$ENGINE_COLOR" --file "$THEME_DIR/colors.toml" background)") || return 0
   fi
 
   osascript - "$image" >/dev/null <<'APPLESCRIPT' || echo "theme-switcher: could not set the desktop picture (allow your terminal to control System Events)" >&2
@@ -268,7 +276,7 @@ repaint_terminals() {
   local osc terminal pid child tty
   local -A painted=()
 
-  osc=$(engine omarchy-theme-osc "$THEME_DIR/colors.toml")
+  osc=$(engine "$ENGINE_OSC" "$THEME_DIR/colors.toml")
   [[ -n $osc ]] || return 0
 
   for terminal in "${TERMINALS[@]}"; do
@@ -312,7 +320,7 @@ set_theme() {
     die "theme '$name' has no colors.toml"
   fi
 
-  if ! engine omarchy-theme-set-templates || ! check_rendered; then
+  if ! engine "$ENGINE_RENDER" || ! check_rendered; then
     rm -rf "$NEXT_THEME_DIR"
     die "theme '$name' was not applied; the current theme is unchanged"
   fi
@@ -379,7 +387,7 @@ bg_import() {
 }
 
 usage() {
-  sed -n '3,22p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '3,32p' "$0" | sed 's/^# \{0,1\}//'
 }
 
 trap cleanup EXIT
@@ -387,6 +395,7 @@ trap cleanup EXIT
 case "${1:-}" in
   list) require_engine; list_themes ;;
   current) current_theme ;;
+  engine) require_engine; echo "$ENGINE_PATH" ;;
   set) [[ -n ${2:-} ]] || die "usage: theme-switcher set <name>"; set_theme "$2" ;;
   bg)
     case "${2:-}" in
