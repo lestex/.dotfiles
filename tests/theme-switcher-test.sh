@@ -11,7 +11,7 @@ ROOT=$(cd "$(dirname "$0")/.." && pwd)
 COMMAND="$ROOT/local/bin/theme-switcher"
 
 if [[ $(uname) != "Darwin" ]] || ! "$COMMAND" list >/dev/null 2>&1; then
-  # CI installs the pinned engine with `make` first, so there a missing engine
+  # CI installs the pinned engine with ./install.sh first, so there a missing engine
   # is a failure, not a reason to skip.
   if [[ ${THEME_SWITCHER_TEST_REQUIRE_ENGINE:-} == "1" ]]; then
     echo "not ok - theme engine is installed (run: theme-switcher engine install <sha>)" >&2
