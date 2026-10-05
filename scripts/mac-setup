@@ -124,6 +124,11 @@ if [ -f ~/.local/state/font-switcher/current/font.name ]; then
 elif ! FONT_SWITCHER_NO_RELOAD=1 ~/.local/bin/font-switcher set "Liga SFMono Nerd Font"; then
   pretty_print "${yellow}Could not set the default font yet; run: font-switcher set \"Liga SFMono Nerd Font\"${neutral}"
 fi
+# The main configs set no font size either; state from before font-switcher
+# owned the size has a family but no size, so give it the default.
+if [ ! -f ~/.local/state/font-switcher/current/font.size ]; then
+  FONT_SWITCHER_NO_RELOAD=1 ~/.local/bin/font-switcher size 14
+fi
 
 # https://github.com/alacritty/alacritty/releases/tag/v0.11.0
 defaults write -g AppleFontSmoothing -int 2

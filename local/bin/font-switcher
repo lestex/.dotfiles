@@ -3,12 +3,13 @@
 # font-switcher — switch the terminal font on macOS (Ghostty, Alacritty, kitty).
 #
 #   font-switcher list            installed monospace font families, current one marked
-#   font-switcher current         current font family
+#   font-switcher current         current font family and size
 #   font-switcher set <family>    use a font family in every terminal
+#   font-switcher size <points>   use a font size in every terminal (default 14)
 #
 # Each terminal includes a generated file from ~/.local/state/font-switcher/current/
 # (ghostty.conf, alacritty.toml, kitty.conf), so the choice survives `make`
-# re-copying the main configs, which therefore name no font family themselves.
+# re-copying the main configs, which therefore set no font family or size.
 #
 # Environment:
 #   FONT_SWITCHER_NO_RELOAD=1   do not signal running terminals
@@ -16,6 +17,9 @@
 set -euo pipefail
 
 STATE_DIR="$HOME/.local/state/font-switcher/current"
+# Omarchy's terminals use 9pt, sized for Linux display scaling; 14pt reads the
+# same on a Mac.
+DEFAULT_SIZE=14
 
 die() {
   echo "font-switcher: $*" >&2
@@ -91,6 +95,44 @@ write_state_file() {
   mv "$tmp" "$STATE_DIR/$name"
 }
 
+current_size() {
+  local size
+  size=$(cat "$STATE_DIR/font.size" 2>/dev/null || true)
+  printf '%s' "${size:-$DEFAULT_SIZE}"
+}
+
+# Render all three terminal files from the family and size, so either can change
+# without losing the other. A family not chosen yet is simply left out.
+render() {
+  local family="$1"
+  local size="$2"
+
+  mkdir -p "$STATE_DIR"
+
+  {
+    [[ -z $family ]] || printf 'font-family = "%s"\n' "$family"
+    printf 'font-size = %s\n' "$size"
+  } | write_state_file ghostty.conf
+
+  {
+    printf '[font]\nsize = %s\n' "$size"
+    if [[ -n $family ]]; then
+      local style
+      for style in normal bold italic bold_italic; do
+        printf '\n[font.%s]\nfamily = "%s"\n' "$style" "$family"
+      done
+    fi
+  } | write_state_file alacritty.toml
+
+  {
+    [[ -z $family ]] || printf 'font_family %s\n' "$family"
+    printf 'font_size %s\n' "$size"
+  } | write_state_file kitty.conf
+
+  [[ -z $family ]] || printf '%s\n' "$family" | write_state_file font.name
+  printf '%s\n' "$size" | write_state_file font.size
+}
+
 set_font() {
   local requested="$1"
   local family
@@ -101,34 +143,23 @@ set_font() {
   family=$(resolve_family "$requested") ||
     die "'$requested' is not an installed monospace font (see: font-switcher list)"
 
-  mkdir -p "$STATE_DIR"
+  render "$family" "$(current_size)"
+  echo "Font: $family $(current_size)pt"
+  reload_terminals
+}
 
-  write_state_file ghostty.conf <<EOF
-font-family = "$family"
-EOF
+set_size() {
+  local size="$1"
 
-  write_state_file alacritty.toml <<EOF
-[font.normal]
-family = "$family"
+  [[ $size =~ ^[0-9]+(\.[0-9]+)?$ ]] || die "font size must be a number: $size"
+  awk -v s="$size" 'BEGIN { exit !(s >= 6 && s <= 72) }' || die "font size must be between 6 and 72: $size"
 
-[font.bold]
-family = "$family"
+  render "$(current_font)" "$size"
+  echo "Font size: ${size}pt"
+  reload_terminals
+}
 
-[font.italic]
-family = "$family"
-
-[font.bold_italic]
-family = "$family"
-EOF
-
-  write_state_file kitty.conf <<EOF
-font_family $family
-EOF
-
-  printf '%s\n' "$family" | write_state_file font.name
-
-  echo "Font: $family"
-
+reload_terminals() {
   [[ ${FONT_SWITCHER_NO_RELOAD:-} == "1" ]] && return 0
 
   # Alacritty watches its imports and applies the change by itself. kitty
@@ -143,13 +174,14 @@ EOF
 }
 
 usage() {
-  sed -n '3,14p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '3,15p' "$0" | sed 's/^# \{0,1\}//'
 }
 
 case "${1:-}" in
   list) list_fonts ;;
-  current) current_font ;;
+  current) echo "$(current_font) $(current_size)pt" ;;
   set) [[ -n ${2:-} ]] || die "usage: font-switcher set <family>"; set_font "$2" ;;
+  size) [[ -n ${2:-} ]] || die "usage: font-switcher size <points>"; set_size "$2" ;;
   -h | --help | help) usage ;;
   *) usage; exit 1 ;;
 esac
