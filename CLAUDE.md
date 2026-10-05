@@ -45,4 +45,4 @@ Scripts must be run from the repo root — they do `source scripts/common` with 
 
 - Scripts use `set -e` and wrap every install in an existence check with a `pretty_print "${yellow}...already installed, skipping${neutral}"` branch. Follow that pattern so re-running the installer stays cheap and CI-safe.
 - `.editorconfig`: 2-space indent, LF, final newline.
-- The software list in `README.md` is hand-maintained and has drifted from `install/Brewfile`/`Caskfile`; update it deliberately rather than trusting it as the manifest.
+- `README.md` is hand-maintained. Its software list mirrors `install/Brewfile`, `Caskfile` and `Codefile` (and the pinned versions in `scripts/common`); update it in the same change when those files change. The manifests, not the README, are the source of truth.
