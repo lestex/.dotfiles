@@ -87,10 +87,10 @@ pretty_print "${green}Copying configs to .configs directory${neutral}"
 mkdir -p ~/.config
 cp -R .config/* ~/.config
 
-# Ghostty, kitty and Alacritty need an absolute path for the command they launch
+# Ghostty and Alacritty need an absolute path for the command they launch
 # (GUI launches inherit no shell PATH) and the Homebrew prefix differs between
 # Apple Silicon and Intel.
-sed -i '' "s|@BREW_PREFIX@|$(brew --prefix)|g" ~/.config/ghostty/config ~/.config/kitty/kitty.conf ~/.config/alacritty/alacritty.toml
+sed -i '' "s|@BREW_PREFIX@|$(brew --prefix)|g" ~/.config/ghostty/config ~/.config/alacritty/alacritty.toml
 
 # theme-switcher runs a theme engine from a checkout beside this repo; Ghostty
 # and Alacritty include the files it generates.
