@@ -18,6 +18,8 @@ brew "telnet"
 brew "tmux"
 
 # development tools
+# bash 5: theme-switcher runs a theme engine that needs associative arrays
+brew "bash"
 brew "git"
 brew "pyenv"
 brew "tfenv"

@@ -66,6 +66,22 @@ cp -R .config/* ~/.config
 # PATH) and the Homebrew prefix differs between Apple Silicon and Intel.
 sed -i '' "s|@BREW_PREFIX@|$(brew --prefix)|g" ~/.config/ghostty/config
 
+# theme-switcher runs a theme engine from a checkout beside this repo; Ghostty
+# and Alacritty include the files it generates.
+pretty_print "${green}Installing theme-switcher${neutral}"
+mkdir -p ~/.local/bin
+cp local/bin/theme-switcher ~/.local/bin/theme-switcher
+THEME_SWITCHER_ENGINE=${THEME_SWITCHER_ENGINE:-$HOME/projects/self/omarchy/omarchy}
+if [ ! -d "$THEME_SWITCHER_ENGINE/themes" ]; then
+  pretty_print "${yellow}No theme engine at $THEME_SWITCHER_ENGINE, skipping theme setup ...${neutral}"
+elif [ -f ~/.local/state/theme-switcher/current/theme.name ]; then
+  pretty_print "${yellow}Theme $(cat ~/.local/state/theme-switcher/current/theme.name) already set, skipping ...${neutral}"
+else
+  # Generate the files only: no desktop change or terminal repaint during setup.
+  THEME_SWITCHER_ENGINE="$THEME_SWITCHER_ENGINE" THEME_SWITCHER_NO_DESKTOP=1 THEME_SWITCHER_TERMINALS="" \
+    ~/.local/bin/theme-switcher set tokyo-night
+fi
+
 pretty_print "${green}Installing fonts${neutral}"
 mkdir -p /Users/$USER/Library/Fonts
 cp fonts/*.ttf /Users/$USER/Library/Fonts

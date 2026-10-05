@@ -1,0 +1,402 @@
+#!/usr/bin/env bash
+#
+# theme-switcher — switch terminal and desktop themes on macOS.
+#
+# The theme engine is read in place from a checkout (THEME_SWITCHER_ENGINE):
+# palettes (themes/*/colors.toml), templates (default/themed/*.tpl), the palette
+# resolver and the template renderer, so theme and template updates there apply
+# here unchanged. This script adds what is specific to macOS: running the engine
+# under bash 5, repainting running terminals through their TTYs, and the desktop
+# picture.
+#
+#   theme-switcher list                 themes, current one marked
+#   theme-switcher current              current theme name
+#   theme-switcher set <name>           render and apply a theme
+#   theme-switcher bg next              next background of the current theme
+#   theme-switcher bg set <path>        use an image as the background
+#   theme-switcher bg none              solid theme background color
+#   theme-switcher bg import [theme]    copy the engine's backgrounds into ~/.local/share
+#
+# State:
+#   ~/.local/state/theme-switcher/current/theme/        generated configs (terminals include these)
+#   ~/.local/state/theme-switcher/current/theme.name    current theme
+#   ~/.local/state/theme-switcher/current/background    chosen image path as plain text; empty = solid color
+#   ~/.local/share/theme-switcher/<theme>/backgrounds/  imported per-theme backgrounds
+#   ~/.config/theme-switcher/themes/<name>/             your own themes (overlay the engine's)
+#   ~/.config/theme-switcher/themed/*.tpl               your own templates
+#
+# Environment:
+#   THEME_SWITCHER_ENGINE         engine checkout (default ~/projects/self/omarchy/omarchy)
+#   THEME_SWITCHER_NO_DESKTOP=1   skip setting the macOS desktop picture
+#   THEME_SWITCHER_TERMINALS      process names to repaint (default "ghostty alacritty kitty"; empty = none)
+
+# The engine uses associative arrays; macOS ships bash 3.2.
+if (( BASH_VERSINFO[0] < 5 )); then
+  for candidate in /opt/homebrew/bin/bash /usr/local/bin/bash; do
+    [[ -x $candidate ]] && exec "$candidate" "$0" "$@"
+  done
+  echo "theme-switcher: needs bash 5 (brew install bash)" >&2
+  exit 1
+fi
+
+set -euo pipefail
+
+ENGINE_PATH=${THEME_SWITCHER_ENGINE:-$HOME/projects/self/omarchy/omarchy}
+STATE_DIR="$HOME/.local/state/theme-switcher/current"
+THEME_DIR="$STATE_DIR/theme"
+NEXT_THEME_DIR="$STATE_DIR/next-theme"
+BACKGROUND_STATE="$STATE_DIR/background"
+DATA_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/theme-switcher"
+CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/theme-switcher"
+USER_THEMES_DIR="$HOME/.config/theme-switcher/themes"
+USER_TEMPLATES_DIR="$HOME/.config/theme-switcher/themed"
+LOCK_DIR="${TMPDIR:-/tmp}/theme-switcher.lock"
+
+read -ra TERMINALS <<<"${THEME_SWITCHER_TERMINALS-ghostty alacritty kitty}"
+IMAGE_PATTERN='\.(jpe?g|png|gif|bmp|webp|heic|tiff?)$'
+
+die() {
+  echo "theme-switcher: $*" >&2
+  exit 1
+}
+
+require_engine() {
+  [[ -f $ENGINE_PATH/bin/omarchy-theme-set-templates ]] ||
+    die "no theme engine at $ENGINE_PATH (set THEME_SWITCHER_ENGINE)"
+}
+
+# The engine's scripts start with #!/bin/bash, which is 3.2 on macOS, and call
+# each other by name. Shims put them on PATH running under this bash instead.
+#
+# The renderer also hardcodes where it stages and where user templates live,
+# under $HOME. It runs with a scratch HOME whose two directories are symlinks to
+# this tool's own, so nothing is written outside ~/.local/state/theme-switcher.
+ENGINE_SHIMS=""
+engine() {
+  local command="$1"
+  shift
+
+  if [[ -z $ENGINE_SHIMS ]]; then
+    ENGINE_SHIMS=$(mktemp -d)
+    local name
+    for name in omarchy-theme-color omarchy-theme-osc omarchy-theme-set-templates; do
+      printf '#!/bin/sh\nexec "%s" "%s/bin/%s" "$@"\n' "$BASH" "$ENGINE_PATH" "$name" >"$ENGINE_SHIMS/$name"
+      chmod +x "$ENGINE_SHIMS/$name"
+    done
+
+    mkdir -p "$ENGINE_SHIMS/home/.local/state/omarchy/current" "$ENGINE_SHIMS/home/.config/omarchy"
+    ln -s "$NEXT_THEME_DIR" "$ENGINE_SHIMS/home/.local/state/omarchy/current/next-theme"
+    ln -s "$USER_TEMPLATES_DIR" "$ENGINE_SHIMS/home/.config/omarchy/themed"
+  fi
+
+  HOME="$ENGINE_SHIMS/home" OMARCHY_PATH="$ENGINE_PATH" PATH="$ENGINE_SHIMS:$PATH" \
+    "$ENGINE_SHIMS/$command" "$@"
+}
+
+cleanup() {
+  [[ -n $ENGINE_SHIMS ]] && rm -rf "$ENGINE_SHIMS"
+  rmdir "$LOCK_DIR" 2>/dev/null || true
+}
+
+# macOS has no flock; mkdir is atomic. A lock older than a minute is from a run
+# that died, since a theme switch takes well under a second.
+take_lock() {
+  local _
+  for _ in {1..50}; do
+    mkdir "$LOCK_DIR" 2>/dev/null && return 0
+    if [[ -n $(find "$LOCK_DIR" -maxdepth 0 -mmin +1 2>/dev/null) ]]; then
+      rmdir "$LOCK_DIR" 2>/dev/null || true
+      continue
+    fi
+    sleep 0.1
+  done
+  die "another theme change is still running"
+}
+
+theme_name() {
+  echo "$1" | sed -E 's/<[^>]+>//g' | tr '[:upper:]' '[:lower:]' | tr ' ' '-'
+}
+
+current_theme() {
+  cat "$STATE_DIR/theme.name" 2>/dev/null || true
+}
+
+list_themes() {
+  local current dir name
+  current=$(current_theme)
+
+  for dir in "$ENGINE_PATH"/themes/*/ "$USER_THEMES_DIR"/*/; do
+    [[ -d $dir ]] || continue
+    basename "$dir"
+  done | sort -u | while read -r name; do
+    if [[ $name == "$current" ]]; then
+      echo "* $name"
+    else
+      echo "  $name"
+    fi
+  done
+}
+
+# Copy a theme directory into staging, minus its backgrounds: those are imported
+# into ~/.local/share once rather than copied on every switch.
+stage_from() {
+  local source="$1"
+  local entry
+
+  [[ -d $source ]] || return 0
+  for entry in "$source"/*; do
+    [[ -e $entry ]] || continue
+    [[ $(basename "$entry") == "backgrounds" ]] && continue
+    cp -R "$entry" "$NEXT_THEME_DIR/"
+  done
+}
+
+# Fail when any {{ ... }} survives rendering: a literal placeholder in a config
+# would otherwise fail inside the app, far from the template that caused it.
+check_rendered() {
+  local leftovers
+  leftovers=$(grep -rIoE '\{\{[^}]*\}\}' "$NEXT_THEME_DIR" 2>/dev/null | sort -u || true)
+  if [[ -n $leftovers ]]; then
+    echo "theme-switcher: unresolved placeholders after rendering:" >&2
+    sed "s|^$NEXT_THEME_DIR/|  |" <<<"$leftovers" >&2
+    return 1
+  fi
+}
+
+write_background_state() {
+  local path="$1"
+  local tmp
+
+  mkdir -p "$STATE_DIR"
+  tmp=$(mktemp "$STATE_DIR/.background.XXXXXX")
+  printf '%s\n' "$path" >"$tmp"
+  mv "$tmp" "$BACKGROUND_STATE"
+}
+
+read_background_state() {
+  [[ -f $BACKGROUND_STATE && ! -L $BACKGROUND_STATE ]] || return 0
+  head -n 1 "$BACKGROUND_STATE"
+}
+
+theme_backgrounds() {
+  local theme="$1"
+  local dir="$DATA_DIR/$theme/backgrounds"
+
+  [[ -d $dir ]] || return 0
+  find "$dir" -maxdepth 1 -type f | grep -iE "$IMAGE_PATTERN" | LC_ALL=C sort || true
+}
+
+import_backgrounds() {
+  local theme="$1"
+  local source="$ENGINE_PATH/themes/$theme/backgrounds"
+  local dest="$DATA_DIR/$theme/backgrounds"
+  local file copied=0
+
+  [[ -d $source ]] || return 0
+  mkdir -p "$dest"
+  for file in "$source"/*; do
+    [[ -f $file && ! -e $dest/$(basename "$file") ]] || continue
+    cp "$file" "$dest/"
+    copied=$((copied + 1))
+  done
+  (( copied == 0 )) || echo "Imported $copied background(s) for $theme"
+}
+
+# A solid image in the palette background color, for the "no image" state. A
+# 24-bit BMP needs no compression or checksums, so bash can write it; sips turns
+# it into a PNG the desktop accepts. Named by color, because macOS does not
+# reload a desktop picture whose path is unchanged.
+solid_background() {
+  local hex="${1#\#}"
+  local out="$CACHE_DIR/solid-$hex.png"
+  local bmp size=8 row pixel i
+
+  [[ $hex =~ ^[0-9A-Fa-f]{6}$ ]] || return 1
+  [[ -f $out ]] && { echo "$out"; return 0; }
+
+  mkdir -p "$CACHE_DIR"
+  bmp=$(mktemp "$CACHE_DIR/solid.XXXXXX")
+  le32() { printf '\\x%02x\\x%02x\\x%02x\\x%02x' $(($1 & 255)) $((($1 >> 8) & 255)) $((($1 >> 16) & 255)) $((($1 >> 24) & 255)); }
+  le16() { printf '\\x%02x\\x%02x' $(($1 & 255)) $((($1 >> 8) & 255)); }
+
+  pixel=$(printf '\\x%s\\x%s\\x%s' "${hex:4:2}" "${hex:2:2}" "${hex:0:2}")
+  row=""
+  for ((i = 0; i < size; i++)); do row+="$pixel"; done
+  {
+    printf 'BM%b' "$(le32 $((54 + size * size * 3)))$(le32 0)$(le32 54)"
+    printf '%b' "$(le32 40)$(le32 $size)$(le32 $size)$(le16 1)$(le16 24)$(le32 0)$(le32 $((size * size * 3)))$(le32 2835)$(le32 2835)$(le32 0)$(le32 0)"
+    for ((i = 0; i < size; i++)); do printf '%b' "$row"; done
+  } >"$bmp"
+
+  sips -s format png "$bmp" --out "$out" >/dev/null
+  rm -f "$bmp"
+  echo "$out"
+}
+
+apply_desktop() {
+  local path image
+
+  [[ ${THEME_SWITCHER_NO_DESKTOP:-} == "1" ]] && return 0
+  command -v osascript >/dev/null || return 0
+
+  path=$(read_background_state)
+  if [[ -n $path && -f $path ]]; then
+    image="$path"
+    # The engine ships .webp, which the desktop is not guaranteed to accept.
+    if [[ ! ${path,,} =~ \.(jpe?g|png|heic)$ ]]; then
+      image="$CACHE_DIR/desktop/$(basename "$(dirname "$(dirname "$path")")")-$(basename "${path%.*}").png"
+      if [[ ! -f $image || $path -nt $image ]]; then
+        mkdir -p "$CACHE_DIR/desktop"
+        sips -s format png "$path" --out "$image" >/dev/null || image="$path"
+      fi
+    fi
+  else
+    image=$(solid_background "$(engine omarchy-theme-color --file "$THEME_DIR/colors.toml" background)") || return 0
+  fi
+
+  osascript - "$image" >/dev/null <<'APPLESCRIPT' || echo "theme-switcher: could not set the desktop picture (allow your terminal to control System Events)" >&2
+on run argv
+  tell application "System Events" to tell every desktop to set picture to POSIX file (item 1 of argv)
+end run
+APPLESCRIPT
+}
+
+# Config includes only reach new windows. Running ones are repainted by writing
+# OSC color sequences to the TTY of each terminal's child (the shell, or
+# /usr/bin/login on macOS); the terminal process itself does not own it.
+repaint_terminals() {
+  local osc terminal pid child tty
+  local -A painted=()
+
+  osc=$(engine omarchy-theme-osc "$THEME_DIR/colors.toml")
+  [[ -n $osc ]] || return 0
+
+  for terminal in "${TERMINALS[@]}"; do
+    # pgrep exits 1 when nothing matches, which is the common case here.
+    for pid in $(pgrep -x "$terminal" || true); do
+      for child in $(pgrep -P "$pid" || true); do
+        tty=$(ps -o tty= -p "$child" 2>/dev/null | tr -d ' ' || true)
+        [[ $tty == ttys* || $tty == pts/* ]] || continue
+        [[ -z ${painted[$tty]:-} ]] || continue
+        painted[$tty]=1
+        printf '%s' "$osc" >"/dev/$tty" 2>/dev/null || true
+      done
+    done
+  done
+
+  # OSC carries colors only; kitty re-reads the rest of its config on SIGUSR1.
+  # Alacritty watches its imports itself. Ghostty is not signalled: on macOS it
+  # has no documented external reload, and an unhandled signal would quit it.
+  if pgrep -x kitty >/dev/null; then
+    pkill -USR1 -x kitty || true
+  fi
+}
+
+set_theme() {
+  local name="$1"
+  local backgrounds=()
+
+  require_engine
+  name=$(theme_name "$name")
+  [[ -n $name && $name != .* && $name != */* ]] || die "invalid theme name: $1"
+  [[ -d $ENGINE_PATH/themes/$name || -d $USER_THEMES_DIR/$name ]] || die "theme '$name' does not exist"
+
+  take_lock
+
+  rm -rf "$NEXT_THEME_DIR"
+  mkdir -p "$NEXT_THEME_DIR"
+  stage_from "$ENGINE_PATH/themes/$name"
+  stage_from "$USER_THEMES_DIR/$name"
+  if [[ ! -f $NEXT_THEME_DIR/colors.toml ]]; then
+    rm -rf "$NEXT_THEME_DIR"
+    die "theme '$name' has no colors.toml"
+  fi
+
+  if ! engine omarchy-theme-set-templates || ! check_rendered; then
+    rm -rf "$NEXT_THEME_DIR"
+    die "theme '$name' was not applied; the current theme is unchanged"
+  fi
+
+  rm -rf "$THEME_DIR"
+  mv "$NEXT_THEME_DIR" "$THEME_DIR"
+  echo "$name" >"$STATE_DIR/theme.name"
+
+  [[ -d $DATA_DIR/$name/backgrounds ]] || import_backgrounds "$name"
+  mapfile -t backgrounds < <(theme_backgrounds "$name")
+  write_background_state "${backgrounds[0]:-}"
+
+  repaint_terminals
+  apply_desktop
+  echo "Theme: $name"
+}
+
+bg_next() {
+  local theme current next="" i
+  local backgrounds=()
+
+  theme=$(current_theme)
+  [[ -n $theme ]] || die "no theme set yet"
+  mapfile -t backgrounds < <(theme_backgrounds "$theme")
+  (( ${#backgrounds[@]} > 0 )) || die "no backgrounds for $theme (try: theme-switcher bg import $theme)"
+
+  current=$(read_background_state)
+  next="${backgrounds[0]}"
+  for i in "${!backgrounds[@]}"; do
+    if [[ ${backgrounds[$i]} == "$current" ]]; then
+      next="${backgrounds[$(((i + 1) % ${#backgrounds[@]}))]}"
+      break
+    fi
+  done
+
+  write_background_state "$next"
+  apply_desktop
+  echo "Background: $next"
+}
+
+bg_set() {
+  local path="${1:-}"
+
+  [[ -n $path ]] || die "usage: theme-switcher bg set <path>"
+  [[ -f $path ]] || die "no such file: $path"
+  path=$(cd "$(dirname "$path")" && pwd)/$(basename "$path")
+  write_background_state "$path"
+  apply_desktop
+}
+
+bg_import() {
+  local theme dir
+
+  require_engine
+  if [[ -n ${1:-} ]]; then
+    theme=$(theme_name "$1")
+    [[ -d $ENGINE_PATH/themes/$theme/backgrounds ]] || die "the engine ships no backgrounds for '$theme'"
+    import_backgrounds "$theme"
+  else
+    for dir in "$ENGINE_PATH"/themes/*/; do
+      import_backgrounds "$(basename "$dir")"
+    done
+  fi
+}
+
+usage() {
+  sed -n '3,22p' "$0" | sed 's/^# \{0,1\}//'
+}
+
+trap cleanup EXIT
+
+case "${1:-}" in
+  list) require_engine; list_themes ;;
+  current) current_theme ;;
+  set) [[ -n ${2:-} ]] || die "usage: theme-switcher set <name>"; set_theme "$2" ;;
+  bg)
+    case "${2:-}" in
+      next) bg_next ;;
+      set) bg_set "${3:-}" ;;
+      none) [[ -f $THEME_DIR/colors.toml ]] || die "no theme set yet"; write_background_state ""; apply_desktop ;;
+      import) bg_import "${3:-}" ;;
+      *) usage; exit 1 ;;
+    esac
+    ;;
+  -h | --help | help) usage ;;
+  *) usage; exit 1 ;;
+esac

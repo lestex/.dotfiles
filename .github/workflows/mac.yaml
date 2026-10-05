@@ -6,6 +6,7 @@ on:
     - 'scripts/mac-setup'
     - 'scripts/common'
     - 'install/**'
+    - 'local/**'
     - '.config/**'
     - 'Makefile'
     - 'bin/**'
