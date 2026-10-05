@@ -138,6 +138,7 @@ pass "other image formats reach the desktop as png"
 if command -v tmux >/dev/null; then
   tmx -f /dev/null new-session -d -s test "sleep 60"
   tmx source-file "$ROOT/.config/tmux/tmux.conf" 2>"$tmp/err" || fail "the repo tmux.conf loads without errors" "$(cat "$tmp/err")"
+  tmx show -sv terminal-features | grep -q "hyperlinks" || fail "tmux passes OSC 8 hyperlinks to the terminal"
   pass "the repo tmux.conf loads"
 
   theme set nord >/dev/null 2>"$tmp/err" || fail "set applies with tmux running" "$(cat "$tmp/err")"
