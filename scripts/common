@@ -12,3 +12,14 @@ pretty_print() {
 TERRAFORM_VERSION=1.9.5
 PYTHON_VERSION=3.12.5
 GO_VERSION=1.22.6
+
+# Alacritty has no Homebrew formula and its cask was disabled (unsigned, fails
+# Gatekeeper), so mac-setup installs the official release DMG pinned here.
+ALACRITTY_VERSION=0.17.0
+ALACRITTY_DMG_SHA256=ad8d7de35fb38e43184776cac6dfee05ca325caa0b6639a06a55e54e4b026620
+
+# theme-switcher's engine (palettes, templates, renderer), fetched by mac-setup
+# with `theme-switcher engine install`. A full commit SHA, since a tag can move;
+# bump it deliberately, and CI runs tests/theme-switcher-test.sh against it.
+# Currently the v4.0.4 release.
+THEME_ENGINE_REF=c668141e9c42b13c80c9ca4ea108e11708c5e8a5

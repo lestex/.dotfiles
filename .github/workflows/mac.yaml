@@ -6,6 +6,8 @@ on:
     - 'scripts/mac-setup'
     - 'scripts/common'
     - 'install/**'
+    - 'local/**'
+    - 'tests/**'
     - '.config/**'
     - 'Makefile'
     - 'bin/**'
@@ -26,3 +28,10 @@ jobs:
 
     - name: Run script
       run: make
+
+    # make installs the theme engine pinned in scripts/common; test theme-switcher
+    # against it, so a pin bump that breaks the engine interface fails here.
+    - name: Test theme-switcher
+      run: bash tests/theme-switcher-test.sh
+      env:
+        THEME_SWITCHER_TEST_REQUIRE_ENGINE: "1"

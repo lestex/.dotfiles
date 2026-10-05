@@ -1,6 +1,8 @@
 # common
-# the alacritty cask fails the Gatekeeper check and was disabled on 2026-09-01; ghostty replaces it
+# the alacritty cask fails the Gatekeeper check and was disabled on 2026-09-01;
+# scripts/mac-setup installs Alacritty from its pinned release DMG instead
 cask "ghostty"
+cask "kitty"
 cask "bitwarden"
 cask "daisydisk"
 cask "google-chrome"
@@ -14,3 +16,12 @@ cask "visual-studio-code"
 # messaging
 cask "slack"
 cask "telegram"
+
+# fonts: Nerd Fonts to choose from with font-switcher
+cask "font-jetbrains-mono-nerd-font"
+cask "font-caskaydia-mono-nerd-font"
+cask "font-meslo-lg-nerd-font"
+cask "font-fira-code-nerd-font"
+cask "font-victor-mono-nerd-font"
+cask "font-bitstream-vera-sans-mono-nerd-font"
+cask "font-iosevka-nerd-font"
