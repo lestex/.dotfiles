@@ -36,11 +36,11 @@ keybind = super+control+shift+alt+arrow_right=resize_split:right,100
 
 # Mouse
 mouse-scroll-multiplier = 0.95
-# Shift takes the mouse back from tmux, as in kitty and Alacritty: Shift+drag
-# selects in Ghostty and Cmd+Shift+click opens links. Ghostty only detects
-# links under a mouse-reporting app (tmux) while Shift is held and not
-# captured, so `true` here makes links inside tmux unclickable.
-mouse-shift-capture = false
+# Shift+click goes to tmux, which opens the link under the mouse (tmux.conf
+# S-MouseUp1Pane -> tmux-open-link), so Shift+click opens links here as it does
+# in kitty and Alacritty. Ghostty itself can only open links with Cmd, and does
+# not detect them under tmux with this set; plain drag still selects in tmux.
+mouse-shift-capture = true
 
 # @BREW_PREFIX@ is substituted by scripts/mac-setup on install. Ghostty needs an
 # absolute path here (GUI launches inherit no shell PATH) and the Homebrew
