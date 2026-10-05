@@ -60,7 +60,7 @@ pass "tmux-open-link picks the right URL and refuses unsafe ones"
 cp "$COMMAND" "$tmp/home/.local/bin/tmux-open-link"
 rm -f "$tmp/opened"
 export TMP="$tmp" ROOT
-env -u TMUX HOME="$tmp/home" PATH="$tmp/bin:$PATH" TMUX_TMPDIR="$tmp/sock" LANG=en_US.UTF-8 TERM=xterm-ghostty python3 - <<'PY' || fail "Shift+click through tmux opens links"
+env -u TMUX HOME="$tmp/home" PATH="$tmp/bin:$PATH" TMUX_TMPDIR="$tmp/sock" LANG=en_US.UTF-8 TERM=xterm-256color python3 - <<'PY' || fail "Shift+click through tmux opens links"
 import os, pty, subprocess, sys, time
 tmp, root = os.environ["TMP"], os.environ["ROOT"]
 env = dict(os.environ)
@@ -81,10 +81,18 @@ r = tx("source-file", f"{root}/.config/tmux/tmux.conf")
 if r.returncode:
     sys.exit(f"repo tmux.conf failed to load: {r.stderr}")
 
+# TERM must have a terminfo entry wherever this runs: CI has no xterm-ghostty,
+# and tmux attach exits at once on an unknown terminal.
 pid, fd = pty.fork()
 if pid == 0:
     os.execvpe("tmux", ["tmux", "attach", "-t", "t"], env)
 time.sleep(1.5)
+if os.waitpid(pid, os.WNOHANG) != (0, 0):
+    try:
+        said = os.read(fd, 4096).decode(errors="replace")
+    except OSError:
+        said = ""
+    sys.exit(f"tmux attach exited early: {said.strip()!r}")
 
 # The status bar is at the top (status-position top), so pane row 0 is client row 2.
 def shift_click(col, pane_row):
