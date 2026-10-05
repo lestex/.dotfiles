@@ -128,8 +128,10 @@ if command -v k9s &>/dev/null; then
   export K9SCONFIG=~/.config/k9s/
 fi
 
-export PATH="$HOME/.cargo/bin:$PATH"
-source "$HOME/.cargo/env"
+# Rust is not installed by these dotfiles; load cargo only if it is there.
+if [ -f "$HOME/.cargo/env" ]; then
+  source "$HOME/.cargo/env"
+fi
 
 # goenv
 export GOENV_ROOT="$HOME/.goenv"

@@ -1,6 +1,6 @@
 # common
 # the alacritty cask fails the Gatekeeper check and was disabled on 2026-09-01;
-# scripts/mac-setup installs Alacritty from its pinned release DMG instead
+# scripts/steps/30-alacritty installs Alacritty from its pinned release DMG instead
 cask "ghostty"
 cask "kitty"
 cask "bitwarden"

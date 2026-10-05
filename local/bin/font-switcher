@@ -27,9 +27,25 @@ die() {
 # Monospace families from AppKit. The fixed-pitch flag alone is not enough: many
 # Nerd Font "Liga" builds leave it unset, so a family also counts when the
 # glyphs i, M, W and . exist and share one advance width.
+#
+# macOS registers new files in ~/Library/Fonts in the background, so a font
+# installed a moment ago (the installer's first run) is not listed yet. Given a
+# directory, the font files in it are registered for this one lookup first
+# (CoreText process scope: nothing is written, nothing persists).
 monospace_families() {
   osascript -l JavaScript -e '
+  function run(argv) {
     ObjC.import("AppKit");
+    ObjC.import("CoreText");
+    const dir = argv[0];
+    if (dir) {
+      const files = ObjC.deepUnwrap($.NSFileManager.defaultManager.contentsOfDirectoryAtPathError(dir, null)) || [];
+      for (const file of files) {
+        if (/\.(ttf|otf|ttc)$/i.test(file)) {
+          $.CTFontManagerRegisterFontsForURL($.NSURL.fileURLWithPath(dir + "/" + file), 1, null);
+        }
+      }
+    }
     const fm = $.NSFontManager.sharedFontManager;
     const out = [];
     for (const family of ObjC.deepUnwrap(fm.availableFontFamilies)) {
@@ -47,7 +63,8 @@ monospace_families() {
       }
       if (mono) out.push(family);
     }
-    out.sort().join("\n");'
+    return out.sort().join("\n");
+  }' "$@"
 }
 
 current_font() {
@@ -72,15 +89,19 @@ list_fonts() {
 # spelling written into the configs is the system's own.
 resolve_family() {
   local wanted="$1"
-  local family wanted_lower
+  local family wanted_lower fonts_dir
 
   wanted_lower=$(printf '%s' "$wanted" | tr '[:upper:]' '[:lower:]')
-  while IFS= read -r family; do
-    if [[ $(printf '%s' "$family" | tr '[:upper:]' '[:lower:]') == "$wanted_lower" ]]; then
-      printf '%s' "$family"
-      return 0
-    fi
-  done < <(monospace_families)
+  # Fonts macOS already knows first; only if that misses, register the user's
+  # font files for the lookup, so a just-installed font is still accepted.
+  for fonts_dir in "" "$HOME/Library/Fonts"; do
+    while IFS= read -r family; do
+      if [[ $(printf '%s' "$family" | tr '[:upper:]' '[:lower:]') == "$wanted_lower" ]]; then
+        printf '%s' "$family"
+        return 0
+      fi
+    done < <(monospace_families ${fonts_dir:+"$fonts_dir"})
+  done
   return 1
 }
 

@@ -11,6 +11,13 @@ bash <(curl -fsSL https://raw.githubusercontent.com/lestex/.dotfiles/master/inst
 ```
 This downloads the repo into `~/.dotfiles` and sets the Mac up. Re-run it (or `./install.sh` from a checkout) to update; it is safe to run again.
 
+The setup is split into independent steps in `scripts/steps/`; run only some of them by name:
+```sh
+./install.sh --list           # homebrew, packages, alacritty, shell, languages, vscode, configs, fonts, themes
+./install.sh configs themes   # just these, in this order
+scripts/steps/80-fonts.sh     # or one step directly, from any directory
+```
+
 - `DOTFILES_DIR` changes where the repo is downloaded (default `~/.dotfiles`).
 - `DOTFILES_REPO` installs from a fork.
 - Configs are **copied**, not symlinked: edit them in the repo and re-run the installer. Re-running overwrites local edits under `~/.config` and `~/.zshrc`.
@@ -65,11 +72,11 @@ Links inside tmux open with **Shift+click** in every terminal, both URLs and the
 ### Also
 - Alacritty, from its pinned release (see Terminals)
 - oh-my-zsh with zsh-autosuggestions and zsh-syntax-highlighting
-- Rust (rustup), Terraform 1.9.5 (tfenv), Python 3.12.5 (pyenv); versions are pinned in `scripts/common`
+- Terraform 1.9.5 (tfenv) and Python 3.12.5 (pyenv); versions are pinned in `scripts/common`
 - tmux plugin manager (tpm), vifm color schemes
 
 ### VS Code extensions (`install/Codefile`)
-EditorConfig.EditorConfig, HashiCorp.terraform, ms-azuretools.vscode-docker, ms-python.python, ms-python.vscode-pylance, GoogleCloudTools.cloudcode, GitHub.github-vscode-theme, tamasfe.even-better-toml, rust-lang.rust-analyzer, golang.go
+EditorConfig.EditorConfig, HashiCorp.terraform, ms-azuretools.vscode-docker, ms-python.python, ms-python.vscode-pylance, GoogleCloudTools.cloudcode, GitHub.github-vscode-theme, tamasfe.even-better-toml, golang.go
 
 ## Tests
 ```sh
