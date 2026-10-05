@@ -1,19 +1,12 @@
 #!/usr/bin/env bash
-# Rust, and the pinned Terraform and Python versions.
+# The pinned Terraform and Python versions.
 #
-# Rust via rustup; Terraform and Python at the versions pinned in scripts/common,
-# through tfenv and pyenv (installed by 20-packages).
+# Installed through tfenv and pyenv (from 20-packages) at the versions pinned in
+# scripts/common.
 set -euo pipefail
 # shellcheck source=scripts/common
 source "$(dirname "$0")/../common"
 require_brew
-
-if command -v rustup >/dev/null 2>&1 || [ -x "$HOME/.cargo/bin/rustup" ]; then
-  pretty_print "${yellow}Rust is already installed, skipping ...${neutral}"
-else
-  pretty_print "${green}Installing Rust${neutral}"
-  curl -fsSL https://sh.rustup.rs | bash -s -- -y
-fi
 
 pretty_print "${green}Terraform $TERRAFORM_VERSION (tfenv)${neutral}"
 tfenv install "$TERRAFORM_VERSION"

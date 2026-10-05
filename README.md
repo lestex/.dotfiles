@@ -61,7 +61,7 @@ Links inside tmux open with **Shift+click** in every terminal, both URLs and the
 ## Software installed
 ### Homebrew formulae (`install/Brewfile`)
 - **common:** coreutils, findutils, jq, htop, btop, tree, mole, neovim, vifm, mpv, ssh-copy-id, telnet, tmux
-- **development tools:** bash, git, pyenv, tfenv, goenv, node, helm, gpg, watch, kind, podman, oh-my-posh, kubectx, krew, k9s, ollama, gh, nvm
+- **development tools:** bash, git, pyenv, tfenv, goenv, node, helm, gpg, watch, kind, podman, oh-my-posh, kubectx, krew, k9s, ollama, gh, nvm, oha
 
 ### Casks (`install/Caskfile`)
 - **common:** ghostty, kitty, bitwarden, daisydisk, google-chrome, vlc, rectangle
@@ -72,11 +72,11 @@ Links inside tmux open with **Shift+click** in every terminal, both URLs and the
 ### Also
 - Alacritty, from its pinned release (see Terminals)
 - oh-my-zsh with zsh-autosuggestions and zsh-syntax-highlighting
-- Rust (rustup), Terraform 1.9.5 (tfenv), Python 3.12.5 (pyenv); versions are pinned in `scripts/common`
+- Terraform 1.9.5 (tfenv) and Python 3.12.5 (pyenv); versions are pinned in `scripts/common`
 - tmux plugin manager (tpm), vifm color schemes
 
 ### VS Code extensions (`install/Codefile`)
-EditorConfig.EditorConfig, HashiCorp.terraform, ms-azuretools.vscode-docker, ms-python.python, ms-python.vscode-pylance, GoogleCloudTools.cloudcode, GitHub.github-vscode-theme, tamasfe.even-better-toml, rust-lang.rust-analyzer, golang.go
+EditorConfig.EditorConfig, HashiCorp.terraform, ms-azuretools.vscode-docker, ms-python.python, ms-python.vscode-pylance, GoogleCloudTools.cloudcode, GitHub.github-vscode-theme, tamasfe.even-better-toml, golang.go
 
 ## Tests
 ```sh
