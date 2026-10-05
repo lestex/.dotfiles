@@ -5,7 +5,7 @@ set -e
 source scripts/common
 
 pretty_print "${green}Installing user packages ...${neutral}"
-sudo apt update -y && sudo apt install -y brave-browser code google-cloud-cli
+sudo apt update -y && sudo apt install -y brave-browser code google-cloud-cli google-chrome-stable
 
 # Installing vscode extensions
 for ext in $(cat install/Codefile)
@@ -23,6 +23,7 @@ then
 else
   pretty_print "${yellow}python $PYTHON_VERSION is already installed, skipping ...${neutral}"
 fi
+$HOME/.pyenv/bin/pyenv global $PYTHON_VERSION
 
 # Install tfenv
 $HOME/.tfenv/bin/tfenv -v
@@ -33,6 +34,7 @@ then
 else
   pretty_print "${yellow}terraform $TERRAFORM_VERSION is already installed, skipping ...${neutral}"
 fi
+$HOME/.tfenv/bin/tfenv use $TERRAFORM_VERSION
 
 # Install go
 $HOME/.goenv/bin/goenv -v
@@ -43,6 +45,7 @@ then
 else
   pretty_print "${yellow}go $GO_VERSION is already installed, skipping ...${neutral}"
 fi
+$HOME/.goenv/bin/goenv global $GO_VERSION
 
 # brew "awscli"
 # brew "packer"

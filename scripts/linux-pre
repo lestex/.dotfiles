@@ -14,7 +14,7 @@ sudo apt update -y && sudo apt install -y \
 if [ ! -d "$HOME/.oh-my-zsh" ];
 then
   pretty_print "${green}Installing oh-my-zsh...${neutral}"
-  curl -L http://install.ohmyz.sh | sh
+  curl -L https://install.ohmyz.sh | sh
 else
   pretty_print "${yellow}oh-my-zsh is already installed, skipping ...${neutral}"
 fi
@@ -29,8 +29,13 @@ else
 fi
 
 # install starship
-pretty_print "${green}Installing starship...${neutral}"
-cargo install starship --locked
+if [ ! -x "$HOME/.cargo/bin/starship" ];
+then
+  pretty_print "${green}Installing starship...${neutral}"
+  cargo install starship --locked
+else
+  pretty_print "${yellow}starship is already installed, skipping ...${neutral}"
+fi
 
 if [ ! -d ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting ];
 then

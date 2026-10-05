@@ -15,7 +15,7 @@ make macos    # force the macOS path
 make linux    # force the Linux path
 ```
 
-There is no lint/test tooling. CI (`.github/workflows/{mac,linux}.yaml`) simply runs `make` on `macos-latest` / `ubuntu-24.04`, so **running `make` on the target OS is the test**. Both workflows are path-filtered. Mac CI fires on `scripts/mac-setup`, `scripts/common`, `install/**`, `.config/**`; linux CI only on `scripts/linux-*` or `.config/**` — so a change confined to `install/**` or `scripts/common` still does not trigger linux CI. `tests/` is an empty placeholder (`.keep`).
+There is no lint/test tooling. CI (`.github/workflows/{mac,linux}.yaml`) simply runs `make` on `macos-latest` / `ubuntu-24.04`, so **running `make` on the target OS is the test**. Both workflows are path-filtered. Mac CI fires on `scripts/mac-setup`, `scripts/common`, `install/**`, `.config/**`; linux CI on `scripts/linux-*`, `scripts/common`, `install/Codefile`, `bin/**`, `Makefile`, `.config/**` (Brewfile/Caskfile changes do not trigger it). Mac CI still ignores `Makefile` and `bin/**`. `tests/` is an empty placeholder (`.keep`).
 
 Scripts must be run from the repo root — they do `source scripts/common` with a relative path. Use `make`, not `./scripts/...` from elsewhere.
 

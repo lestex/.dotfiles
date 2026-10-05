@@ -109,14 +109,19 @@ eval "$(pyenv init -)"
 # cargo bin
 export CARGO_ROOT="$HOME/.cargo"
 [[ -d $CARGO_ROOT/bin ]] && export PATH="$CARGO_ROOT/bin:$PATH"
-eval "$($CARGO_ROOT/bin/starship init zsh)"
-
 eval "$(starship init zsh)"
+
 export PATH="$HOME/.tfenv/bin:$PATH"
 
 export GOENV_ROOT="$HOME/.goenv"
 export PATH="$GOENV_ROOT/bin:$PATH"
 eval "$(goenv init -)"
 
-# Completion for zsh
-source "/usr/share/google-cloud-sdk/completion.zsh.inc"
+# Completion for zsh. The apt package has installed under both /usr/lib and
+# /usr/share across releases; source whichever exists.
+for GCLOUD_SDK in /usr/lib/google-cloud-sdk /usr/share/google-cloud-sdk; do
+  if [[ -f "$GCLOUD_SDK/completion.zsh.inc" ]]; then
+    source "$GCLOUD_SDK/completion.zsh.inc"
+    break
+  fi
+done

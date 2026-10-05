@@ -4,6 +4,10 @@ on:
   pull_request:
     paths:
     - 'scripts/linux-*'
+    - 'scripts/common'
+    - 'install/Codefile'
+    - 'bin/**'
+    - 'Makefile'
     - '.config/**'
 
 # a new push to the same PR cancels the run still in flight
