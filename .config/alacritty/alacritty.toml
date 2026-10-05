@@ -111,4 +111,4 @@ import = [
 
 [terminal]
 
-shell = "/opt/homebrew/bin/tmux"
+shell = "@BREW_PREFIX@/bin/tmux"

@@ -12,3 +12,8 @@ pretty_print() {
 TERRAFORM_VERSION=1.9.5
 PYTHON_VERSION=3.12.5
 GO_VERSION=1.22.6
+
+# Alacritty has no Homebrew formula and its cask was disabled (unsigned, fails
+# Gatekeeper), so mac-setup installs the official release DMG pinned here.
+ALACRITTY_VERSION=0.17.0
+ALACRITTY_DMG_SHA256=ad8d7de35fb38e43184776cac6dfee05ca325caa0b6639a06a55e54e4b026620

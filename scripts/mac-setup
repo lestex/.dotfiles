@@ -44,6 +44,31 @@ fi
 brew bundle --file install/Brewfile
 brew bundle --file install/Caskfile
 
+# Alacritty: no formula, and the cask is disabled for failing Gatekeeper, so
+# install the official release DMG, pinned by version and checksum in
+# scripts/common. The app is unsigned; the quarantine flag is cleared only after
+# the checksum matches.
+installed_alacritty=$(defaults read /Applications/Alacritty.app/Contents/Info.plist CFBundleShortVersionString 2>/dev/null || true)
+if [ "$installed_alacritty" = "$ALACRITTY_VERSION" ]; then
+  pretty_print "${yellow}Alacritty $ALACRITTY_VERSION is already installed, skipping ...${neutral}"
+else
+  pretty_print "${green}Installing Alacritty $ALACRITTY_VERSION${neutral}"
+  alacritty_tmp=$(mktemp -d)
+  curl -fsSL -o "$alacritty_tmp/alacritty.dmg" \
+    "https://github.com/alacritty/alacritty/releases/download/v$ALACRITTY_VERSION/Alacritty-v$ALACRITTY_VERSION.dmg"
+  if ! echo "$ALACRITTY_DMG_SHA256  $alacritty_tmp/alacritty.dmg" | shasum -a 256 -c - >/dev/null; then
+    pretty_print "${red}Alacritty DMG checksum mismatch, refusing to install${neutral}"
+    rm -rf "$alacritty_tmp"
+    exit 1
+  fi
+  hdiutil attach -quiet -nobrowse -readonly -mountpoint "$alacritty_tmp/mnt" "$alacritty_tmp/alacritty.dmg"
+  rm -rf /Applications/Alacritty.app
+  cp -R "$alacritty_tmp/mnt/Alacritty.app" /Applications/
+  hdiutil detach -quiet "$alacritty_tmp/mnt"
+  xattr -dr com.apple.quarantine /Applications/Alacritty.app 2>/dev/null || true
+  rm -rf "$alacritty_tmp"
+fi
+
 # Installing vscode extensions
 for ext in $(cat install/Codefile)
 do
@@ -62,9 +87,10 @@ pretty_print "${green}Copying configs to .configs directory${neutral}"
 mkdir -p ~/.config
 cp -R .config/* ~/.config
 
-# Ghostty needs an absolute path for `command` (GUI launches inherit no shell
-# PATH) and the Homebrew prefix differs between Apple Silicon and Intel.
-sed -i '' "s|@BREW_PREFIX@|$(brew --prefix)|g" ~/.config/ghostty/config
+# Ghostty, kitty and Alacritty need an absolute path for the command they launch
+# (GUI launches inherit no shell PATH) and the Homebrew prefix differs between
+# Apple Silicon and Intel.
+sed -i '' "s|@BREW_PREFIX@|$(brew --prefix)|g" ~/.config/ghostty/config ~/.config/kitty/kitty.conf ~/.config/alacritty/alacritty.toml
 
 # theme-switcher runs a theme engine from a checkout beside this repo; Ghostty
 # and Alacritty include the files it generates.
