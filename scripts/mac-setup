@@ -92,13 +92,15 @@ cp -R .config/* ~/.config
 # Apple Silicon and Intel.
 sed -i '' "s|@BREW_PREFIX@|$(brew --prefix)|g" ~/.config/ghostty/config ~/.config/alacritty/alacritty.toml
 
-# theme-switcher runs a theme engine from a checkout beside this repo; Ghostty
-# and Alacritty include the files it generates.
+# theme-switcher runs a theme engine fetched at the commit pinned by
+# THEME_ENGINE_REF in scripts/common (a sparse checkout under
+# ~/.local/share/theme-switcher/.engine; rerunning at the same commit is a
+# no-op). Ghostty, Alacritty and kitty include the files it generates.
 pretty_print "${green}Installing theme-switcher${neutral}"
 mkdir -p ~/.local/bin
 cp local/bin/theme-switcher ~/.local/bin/theme-switcher
-if ! ~/.local/bin/theme-switcher list >/dev/null 2>&1; then
-  pretty_print "${yellow}No theme engine checkout found, skipping theme setup ...${neutral}"
+if ! ~/.local/bin/theme-switcher engine install "$THEME_ENGINE_REF"; then
+  pretty_print "${yellow}Could not install the theme engine, skipping theme setup ...${neutral}"
 elif [ -f ~/.local/state/theme-switcher/current/theme.name ]; then
   pretty_print "${yellow}Theme $(cat ~/.local/state/theme-switcher/current/theme.name) already set, skipping ...${neutral}"
 else

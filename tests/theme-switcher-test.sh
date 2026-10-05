@@ -3,7 +3,7 @@
 # Tests for local/bin/theme-switcher. Runs against a throwaway HOME, a fake
 # terminal and a stub osascript, so the real desktop and terminals are untouched.
 #
-#   tests/theme-switcher-test.sh     (from the repo root; needs macOS and a theme engine checkout)
+#   tests/theme-switcher-test.sh     (from the repo root; needs macOS and an installed theme engine)
 
 set -euo pipefail
 
@@ -11,7 +11,13 @@ ROOT=$(cd "$(dirname "$0")/.." && pwd)
 COMMAND="$ROOT/local/bin/theme-switcher"
 
 if [[ $(uname) != "Darwin" ]] || ! "$COMMAND" list >/dev/null 2>&1; then
-  echo "skip - needs macOS and a theme engine checkout (see THEME_SWITCHER_ENGINE in $COMMAND)"
+  # CI installs the pinned engine with `make` first, so there a missing engine
+  # is a failure, not a reason to skip.
+  if [[ ${THEME_SWITCHER_TEST_REQUIRE_ENGINE:-} == "1" ]]; then
+    echo "not ok - theme engine is installed (run: theme-switcher engine install <sha>)" >&2
+    exit 1
+  fi
+  echo "skip - needs macOS and an installed theme engine (theme-switcher engine install <sha>)"
   exit 0
 fi
 
@@ -56,8 +62,8 @@ grep -q '^background = #1a1b26$' "$state/theme/ghostty.conf" || fail "ghostty.co
 [[ $(ls "$home/.local/state") == "theme-switcher" && ! -e $home/.config ]] || fail "the engine writes nothing outside theme-switcher's own dirs" "$(ls "$home/.local/state" "$home/.config" 2>&1)"
 first=$(head -n 1 "$state/background")
 [[ $first == "$home/.local/share/theme-switcher/tokyo-night/backgrounds/"* && -f $first ]] || fail "set picks an imported background" "$first"
-[[ $(cat "$tmp/desktop") == "$home/.cache/theme-switcher/desktop/"*.png ]] || fail "a webp background reaches the desktop as png" "$(cat "$tmp/desktop")"
-[[ -f $(cat "$tmp/desktop") ]] || fail "the converted desktop png exists"
+[[ $first =~ \.(jpe?g|png)$ ]] || fail "the theme ships a jpeg or png background" "$first"
+[[ $(cat "$tmp/desktop") == "$first" ]] || fail "a jpeg or png background reaches the desktop as-is" "$(cat "$tmp/desktop")"
 pass "set renders, imports backgrounds and sets the desktop"
 
 # --- refusal -----------------------------------------------------------------
@@ -112,5 +118,13 @@ theme bg set "$tmp/mine.png"
 [[ $(cat "$tmp/desktop") == "$tmp/mine.png" ]] || fail "bg set applies a png as-is"
 [[ -f $state/background && ! -L $state/background ]] || fail "background state is a plain file"
 pass "bg set stores a plain-text path"
+
+# Formats the desktop may not accept (webp, tiff, ...) are converted to png.
+sips -s format tiff "$solid" --out "$tmp/mine.tiff" >/dev/null
+theme bg set "$tmp/mine.tiff"
+converted=$(cat "$tmp/desktop")
+[[ $converted == "$home/.cache/theme-switcher/desktop/"*.png && -f $converted ]] || fail "a tiff background reaches the desktop as png" "$converted"
+[[ $(head -n 1 "$state/background") == "$tmp/mine.tiff" ]] || fail "the state keeps the original path"
+pass "other image formats reach the desktop as png"
 
 echo "all theme-switcher tests passed"

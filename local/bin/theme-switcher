@@ -17,6 +17,7 @@
 #   theme-switcher bg none              solid theme background color
 #   theme-switcher bg import [theme]    copy the engine's backgrounds into ~/.local/share
 #   theme-switcher engine               path of the theme engine checkout in use
+#   theme-switcher engine install <sha> fetch the engine at a pinned commit (mac-setup does this)
 #
 # State:
 #   ~/.local/state/theme-switcher/current/theme/        generated configs (terminals include these)
@@ -27,7 +28,8 @@
 #   ~/.config/theme-switcher/themed/*.tpl               your own templates
 #
 # Environment:
-#   THEME_SWITCHER_ENGINE         engine checkout (default ~/projects/self/<engine>/<engine>)
+#   THEME_SWITCHER_ENGINE         engine checkout to use instead of the managed one
+#                                 (default ~/.local/share/theme-switcher/.engine)
 #   THEME_SWITCHER_NO_DESKTOP=1   skip setting the macOS desktop picture
 #   THEME_SWITCHER_TERMINALS      process names to repaint (default "ghostty alacritty kitty"; empty = none)
 
@@ -42,11 +44,16 @@ fi
 
 set -euo pipefail
 
-# The engine's own name. Its scripts are <name>-theme-*, it reads <NAME>_PATH, and
-# its renderer stages under ~/.local/state/<name> and ~/.config/<name>; this is
-# the one place that name appears.
+# The engine's own name. Its repository is named after it, its scripts are
+# <name>-theme-*, it reads <NAME>_PATH, and its renderer stages under
+# ~/.local/state/<name> and ~/.config/<name>; this is the one place it appears.
 ENGINE_NAME=omarchy
-ENGINE_PATH=${THEME_SWITCHER_ENGINE:-$HOME/projects/self/$ENGINE_NAME/$ENGINE_NAME}
+ENGINE_REPO="https://github.com/omacom/$ENGINE_NAME.git"
+# `engine install` keeps a sparse checkout here, at the commit mac-setup pins in
+# scripts/common. Theme names cannot start with a dot, so it cannot collide with
+# a theme's imported backgrounds beside it.
+ENGINE_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/theme-switcher/.engine"
+ENGINE_PATH=${THEME_SWITCHER_ENGINE:-$ENGINE_HOME}
 ENGINE_COLOR="$ENGINE_NAME-theme-color"
 ENGINE_OSC="$ENGINE_NAME-theme-osc"
 ENGINE_RENDER="$ENGINE_NAME-theme-set-templates"
@@ -70,7 +77,39 @@ die() {
 
 require_engine() {
   [[ -f $ENGINE_PATH/bin/$ENGINE_RENDER ]] ||
-    die "no theme engine at $ENGINE_PATH (set THEME_SWITCHER_ENGINE)"
+    die "no theme engine at $ENGINE_PATH (run: theme-switcher engine install <sha>, or set THEME_SWITCHER_ENGINE)"
+}
+
+# Fetch only what theme-switcher reads (the engine's scripts, templates and
+# themes) at one commit, without history. Pinned by full SHA, since a tag or
+# branch can move under you. Rerunning at the installed commit does nothing.
+install_engine() {
+  local ref="$1"
+  local dir="$ENGINE_HOME"
+
+  [[ $ref =~ ^[0-9a-f]{40}$ ]] || die "engine install needs a full 40-character commit SHA: $ref"
+
+  if [[ $(git -C "$dir" rev-parse HEAD 2>/dev/null || true) == "$ref" ]]; then
+    echo "Theme engine already at ${ref:0:12}"
+    return 0
+  fi
+
+  mkdir -p "$dir"
+  if [[ ! -d $dir/.git ]]; then
+    git -C "$dir" init -q
+    git -C "$dir" remote add origin "$ENGINE_REPO"
+  else
+    git -C "$dir" remote set-url origin "$ENGINE_REPO"
+  fi
+  # Backgrounds stay out of the working tree; import_backgrounds reads them
+  # from git on demand, so only the themes in use are ever downloaded.
+  git -C "$dir" sparse-checkout set --no-cone /bin/ /default/themed/ /themes/ '!/themes/*/backgrounds/'
+  git -C "$dir" fetch -q --depth 1 --filter=blob:none origin "$ref"
+  git -C "$dir" checkout -q --force --detach FETCH_HEAD
+
+  [[ $(git -C "$dir" rev-parse HEAD) == "$ref" ]] || die "engine checkout is not at $ref"
+  ENGINE_PATH="$dir" require_engine
+  echo "Theme engine installed at ${ref:0:12}"
 }
 
 # The engine's scripts start with #!/bin/bash, which is 3.2 on macOS, and call
@@ -194,17 +233,48 @@ theme_backgrounds() {
   find "$dir" -maxdepth 1 -type f | grep -iE "$IMAGE_PATTERN" | LC_ALL=C sort || true
 }
 
+# Backgrounds of the engine's themes. A full checkout (THEME_SWITCHER_ENGINE)
+# has them on disk; the managed one leaves them out of the working tree, and git
+# fetches just this theme's files from the partial clone on first read.
+engine_backgrounds() {
+  local theme="$1"
+  local dir="$ENGINE_PATH/themes/$theme/backgrounds"
+
+  if [[ -d $dir ]]; then
+    find "$dir" -maxdepth 1 -type f -exec basename {} \; | LC_ALL=C sort
+  elif git -C "$ENGINE_PATH" rev-parse --git-dir >/dev/null 2>&1; then
+    git -C "$ENGINE_PATH" ls-tree --name-only HEAD "themes/$theme/backgrounds/" 2>/dev/null | sed 's|.*/||'
+  fi
+}
+
+copy_engine_background() {
+  local theme="$1"
+  local name="$2"
+  local dest="$3"
+  local tmp
+
+  if [[ -f $ENGINE_PATH/themes/$theme/backgrounds/$name ]]; then
+    cp "$ENGINE_PATH/themes/$theme/backgrounds/$name" "$dest"
+  else
+    tmp=$(mktemp "$dest.XXXXXX")
+    git -C "$ENGINE_PATH" cat-file blob "HEAD:themes/$theme/backgrounds/$name" >"$tmp"
+    mv "$tmp" "$dest"
+  fi
+}
+
 import_backgrounds() {
   local theme="$1"
-  local source="$ENGINE_PATH/themes/$theme/backgrounds"
   local dest="$DATA_DIR/$theme/backgrounds"
-  local file copied=0
+  local name copied=0
+  local names=()
 
-  [[ -d $source ]] || return 0
+  mapfile -t names < <(engine_backgrounds "$theme")
+  (( ${#names[@]} > 0 )) || return 0
+
   mkdir -p "$dest"
-  for file in "$source"/*; do
-    [[ -f $file && ! -e $dest/$(basename "$file") ]] || continue
-    cp "$file" "$dest/"
+  for name in "${names[@]}"; do
+    [[ -n $name && ! -e $dest/$name ]] || continue
+    copy_engine_background "$theme" "$name" "$dest/$name"
     copied=$((copied + 1))
   done
   (( copied == 0 )) || echo "Imported $copied background(s) for $theme"
@@ -377,7 +447,7 @@ bg_import() {
   require_engine
   if [[ -n ${1:-} ]]; then
     theme=$(theme_name "$1")
-    [[ -d $ENGINE_PATH/themes/$theme/backgrounds ]] || die "the engine ships no backgrounds for '$theme'"
+    [[ -n $(engine_backgrounds "$theme") ]] || die "the engine ships no backgrounds for '$theme'"
     import_backgrounds "$theme"
   else
     for dir in "$ENGINE_PATH"/themes/*/; do
@@ -387,7 +457,7 @@ bg_import() {
 }
 
 usage() {
-  sed -n '3,32p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '3,34p' "$0" | sed 's/^# \{0,1\}//'
 }
 
 trap cleanup EXIT
@@ -395,7 +465,13 @@ trap cleanup EXIT
 case "${1:-}" in
   list) require_engine; list_themes ;;
   current) current_theme ;;
-  engine) require_engine; echo "$ENGINE_PATH" ;;
+  engine)
+    case "${2:-}" in
+      "") require_engine; echo "$ENGINE_PATH" ;;
+      install) [[ -n ${3:-} ]] || die "usage: theme-switcher engine install <sha>"; install_engine "$3" ;;
+      *) usage; exit 1 ;;
+    esac
+    ;;
   set) [[ -n ${2:-} ]] || die "usage: theme-switcher set <name>"; set_theme "$2" ;;
   bg)
     case "${2:-}" in
