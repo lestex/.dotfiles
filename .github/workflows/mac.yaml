@@ -30,7 +30,7 @@ jobs:
 
     # The installer fetches the theme engine pinned in scripts/common; test theme-switcher
     # against it, so a pin bump that breaks the engine interface fails here.
-    - name: Test theme-switcher
-      run: bash tests/theme-switcher-test.sh
+    - name: Run tests
+      run: for t in tests/*-test.sh; do echo "== $t"; bash "$t"; done
       env:
         THEME_SWITCHER_TEST_REQUIRE_ENGINE: "1"

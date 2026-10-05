@@ -100,6 +100,8 @@ sed -i '' "s|@BREW_PREFIX@|$(brew --prefix)|g" ~/.config/ghostty/config ~/.confi
 pretty_print "${green}Installing theme-switcher${neutral}"
 mkdir -p ~/.local/bin
 cp local/bin/theme-switcher ~/.local/bin/theme-switcher
+# Opens links on Shift+click inside tmux (bound in .config/tmux/tmux.conf).
+cp local/bin/tmux-open-link ~/.local/bin/tmux-open-link
 if ! ~/.local/bin/theme-switcher engine install "$THEME_ENGINE_REF"; then
   pretty_print "${yellow}Could not install the theme engine, skipping theme setup ...${neutral}"
 elif [ -f ~/.local/state/theme-switcher/current/theme.name ]; then

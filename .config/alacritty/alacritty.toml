@@ -118,5 +118,7 @@ import = [
 ]
 
 [terminal]
-osc52 = "CopyPaste"
+# Programs may copy to the clipboard (tmux selections reach macOS this way) but
+# not read it; Ghostty and kitty likewise ask before a program reads it.
+osc52 = "OnlyCopy"
 shell = "@BREW_PREFIX@/bin/tmux"

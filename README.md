@@ -2,6 +2,8 @@
 [![Maintained by Leandevops.io](https://img.shields.io/badge/maintained%20by-leandevops-green.svg)](https://leandevops.io)
 ![macOS](https://github.com/lestex/.dotfiles/actions/workflows/mac.yaml/badge.svg)
 
+macOS only. One script installs the software below, copies the configs into `~/.config`, and sets up three terminals (Ghostty, kitty, Alacritty) plus tmux that switch theme and font together.
+
 ## Installation
 On a fresh Mac:
 ```sh
@@ -9,72 +11,68 @@ bash <(curl -fsSL https://raw.githubusercontent.com/lestex/.dotfiles/master/inst
 ```
 This downloads the repo into `~/.dotfiles` and sets the Mac up. Re-run it (or `./install.sh` from a checkout) to update; it is safe to run again.
 
-## Software Installed
-### common
-- coreutils
-- findutils
-- jq
-- htop
-- btop
-- tree
-- vim
-- neovim
-- vifm
-- ssh-copy-id
-- telnet
-- tmux
+- `DOTFILES_DIR` changes where the repo is downloaded (default `~/.dotfiles`).
+- `DOTFILES_REPO` installs from a fork.
+- Configs are **copied**, not symlinked: edit them in the repo and re-run the installer. Re-running overwrites local edits under `~/.config` and `~/.zshrc`.
 
-### development tools
-- git
-- pyenv
-- tfenv
-- goenv
-- bitwarden-cli
-- node
-- helm
-- gpg
-- watch
-- kind
-- podman
-- starship
-- kubectx
-- krew
-- k9s
+## Terminals
+Ghostty, kitty and Alacritty share the same defaults: padding 14, no window decorations, a non-blinking block cursor, no close prompt, Shift/Ctrl+Insert to paste/copy, and Shift+Enter / Alt+Shift+Enter sent as CSI-u so apps such as Claude can tell them apart from Enter. Ghostty and Alacritty start tmux; kitty uses your login shell and its own tabs (Cmd+1…0, Cmd+T, Cmd+N).
 
-## Casks
-# common
-- authy
-- alacritty
-- bitwarden
-- daisydisk
-- google-chrome
-- vlc
-- rectangle
-- mpv
-- utm
+Alacritty has no Homebrew package any more, so the installer downloads the official release, checks it against a pinned SHA-256 (`ALACRITTY_VERSION` / `ALACRITTY_DMG_SHA256` in `scripts/common`) and copies it into `/Applications`.
 
-### development tools
-- google-cloud-sdk
-- visual-studio-code
+## Themes
+```sh
+theme-switcher list                 # available themes, current one marked
+theme-switcher set "Tokyo Night"    # apply a theme
+theme-switcher bg next              # next wallpaper of the current theme
+theme-switcher bg set ~/Pictures/x.jpg
+theme-switcher bg none              # solid background in the theme's color
+```
+A theme recolors Ghostty, kitty, Alacritty and tmux (including windows that are already open) and sets the desktop picture. The first time, macOS asks to let your terminal control System Events; that is needed for the desktop picture.
 
-### messaging
-- slack
-- telegram
-- whatsapp-beta
+Themes come from a theme engine the installer fetches at a pinned commit (`THEME_ENGINE_REF` in `scripts/common`) into `~/.local/share/theme-switcher/.engine`. A theme's wallpapers are downloaded the first time you use it. Your own themes go in `~/.config/theme-switcher/themes/<name>/`, your own templates in `~/.config/theme-switcher/themed/`.
 
-### VSCode extensions
-- editorconfig.editorconfig
-- bbenoist.vagrant
-- golang.go
-- 4ops.terraform
-- magicstack.magicpython
-- ms-azuretools.vscode-docker
-- ms-python.python
-- ms-python.vscode-pylance
-- ms-vscode-remote.remote-containers
-- pkief.material-icon-theme
-- wholroyd.jinja
-- redhat.ansible
-- GoogleCloudTools.cloudcode
-- GitHub.github-vscode-theme
-- tamasfe.even-better-toml
+## Fonts
+```sh
+font-switcher list                          # installed monospace fonts, current one marked
+font-switcher set "JetBrainsMono Nerd Font" # change the font in all three terminals
+font-switcher size 14                       # change the size in all three terminals
+```
+The default is Liga SFMono Nerd Font at 14pt. Alacritty picks up a change by itself, kitty is reloaded for you, and Ghostty needs Cmd+Shift+, (or a new window).
+
+## tmux
+Your tmux config, with the status bar and borders in palette colors so they follow the theme. Prefix is Ctrl+B; prefix+r reloads the config.
+
+Links inside tmux open with **Shift+click** in every terminal, both URLs and the links programs print (`ls --hyperlink`, `gh`, Claude's file links). A plain drag selects text in tmux and copies it to the macOS clipboard. Only http, https and file links are opened.
+
+| | Open a link in tmux | Outside tmux |
+|---|---|---|
+| Ghostty | Shift+click (tmux opens it) | Cmd+click |
+| kitty | Shift+click | click |
+| Alacritty | Shift+click | click |
+
+## Software installed
+### Homebrew formulae (`install/Brewfile`)
+- **common:** coreutils, findutils, jq, htop, btop, tree, mole, neovim, vifm, mpv, ssh-copy-id, telnet, tmux
+- **development tools:** bash, git, pyenv, tfenv, goenv, node, helm, gpg, watch, kind, podman, oh-my-posh, kubectx, krew, k9s, ollama, gh, nvm
+
+### Casks (`install/Caskfile`)
+- **common:** ghostty, kitty, bitwarden, daisydisk, google-chrome, vlc, rectangle
+- **development tools:** gcloud-cli, visual-studio-code
+- **messaging:** slack, telegram
+- **fonts (Nerd Fonts):** JetBrainsMono, CaskaydiaMono, Meslo LG, FiraCode, VictorMono, Bitstream Vera Sans Mono, Iosevka; plus Liga SFMono and MesloLGS NF from `fonts/`
+
+### Also
+- Alacritty, from its pinned release (see Terminals)
+- oh-my-zsh with zsh-autosuggestions and zsh-syntax-highlighting
+- Rust (rustup), Terraform 1.9.5 (tfenv), Python 3.12.5 (pyenv); versions are pinned in `scripts/common`
+- tmux plugin manager (tpm), vifm color schemes
+
+### VS Code extensions (`install/Codefile`)
+EditorConfig.EditorConfig, HashiCorp.terraform, ms-azuretools.vscode-docker, ms-python.python, ms-python.vscode-pylance, GoogleCloudTools.cloudcode, GitHub.github-vscode-theme, tamasfe.even-better-toml, rust-lang.rust-analyzer, golang.go
+
+## Tests
+```sh
+for t in tests/*-test.sh; do bash "$t"; done
+```
+CI runs the installer and these tests on `macos-latest` for pull requests. The tests use a throwaway home folder, a private tmux server and stubbed `open`/`osascript`, so they never touch your desktop or running tmux.

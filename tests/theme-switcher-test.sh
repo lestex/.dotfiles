@@ -28,6 +28,7 @@ export THEME_SWITCHER_ENGINE
 tmp=$(mktemp -d)
 cleanup() {
   pkill -f "$tmp/bin/faketerm" 2>/dev/null || true
+  tmx kill-server 2>/dev/null || true
   rm -rf "$tmp"
 }
 trap cleanup EXIT
@@ -46,8 +47,14 @@ printf '%s\n' "\$2" >"$tmp/desktop"
 SH
 chmod +x "$tmp/bin/osascript"
 
+# Never the real tmux: drop $TMUX (set when the test runs inside tmux) and give
+# tmux a private socket directory, so only the server this test starts is seen.
+mkdir -p "$tmp/tmux"
 theme() {
-  HOME="$home" PATH="$tmp/bin:$PATH" THEME_SWITCHER_TERMINALS="faketerm" "$COMMAND" "$@"
+  env -u TMUX TMUX_TMPDIR="$tmp/tmux" HOME="$home" PATH="$tmp/bin:$PATH" THEME_SWITCHER_TERMINALS="faketerm" "$COMMAND" "$@"
+}
+tmx() {
+  env -u TMUX TMUX_TMPDIR="$tmp/tmux" tmux "$@"
 }
 
 # --- set ---------------------------------------------------------------------
@@ -126,5 +133,27 @@ converted=$(cat "$tmp/desktop")
 [[ $converted == "$home/.cache/theme-switcher/desktop/"*.png && -f $converted ]] || fail "a tiff background reaches the desktop as png" "$converted"
 [[ $(head -n 1 "$state/background") == "$tmp/mine.tiff" ]] || fail "the state keeps the original path"
 pass "other image formats reach the desktop as png"
+
+# --- tmux ----------------------------------------------------------------------
+if command -v tmux >/dev/null; then
+  tmx -f /dev/null new-session -d -s test "sleep 60"
+  tmx source-file "$ROOT/.config/tmux/tmux.conf" 2>"$tmp/err" || fail "the repo tmux.conf loads without errors" "$(cat "$tmp/err")"
+  tmx show -sv terminal-features | grep -q "hyperlinks" || fail "tmux passes OSC 8 hyperlinks to the terminal"
+  pass "the repo tmux.conf loads"
+
+  theme set nord >/dev/null 2>"$tmp/err" || fail "set applies with tmux running" "$(cat "$tmp/err")"
+  [[ $(tmx show -gv window-style) == "fg=#d8dee9,bg=#2e3440" ]] || fail "tmux window-style follows the palette" "$(tmx show -gv window-style)"
+  [[ $(tmx show -gv window-active-style) == "fg=#d8dee9,bg=#2e3440" ]] || fail "tmux window-active-style follows the palette"
+  cursor=$(sed -n 's/^cursor-color = //p' "$state/theme/ghostty.conf")
+  [[ $(tmx show -gv cursor-colour) == "$cursor" ]] || fail "tmux cursor-colour follows the palette" "$(tmx show -gv cursor-colour) vs $cursor"
+  [[ $(tmx show-environment -g COLORFGBG) == "COLORFGBG=15;0" ]] || fail "a dark theme sets COLORFGBG=15;0" "$(tmx show-environment -g COLORFGBG)"
+  [[ $(tmx show-environment -t test COLORFGBG) == "COLORFGBG=15;0" ]] || fail "the session environment gets COLORFGBG too"
+
+  theme set catppuccin-latte >/dev/null
+  [[ $(tmx show-environment -g COLORFGBG) == "COLORFGBG=0;15" ]] || fail "a light theme sets COLORFGBG=0;15" "$(tmx show-environment -g COLORFGBG)"
+  [[ $(tmx show -gv window-style) == "fg=#4c4f69,bg=#eff1f5" ]] || fail "switching theme updates tmux again" "$(tmx show -gv window-style)"
+  tmx kill-server
+  pass "a running tmux server follows the theme"
+fi
 
 echo "all theme-switcher tests passed"

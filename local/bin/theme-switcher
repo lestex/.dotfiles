@@ -370,6 +370,47 @@ repaint_terminals() {
   fi
 }
 
+# tmux draws each pane on its own pty, which the terminal repaint above does not
+# reach, and its status bar and borders use ANSI color names that resolve
+# through the palette. So: give tmux the palette's default colors and cursor,
+# send every pane the OSC palette, tell apps whether the theme is light, and
+# redraw. Inside tmux, $TMUX picks the server; otherwise the default one.
+repaint_tmux() {
+  local foreground background cursor colorfgbg="15;0" osc tty session client pgid
+
+  command -v tmux >/dev/null || return 0
+  tmux list-sessions >/dev/null 2>&1 || return 0
+
+  foreground=$(engine "$ENGINE_COLOR" --file "$THEME_DIR/colors.toml" foreground)
+  background=$(engine "$ENGINE_COLOR" --file "$THEME_DIR/colors.toml" background)
+  cursor=$(engine "$ENGINE_COLOR" --file "$THEME_DIR/colors.toml" cursor || true)
+  [[ $(engine "$ENGINE_COLOR" --file "$THEME_DIR/colors.toml" mode) == "light" ]] && colorfgbg="0;15"
+
+  tmux set-option -g window-style "fg=$foreground,bg=$background" 2>/dev/null || true
+  tmux set-option -g window-active-style "fg=$foreground,bg=$background" 2>/dev/null || true
+  # Apps such as nvim reset the cursor color (OSC 112); without a global value
+  # tmux would then restore whatever the outer terminal started with.
+  [[ -z $cursor ]] || tmux set-option -g cursor-colour "$cursor" 2>/dev/null || true
+
+  tmux set-environment -g COLORFGBG "$colorfgbg" 2>/dev/null || true
+  while IFS= read -r session; do
+    [[ -z $session ]] || tmux set-environment -t "$session" COLORFGBG "$colorfgbg" 2>/dev/null || true
+  done < <(tmux list-sessions -F '#{session_id}' 2>/dev/null)
+
+  osc=$(engine "$ENGINE_OSC" "$THEME_DIR/colors.toml")
+  while IFS= read -r tty; do
+    [[ $tty == /dev/ttys* || $tty == /dev/pts/* ]] || continue
+    printf '%s' "$osc" >"$tty" 2>/dev/null || true
+    # Let full-screen apps in the pane (nvim, less) redraw with the new colors.
+    pgid=$(ps -o tpgid= -t "${tty#/dev/}" 2>/dev/null | awk 'NF && $1 > 0 { print $1; exit }')
+    [[ -z $pgid ]] || kill -WINCH "-$pgid" 2>/dev/null || true
+  done < <(tmux list-panes -a -F '#{pane_tty}' 2>/dev/null | sort -u)
+
+  while IFS= read -r client; do
+    [[ -z $client ]] || tmux refresh-client -t "$client" 2>/dev/null || true
+  done < <(tmux list-clients -F '#{client_name}' 2>/dev/null)
+}
+
 set_theme() {
   local name="$1"
   local backgrounds=()
@@ -404,6 +445,7 @@ set_theme() {
   write_background_state "${backgrounds[0]:-}"
 
   repaint_terminals
+  repaint_tmux
   apply_desktop
   echo "Theme: $name"
 }

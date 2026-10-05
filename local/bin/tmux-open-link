@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+#
+# tmux-open-link <hyperlink> <line> <column>
+#
+# Opens the link under the mouse; bound to Shift+click in .config/tmux/tmux.conf.
+# kitty and Alacritty keep Shift+click for themselves and open links on their
+# own; Ghostty can only open links with Cmd, so it hands Shift+click to tmux
+# (mouse-shift-capture = true) and this opens the link instead.
+#
+#   <hyperlink>  tmux #{mouse_hyperlink}: the OSC 8 link under the mouse, if any
+#   <line>       tmux #{mouse_line}: the text of the line under the mouse
+#   <column>     tmux #{mouse_x}: 0-based column of the mouse within the pane
+#
+# tmux's #{q:...} quoting drops an empty value entirely, which would shift the
+# arguments, so the binding passes "-" for "none".
+#
+# An OSC 8 link wins; otherwise the plain-text URL spanning <column> on <line>,
+# or the only URL on the line. Only http, https and file URLs are opened, and
+# the URL reaches `open` as one argument, never through a shell.
+
+set -euo pipefail
+
+hyperlink="${1:-}"
+line="${2:-}"
+[[ $hyperlink != "-" ]] || hyperlink=""
+[[ $line != "-" ]] || line=""
+column="${3:-0}"
+[[ $column =~ ^[0-9]+$ ]] || column=0
+
+URL_PATTERN='(https?|file)://[^][:space:]<>"`'"'"'{}|\\^]+'
+TRAILING='[].,:;!?)]$'
+
+# Trailing characters that usually end a sentence or a wrapping bracket rather
+# than belong to the URL, as terminals' own URL matchers trim them.
+trim_url() {
+  local url="$1"
+  while [[ $url =~ $TRAILING ]]; do
+    url="${url%?}"
+  done
+  printf '%s' "$url"
+}
+
+has_multibyte() {
+  local chars bytes
+  chars=${#1}
+  bytes=$(LC_ALL=C; printf '%s' "$1" | wc -c | tr -d ' ')
+  (( bytes != chars ))
+}
+
+url_at_column() {
+  local rest="$line" offset=0 raw prefix start url only="" count=0
+
+  while [[ $rest =~ $URL_PATTERN ]]; do
+    raw="${BASH_REMATCH[0]}"
+    prefix="${rest%%"$raw"*}"
+    start=$((offset + ${#prefix}))
+    url=$(trim_url "$raw")
+    count=$((count + 1))
+    only="$url"
+    if (( column >= start && column < start + ${#url} )); then
+      printf '%s' "$url"
+      return 0
+    fi
+    rest="${rest#*"$raw"}"
+    offset=$((start + ${#raw}))
+  done
+
+  # Wide characters earlier on the line put tmux's column out of step with
+  # string offsets. Only then, and only with a single URL on the line, assume
+  # that URL was meant; on a plain line a click beside it opens nothing.
+  if (( count == 1 )) && has_multibyte "$line"; then
+    printf '%s' "$only"
+  fi
+}
+
+url="$hyperlink"
+[[ -n $url ]] || url=$(url_at_column)
+[[ -n $url ]] || exit 0
+
+case "$url" in
+  http://* | https://* | file://*) ;;
+  *) exit 0 ;;
+esac
+
+exec open "$url"
