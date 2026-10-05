@@ -1,5 +1,5 @@
 # common
-cask "alacritty"
+# the alacritty cask fails the Gatekeeper check and was disabled on 2026-09-01; ghostty replaces it
 cask "ghostty"
 cask "bitwarden"
 cask "daisydisk"
