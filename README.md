@@ -61,7 +61,7 @@ Links inside tmux open with **Shift+click** in every terminal, both URLs and the
 ## Software installed
 ### Homebrew formulae (`install/Brewfile`)
 - **common:** coreutils, findutils, jq, htop, btop, tree, mole, neovim, vifm, mpv, ssh-copy-id, telnet, tmux
-- **development tools:** bash, git, pyenv, tfenv, goenv, node, helm, gpg, watch, kind, podman, oh-my-posh, kubectx, krew, k9s, ollama, gh, nvm, oha
+- **development tools:** bash, git, pyenv, tfenv, goenv, node, helm, gpg, watch, kind, podman, oh-my-posh, kubectx, krew, k9s, ollama, gh, nvm
 
 ### Casks (`install/Caskfile`)
 - **common:** ghostty, kitty, bitwarden, daisydisk, google-chrome, vlc, rectangle
