@@ -113,6 +113,18 @@ mkdir -p /Users/$USER/Library/Fonts
 cp fonts/*.ttf /Users/$USER/Library/Fonts
 cp fonts/*.otf /Users/$USER/Library/Fonts
 
+# The terminals include their font family from font-switcher's state, so give
+# them one on first setup. A font copied a moment ago may not be registered with
+# macOS yet; then the terminals fall back to their default until it is set.
+pretty_print "${green}Installing font-switcher${neutral}"
+mkdir -p ~/.local/bin
+cp local/bin/font-switcher ~/.local/bin/font-switcher
+if [ -f ~/.local/state/font-switcher/current/font.name ]; then
+  pretty_print "${yellow}Font $(cat ~/.local/state/font-switcher/current/font.name) already set, skipping ...${neutral}"
+elif ! FONT_SWITCHER_NO_RELOAD=1 ~/.local/bin/font-switcher set "Liga SFMono Nerd Font"; then
+  pretty_print "${yellow}Could not set the default font yet; run: font-switcher set \"Liga SFMono Nerd Font\"${neutral}"
+fi
+
 # https://github.com/alacritty/alacritty/releases/tag/v0.11.0
 defaults write -g AppleFontSmoothing -int 2
 

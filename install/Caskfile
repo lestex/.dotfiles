@@ -16,3 +16,12 @@ cask "visual-studio-code"
 # messaging
 cask "slack"
 cask "telegram"
+
+# fonts: the Nerd Fonts Omarchy offers (JetBrainsMono is its default); switch with font-switcher
+cask "font-jetbrains-mono-nerd-font"
+cask "font-caskaydia-mono-nerd-font"
+cask "font-meslo-lg-nerd-font"
+cask "font-fira-code-nerd-font"
+cask "font-victor-mono-nerd-font"
+cask "font-bitstream-vera-sans-mono-nerd-font"
+cask "font-iosevka-nerd-font"
