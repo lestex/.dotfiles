@@ -3,11 +3,11 @@
 ![macOS](https://github.com/lestex/.dotfiles/actions/workflows/mac.yaml/badge.svg)
 
 ## Installation
-Run:
+On a fresh Mac:
 ```sh
-➜ bash <(curl -s https://raw.githubusercontent.com/lestex/dotfiles/master/install.sh)
-➜ cd .dotfiles && make
+bash <(curl -fsSL https://raw.githubusercontent.com/lestex/.dotfiles/master/install.sh)
 ```
+This downloads the repo into `~/.dotfiles` and sets the Mac up. Re-run it (or `./install.sh` from a checkout) to update; it is safe to run again.
 
 ## Software Installed
 ### common

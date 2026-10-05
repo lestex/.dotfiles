@@ -8,8 +8,8 @@
 #   font-switcher size <points>   use a font size in every terminal (default 14)
 #
 # Each terminal includes a generated file from ~/.local/state/font-switcher/current/
-# (ghostty.conf, alacritty.toml, kitty.conf), so the choice survives `make`
-# re-copying the main configs, which therefore set no font family or size.
+# (ghostty.conf, alacritty.toml, kitty.conf), so the choice survives the
+# installer re-copying the main configs, which therefore set no font family or size.
 #
 # Environment:
 #   FONT_SWITCHER_NO_RELOAD=1   do not signal running terminals
