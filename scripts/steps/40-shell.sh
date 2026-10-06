@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# oh-my-zsh, its plugins, oh-my-posh and ~/.zshrc.
+# oh-my-zsh, its plugins, oh-my-posh, ~/.zshrc and ~/.zshrc.d.
 #
 # Runs after 20-tools: the oh-my-zsh installer clones with git, which on a
 # fresh Mac is only a stub until Homebrew has installed the Command Line Tools.
@@ -29,5 +29,9 @@ for plugin in zsh-autosuggestions zsh-syntax-highlighting; do
   fi
 done
 
-pretty_print "${green}Copying .zshrc${neutral}"
+# ~/.zshrc loads oh-my-zsh, then sources ~/.zshrc.d/*.zsh in name order. Only
+# the repo's files are replaced there; files of your own are left alone.
+pretty_print "${green}Copying .zshrc and .zshrc.d${neutral}"
 cp .config/zsh/.zshrc "$HOME/.zshrc"
+mkdir -p "$HOME/.zshrc.d"
+cp .config/zsh/.zshrc.d/*.zsh "$HOME/.zshrc.d/"
