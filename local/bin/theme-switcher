@@ -16,6 +16,10 @@
 #   theme-switcher bg set <path>        use an image as the background
 #   theme-switcher bg none              solid theme background color
 #   theme-switcher bg import [theme]    copy the engine's backgrounds into ~/.local/share
+#   theme-switcher catalog [filter]     community themes you can install, installed ones marked
+#   theme-switcher install <name|url>   clone a community theme (catalog name or git URL) and apply it
+#   theme-switcher remove <name>        remove an installed theme
+#   theme-switcher update               pull every installed theme
 #   theme-switcher engine               path of the theme engine checkout in use
 #   theme-switcher engine install <sha> fetch the engine at a pinned commit (the installer does this)
 #
@@ -24,7 +28,7 @@
 #   ~/.local/state/theme-switcher/current/theme.name    current theme
 #   ~/.local/state/theme-switcher/current/background    chosen image path as plain text; empty = solid color
 #   ~/.local/share/theme-switcher/<theme>/backgrounds/  imported per-theme backgrounds
-#   ~/.config/theme-switcher/themes/<name>/             your own themes (overlay the engine's)
+#   ~/.config/theme-switcher/themes/<name>/             your own and installed themes (overlay the engine's)
 #   ~/.config/theme-switcher/themed/*.tpl               your own templates
 #
 # Environment:
@@ -57,6 +61,7 @@ ENGINE_PATH=${THEME_SWITCHER_ENGINE:-$ENGINE_HOME}
 ENGINE_COLOR="$ENGINE_NAME-theme-color"
 ENGINE_OSC="$ENGINE_NAME-theme-osc"
 ENGINE_RENDER="$ENGINE_NAME-theme-set-templates"
+ENGINE_FROM_ALACRITTY="$ENGINE_NAME-theme-colors-from-alacritty"
 STATE_DIR="$HOME/.local/state/theme-switcher/current"
 THEME_DIR="$STATE_DIR/theme"
 NEXT_THEME_DIR="$STATE_DIR/next-theme"
@@ -65,6 +70,15 @@ DATA_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/theme-switcher"
 CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/theme-switcher"
 USER_THEMES_DIR="$HOME/.config/theme-switcher/themes"
 USER_TEMPLATES_DIR="$HOME/.config/theme-switcher/themed"
+
+# Community themes: the engine's site lists their git repositories.
+CATALOG_URL=${THEME_SWITCHER_CATALOG_URL:-https://$ENGINE_NAME.org/themes/}
+# What a theme cloned from a git repo may not ship, because it can run code: a
+# terminal config names the program the terminal launches, and editors load Lua
+# and vscode.json. Colors are all theme-switcher needs from such a theme; these
+# files are generated from its colors instead.
+INSTALLED_THEME_DENIED=(alacritty.toml foot.ini ghostty.conf kitty.conf vscode.json)
+DROPPED_FILES=()
 LOCK_DIR="${TMPDIR:-/tmp}/theme-switcher.lock"
 
 read -ra TERMINALS <<<"${THEME_SWITCHER_TERMINALS-ghostty alacritty kitty}"
@@ -126,7 +140,7 @@ engine() {
   if [[ -z $ENGINE_SHIMS ]]; then
     ENGINE_SHIMS=$(mktemp -d)
     local name
-    for name in "$ENGINE_COLOR" "$ENGINE_OSC" "$ENGINE_RENDER"; do
+    for name in "$ENGINE_COLOR" "$ENGINE_OSC" "$ENGINE_RENDER" "$ENGINE_FROM_ALACRITTY"; do
       printf '#!/bin/sh\nexec "%s" "%s/bin/%s" "$@"\n' "$BASH" "$ENGINE_PATH" "$name" >"$ENGINE_SHIMS/$name"
       chmod +x "$ENGINE_SHIMS/$name"
     done
@@ -184,6 +198,43 @@ list_themes() {
   done
 }
 
+# A theme installed with `theme-switcher install` is a stranger's git clone; one
+# the user wrote (a plain directory, or a symlink to their own working copy) is
+# trusted in full.
+theme_is_cloned() {
+  [[ ! -L $1 && -d $1/.git ]]
+}
+
+is_denied_file() {
+  local name="$1" denied
+  [[ $name == *.lua ]] && return 0
+  for denied in "${INSTALLED_THEME_DENIED[@]}"; do
+    [[ $name == "$denied" ]] && return 0
+  done
+  return 1
+}
+
+# Copy a cloned theme without what can run code, and without following any
+# symlink: in a cloned theme one points wherever its author chose.
+stage_cloned() {
+  local source="$1" dest="$2" root="$3"
+  local entry name
+
+  mkdir -p "$dest"
+  for entry in "$source"/*; do
+    [[ -e $entry || -L $entry ]] || continue
+    name=${entry##*/}
+    [[ $source == "$root" && $name == "backgrounds" ]] && continue
+    if [[ -L $entry ]] || is_denied_file "$name"; then
+      DROPPED_FILES+=("${entry#"$root"/}")
+    elif [[ -d $entry ]]; then
+      stage_cloned "$entry" "$dest/$name" "$root"
+    else
+      cp "$entry" "$dest/$name"
+    fi
+  done
+}
+
 # Copy a theme directory into staging, minus its backgrounds: those are imported
 # into ~/.local/share once rather than copied on every switch.
 stage_from() {
@@ -191,11 +242,31 @@ stage_from() {
   local entry
 
   [[ -d $source ]] || return 0
+  if theme_is_cloned "$source"; then
+    stage_cloned "$source" "$NEXT_THEME_DIR" "$source"
+    return 0
+  fi
   for entry in "$source"/*; do
     [[ -e $entry ]] || continue
     [[ $(basename "$entry") == "backgrounds" ]] && continue
     cp -R "$entry" "$NEXT_THEME_DIR/"
   done
+}
+
+# Themes from before colors.toml ship only an alacritty.toml. Its palette is read
+# in a scratch directory and only the resulting colors.toml is staged, so the
+# colors survive and the terminal config (which can name a program) does not.
+stage_colors_from_alacritty() {
+  local source="$1" scratch
+
+  [[ ! -f $NEXT_THEME_DIR/colors.toml ]] || return 0
+  [[ -f $source/alacritty.toml && ! -L $source/alacritty.toml ]] || return 0
+
+  scratch=$(mktemp -d)
+  cp "$source/alacritty.toml" "$scratch/alacritty.toml"
+  engine "$ENGINE_FROM_ALACRITTY" "$scratch" >/dev/null 2>&1 || true
+  [[ ! -f $scratch/colors.toml ]] || cp "$scratch/colors.toml" "$NEXT_THEME_DIR/colors.toml"
+  rm -rf "$scratch"
 }
 
 # Fail when any {{ ... }} survives rendering: a literal placeholder in a config
@@ -225,10 +296,18 @@ read_background_state() {
   head -n 1 "$BACKGROUND_STATE"
 }
 
+# An installed or hand-written theme carries its backgrounds in its own folder,
+# so they are used in place, not copied. Only regular files count: find does
+# not follow symlinks, and a cloned theme's backgrounds/ may not be one either.
+# Engine themes keep theirs in git, so those are imported into ~/.local/share.
 theme_backgrounds() {
   local theme="$1"
   local dir="$DATA_DIR/$theme/backgrounds"
+  local own="$USER_THEMES_DIR/$theme/backgrounds"
 
+  if [[ -d $own ]] && ! { theme_is_cloned "$USER_THEMES_DIR/$theme" && [[ -L $own ]]; }; then
+    dir="$own"
+  fi
   [[ -d $dir ]] || return 0
   find "$dir" -maxdepth 1 -type f | grep -iE "$IMAGE_PATTERN" | LC_ALL=C sort || true
 }
@@ -426,6 +505,10 @@ set_theme() {
   mkdir -p "$NEXT_THEME_DIR"
   stage_from "$ENGINE_PATH/themes/$name"
   stage_from "$USER_THEMES_DIR/$name"
+  stage_colors_from_alacritty "$USER_THEMES_DIR/$name"
+  if (( ${#DROPPED_FILES[@]} > 0 )); then
+    echo "Ignored from installed theme '$name' (it may not supply code): ${DROPPED_FILES[*]}" >&2
+  fi
   if [[ ! -f $NEXT_THEME_DIR/colors.toml ]]; then
     rm -rf "$NEXT_THEME_DIR"
     die "theme '$name' has no colors.toml"
@@ -440,7 +523,7 @@ set_theme() {
   mv "$NEXT_THEME_DIR" "$THEME_DIR"
   echo "$name" >"$STATE_DIR/theme.name"
 
-  [[ -d $DATA_DIR/$name/backgrounds ]] || import_backgrounds "$name"
+  [[ -d $DATA_DIR/$name/backgrounds || -d $USER_THEMES_DIR/$name/backgrounds ]] || import_backgrounds "$name"
   mapfile -t backgrounds < <(theme_backgrounds "$name")
   write_background_state "${backgrounds[0]:-}"
 
@@ -498,8 +581,127 @@ bg_import() {
   fi
 }
 
+# --- community themes -----------------------------------------------------------
+
+# "<display name><TAB><repo URL>" for each theme on the catalog page: every entry
+# is a link to the theme's GitHub repo around its screenshot and name.
+catalog_entries() {
+  local html
+  html=$(curl -fsSL "$CATALOG_URL") || die "could not fetch the theme catalog ($CATALOG_URL)"
+  tr '\n' ' ' <<<"$html" |
+    grep -oE '<a href="https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+"[^>]*>[[:space:]]*<img[^>]*>[[:space:]]*<span[^>]*>[^<]+</span>' |
+    sed -E 's|^<a href="([^"]+)".*<span[^>]*>([^<]+)</span>$|\2'$'\t''\1|; s/&amp;/\&/g; s/&#39;|&#x27;/'"'"'/g; s/&quot;/"/g' || true
+}
+
+# The theme name a repo installs as, as the engine names it: the repo name,
+# lowercased, minus an "<engine>-" prefix and a "-theme" suffix. It becomes a
+# directory name, so it is held to the characters a theme name needs.
+repo_theme_name() {
+  local path="$1" name
+  path="${path%/}"
+  # scp-style git@host:owner/repo: drop the user@host: part before taking the basename.
+  [[ $path != *"://"* && $path == *:* ]] && path="${path#*:}"
+  name=$(basename -- "$path" .git | tr '[:upper:]' '[:lower:]')
+  name="${name#"$ENGINE_NAME"-}"
+  name="${name%-theme}"
+  (LC_ALL=C; [[ $name =~ ^[a-z0-9_][a-z0-9._+-]*$ ]]) || return 1
+  printf '%s' "$name"
+}
+
+# Only plain repository URLs: git runs a helper program for "<helper>::" URLs and
+# for "<scheme>://" schemes it does not handle itself, and a leading "-" would
+# be read as an option. The clone below also restricts git to these transports.
+check_git_url() {
+  local url="$1"
+  [[ $url != -* && $url != *::* ]] || die "'$url' is not a repository URL"
+  case "$url" in
+    https://* | ssh://* | file://*) ;;
+    git@*:*) ;;
+    *) die "'$url' is not an https, ssh, git@host: or file:// repository URL" ;;
+  esac
+}
+
+catalog() {
+  local filter="${1:-}" display url name mark
+  while IFS=$'\t' read -r display url; do
+    [[ -n $url ]] || continue
+    if [[ -n $filter ]] && ! grep -qiF -- "$filter" <<<"$display $url"; then
+      continue
+    fi
+    name=$(repo_theme_name "$url") || continue
+    mark=" "
+    [[ -d $USER_THEMES_DIR/$name ]] && mark="*"
+    printf '%s %-24s %-22s %s\n' "$mark" "$name" "$display" "$url"
+  done < <(catalog_entries | LC_ALL=C sort -f)
+}
+
+install_theme() {
+  local wanted="$1" url="" name display entry_url staging
+
+  require_engine
+  if [[ $wanted == *"://"* || $wanted == git@*:* ]]; then
+    url="$wanted"
+  else
+    # A catalog theme, by its display name or the name it installs as.
+    while IFS=$'\t' read -r display entry_url; do
+      name=$(repo_theme_name "$entry_url") || continue
+      if [[ $(tr '[:upper:]' '[:lower:]' <<<"$display") == "$(tr '[:upper:]' '[:lower:]' <<<"$wanted")" || $name == "$(theme_name "$wanted")" ]]; then
+        url="$entry_url"
+        break
+      fi
+    done < <(catalog_entries)
+    [[ -n $url ]] || die "'$wanted' is not in the theme catalog (see: theme-switcher catalog)"
+  fi
+
+  check_git_url "$url"
+  name=$(repo_theme_name "$url") || die "'$url' does not give a usable theme name"
+
+  if [[ -e $USER_THEMES_DIR/$name ]] && ! theme_is_cloned "$USER_THEMES_DIR/$name"; then
+    die "$USER_THEMES_DIR/$name exists and is not an installed theme; not replacing it"
+  fi
+
+  mkdir -p "$USER_THEMES_DIR"
+  staging=$(mktemp -d "$USER_THEMES_DIR/.install.XXXXXX")
+  echo "Installing $name from $url ..."
+  if ! git -c protocol.allow=never -c protocol.https.allow=always -c protocol.ssh.allow=always \
+    -c protocol.file.allow=always clone --quiet --depth 1 -- "$url" "$staging/$name"; then
+    rm -rf "$staging"
+    die "could not clone $url"
+  fi
+  rm -rf "${USER_THEMES_DIR:?}/$name"
+  mv "$staging/$name" "$USER_THEMES_DIR/$name"
+  rmdir "$staging"
+
+  set_theme "$name"
+}
+
+remove_theme() {
+  local name
+
+  name=$(theme_name "$1")
+  [[ -n $name && $name != .* && $name != */* ]] || die "invalid theme name: $1"
+  [[ -e $USER_THEMES_DIR/$name || -L $USER_THEMES_DIR/$name ]] || die "'$name' is not an installed theme"
+
+  rm -rf "${USER_THEMES_DIR:?}/$name" "${DATA_DIR:?}/$name"
+  echo "Removed $name"
+  [[ $(current_theme) != "$name" ]] || echo "It stays applied until you set another theme."
+}
+
+update_themes() {
+  local dir updated=0
+
+  for dir in "$USER_THEMES_DIR"/*/; do
+    dir="${dir%/}"
+    theme_is_cloned "$dir" || continue
+    echo "Updating $(basename "$dir") ..."
+    git -C "$dir" pull --quiet --ff-only || echo "theme-switcher: could not update $(basename "$dir")" >&2
+    updated=$((updated + 1))
+  done
+  (( updated > 0 )) || echo "No installed themes to update."
+}
+
 usage() {
-  sed -n '3,34p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '3,38p' "$0" | sed 's/^# \{0,1\}//'
 }
 
 trap cleanup EXIT
@@ -515,6 +717,10 @@ case "${1:-}" in
     esac
     ;;
   set) [[ -n ${2:-} ]] || die "usage: theme-switcher set <name>"; set_theme "$2" ;;
+  catalog) catalog "${2:-}" ;;
+  install) [[ -n ${2:-} ]] || die "usage: theme-switcher install <name|url>"; install_theme "$2" ;;
+  remove) [[ -n ${2:-} ]] || die "usage: theme-switcher remove <name>"; remove_theme "$2" ;;
+  update) update_themes ;;
   bg)
     case "${2:-}" in
       next) bg_next ;;
