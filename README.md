@@ -13,7 +13,7 @@ This downloads the repo into `~/.dotfiles` and sets the Mac up. Re-run it (or `.
 
 The setup is split into independent steps in `scripts/steps/`; run only some of them by name:
 ```sh
-./install.sh --list           # homebrew, packages, alacritty, shell, languages, vscode, configs, fonts, themes
+./install.sh --list           # homebrew, packages, alacritty, shell, neovim, languages, vscode, configs, fonts, themes
 ./install.sh configs themes   # just these, in this order
 scripts/steps/80-fonts.sh     # or one step directly, from any directory
 ```
@@ -74,7 +74,7 @@ Links inside tmux open with **Shift+click** in every terminal, both URLs and the
 
 ## Software installed
 ### Homebrew formulae (`install/Brewfile`)
-- **common:** coreutils, findutils, jq, htop, btop, tree, mole, neovim, vifm, mpv, ssh-copy-id, telnet, tmux, fzf
+- **common:** coreutils, findutils, jq, htop, btop, fastfetch, tree, mole, neovim (with ripgrep, fd, lazygit, tree-sitter-cli for LazyVim), vifm, mpv, ssh-copy-id, telnet, tmux, fzf
 - **development tools:** bash, git, pyenv, tfenv, goenv, node, helm, gpg, watch, kind, podman, oh-my-posh, kubectx, krew, k9s, ollama, gh, nvm
 
 ### Casks (`install/Caskfile`)
@@ -86,6 +86,7 @@ Links inside tmux open with **Shift+click** in every terminal, both URLs and the
 ### Also
 - Alacritty, from its pinned release (see Terminals)
 - oh-my-zsh with zsh-autosuggestions and zsh-syntax-highlighting
+- LazyVim as the Neovim config, from its starter, when `~/.config/nvim` doesn't exist yet (an existing config is left alone); it installs its plugins on the first `nvim` start
 - Terraform 1.9.5 (tfenv) and Python 3.12.5 (pyenv); versions are pinned in `scripts/common`
 - tmux plugin manager (tpm), vifm color schemes
 
