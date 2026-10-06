@@ -16,6 +16,9 @@ brew "mpv"
 brew "ssh-copy-id"
 brew "telnet"
 brew "tmux"
+# fzf and chafa: `theme-switcher pick` (picker, and theme screenshots in its preview)
+brew "fzf"
+brew "chafa"
 
 # development tools
 # bash 5: theme-switcher runs a theme engine that needs associative arrays

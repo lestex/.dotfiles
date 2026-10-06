@@ -20,6 +20,9 @@
 #   theme-switcher install <name|url>   clone a community theme (catalog name or git URL) and apply it
 #   theme-switcher remove <name>        remove an installed theme
 #   theme-switcher update               pull every installed theme
+#   theme-switcher pick [--catalog]     choose a theme in fzf with a live preview; Enter applies
+#                                       (--catalog: gallery themes; Enter installs)
+#   theme-switcher preview <name>       print a theme's palette and screenshot (the picker's preview)
 #   theme-switcher engine               path of the theme engine checkout in use
 #   theme-switcher engine install <sha> fetch the engine at a pinned commit (the installer does this)
 #
@@ -700,8 +703,138 @@ update_themes() {
   (( updated > 0 )) || echo "No installed themes to update."
 }
 
+# --- previews and the fzf picker -----------------------------------------------
+
+# Where a theme's colors.toml and screenshot come from: the user's or installed
+# copy first (it overlays the engine's), never through a symlink.
+theme_file() {
+  local name="$1" file="$2" dir
+  for dir in "$USER_THEMES_DIR/$name" "$ENGINE_PATH/themes/$name"; do
+    if [[ -f $dir/$file && ! -L $dir/$file ]]; then
+      printf '%s' "$dir/$file"
+      return 0
+    fi
+  done
+  return 1
+}
+
+# A gallery theme's colors.toml and preview.png, fetched once from its repo
+# without cloning it. A theme with only an alacritty.toml gets its colors
+# derived in a scratch dir, as `install` does.
+catalog_preview_files() {
+  local url="$1" slug dir raw scratch
+  [[ $url =~ ^https://github\.com/([A-Za-z0-9_.-]+)/([A-Za-z0-9_.-]+)$ ]] || return 1
+  slug="${BASH_REMATCH[1]}__${BASH_REMATCH[2]%.git}"
+  raw="https://raw.githubusercontent.com/${BASH_REMATCH[1]}/${BASH_REMATCH[2]%.git}/HEAD"
+  dir="$CACHE_DIR/catalog/$slug"
+
+  if [[ ! -f $dir/colors.toml ]]; then
+    mkdir -p "$dir"
+    if ! curl -fsSL -o "$dir/colors.toml" "$raw/colors.toml" 2>/dev/null; then
+      rm -f "$dir/colors.toml"
+      scratch=$(mktemp -d)
+      if curl -fsSL -o "$scratch/alacritty.toml" "$raw/alacritty.toml" 2>/dev/null; then
+        engine "$ENGINE_FROM_ALACRITTY" "$scratch" >/dev/null 2>&1 || true
+        [[ ! -f $scratch/colors.toml ]] || cp "$scratch/colors.toml" "$dir/colors.toml"
+      fi
+      rm -rf "$scratch"
+    fi
+    curl -fsSL -o "$dir/preview.png" "$raw/preview.png" 2>/dev/null || rm -f "$dir/preview.png"
+  fi
+  printf '%s' "$dir"
+}
+
+# 24-bit color escapes from #rrggbb.
+hex_fg() { local h="${1#\#}"; printf '\033[38;2;%d;%d;%dm' "0x${h:0:2}" "0x${h:2:2}" "0x${h:4:2}"; }
+hex_bg() { local h="${1#\#}"; printf '\033[48;2;%d;%d;%dm' "0x${h:0:2}" "0x${h:2:2}" "0x${h:4:2}"; }
+
+# The palette as the terminals would show it: the 16 ANSI colors as swatches,
+# then a prompt, some code and a selection on the theme's background.
+render_preview() {
+  local title="$1" colors="$2" image="${3:-}"
+  local width="${FZF_PREVIEW_COLUMNS:-$(tput cols 2>/dev/null || echo 80)}"
+  local height="${FZF_PREVIEW_LINES:-$(tput lines 2>/dev/null || echo 30)}"
+  local -A c=()
+  local key value i reset=$'\033[0m' bg fg
+
+  while IFS=$'\t' read -r key value; do
+    [[ $value =~ ^#[0-9A-Fa-f]{6}$ ]] && c[$key]="$value"
+  done < <(engine "$ENGINE_COLOR" --file "$colors" --all 2>/dev/null)
+  [[ -n ${c[background]:-} && -n ${c[foreground]:-} ]] || { echo "$title: no usable colors.toml"; return 0; }
+
+  bg=$(hex_bg "${c[background]}")
+  fg=$(hex_fg "${c[foreground]}")
+  # A line of the given segments on the theme background, padded to the width.
+  line() {
+    local text="$1" plain
+    plain=$(sed $'s/\033\\[[0-9;]*m//g' <<<"$text")
+    printf '%s%s%s%s%*s%s\n' "$bg" "$fg" "$text" "$bg" $(( width > ${#plain} ? width - ${#plain} : 0 )) "" "$reset"
+  }
+
+  if [[ -n $image && -f $image ]] && command -v chafa >/dev/null 2>&1; then
+    chafa --format symbols --animate off --size "${width}x$(( height / 2 ))" "$image" 2>/dev/null || true
+  fi
+
+  line "  ${title}  ($(hex_fg "${c[accent]:-${c[blue]}}")${c[mode]:-dark}$fg)"
+  line ""
+  for i in 0 8; do
+    local row="  " n
+    for n in 0 1 2 3 4 5 6 7; do
+      row+="$(hex_bg "${c[color$((i + n))]:-${c[background]}}")    $bg "
+    done
+    line "$row"
+  done
+  line ""
+  line "  $(hex_fg "${c[cyan]}")~/projects$fg on $(hex_fg "${c[magenta]}") main$fg $(hex_fg "${c[green]}")❯$fg git status"
+  line "  $(hex_fg "${c[green]}")modified:$fg   install.sh   $(hex_fg "${c[red]}")deleted:$fg Makefile"
+  line ""
+  line "  $(hex_fg "${c[magenta]}")function$fg $(hex_fg "${c[blue]}")greet$fg(name) {"
+  line "    $(hex_fg "${c[muted]:-${c[color8]}}")// say hello$fg"
+  line "    $(hex_fg "${c[magenta]}")return$fg $(hex_fg "${c[green]}")\"hi \"$fg + name + $(hex_fg "${c[yellow]}")42$fg"
+  line "  }"
+  line ""
+  line "  $(hex_bg "${c[selection]:-${c[color8]}}")$(hex_fg "${c[bright_foreground]:-${c[foreground]}}") selected text $bg$fg  $(hex_fg "${c[accent]:-${c[blue]}}")accent$fg  $(hex_fg "${c[yellow]}")warning$fg  $(hex_fg "${c[red]}")error$fg"
+}
+
+preview_theme() {
+  local name="$1" colors dir
+  require_engine
+  if [[ $name == --repo ]]; then
+    dir=$(catalog_preview_files "${2:-}") || { echo "no preview for ${2:-}"; return 0; }
+    [[ -f $dir/colors.toml ]] || { echo "$(basename "${2:-}"): its repo has no colors.toml or alacritty.toml"; return 0; }
+    render_preview "$(repo_theme_name "$2" || basename "$2")" "$dir/colors.toml" "$dir/preview.png"
+    return 0
+  fi
+  name=$(theme_name "$name")
+  colors=$(theme_file "$name" colors.toml) || { echo "$name: no colors.toml"; return 0; }
+  render_preview "$name" "$colors" "$(theme_file "$name" preview.png || true)"
+}
+
+pick_theme() {
+  local self selected pos
+  command -v fzf >/dev/null 2>&1 || die "the picker needs fzf (brew install fzf)"
+  require_engine
+  self="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
+
+  if [[ ${1:-} == --catalog ]]; then
+    selected=$(catalog | fzf --ansi --reverse --height 90% --prompt 'gallery theme> ' \
+      --header 'Enter: install and apply   Esc: cancel   (first preview of a theme downloads its colors)' \
+      --with-nth 1,2.. --preview "'$self' preview --repo {-1}" --preview-window 'right,65%,border-left') || return 0
+    install_theme "$(awk '{print $NF}' <<<"$selected")"
+    return 0
+  fi
+
+  # Start on the current theme.
+  pos=$(list_themes | awk '{print $NF}' | grep -nxF -- "$(current_theme)" | cut -d: -f1 || true)
+  pos=${pos:-1}
+  selected=$(list_themes | fzf --ansi --reverse --height 90% --prompt 'theme> ' \
+    --header 'Enter: apply   Esc: cancel   * = current' --bind "load:pos($pos)" \
+    --preview "'$self' preview {-1}" --preview-window 'right,65%,border-left') || return 0
+  set_theme "$(awk '{print $NF}' <<<"$selected")"
+}
+
 usage() {
-  sed -n '3,38p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '3,41p' "$0" | sed 's/^# \{0,1\}//'
 }
 
 trap cleanup EXIT
@@ -721,6 +854,8 @@ case "${1:-}" in
   install) [[ -n ${2:-} ]] || die "usage: theme-switcher install <name|url>"; install_theme "$2" ;;
   remove) [[ -n ${2:-} ]] || die "usage: theme-switcher remove <name>"; remove_theme "$2" ;;
   update) update_themes ;;
+  pick) pick_theme "${2:-}" ;;
+  preview) [[ -n ${2:-} ]] || die "usage: theme-switcher preview <name>"; preview_theme "$2" "${3:-}" ;;
   bg)
     case "${2:-}" in
       next) bg_next ;;
