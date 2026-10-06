@@ -4,7 +4,8 @@
 #   ❯
 #
 # Path, git branch (* when dirty, ⇣⇡ behind/ahead, fetched in the background),
-# the last command's time when it took over 5 s, then ❯ (red after a failure).
+# the last command's time when it took over 5 s, then ❯ (red after a failure,
+# with the exit code on the right).
 # Colors are ANSI names only, so the prompt follows theme-switcher's palette.
 
 # Pure ships with Homebrew; a non-login shell has not run `brew shellenv`.
@@ -21,3 +22,7 @@ zstyle :prompt:pure:prompt:continuation color 8
 
 autoload -U promptinit && promptinit
 prompt pure
+
+# The last command's exit code on the right when it failed: some themes'
+# red is barely different from their magenta (lumon's are both blue).
+RPROMPT='%(?..%F{red}%?%f)'
