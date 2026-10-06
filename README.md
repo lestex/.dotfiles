@@ -35,6 +35,17 @@ theme-switcher bg next              # next wallpaper of the current theme
 theme-switcher bg set ~/Pictures/x.jpg
 theme-switcher bg none              # solid background in the theme's color
 ```
+Community themes from the theme engine's gallery install by name or git URL:
+```sh
+theme-switcher catalog              # the gallery's themes, installed ones marked *
+theme-switcher catalog gruv         # search it
+theme-switcher install ayaka        # clone it into ~/.config/theme-switcher/themes and apply it
+theme-switcher install https://github.com/someone/my-theme
+theme-switcher update               # pull every installed theme
+theme-switcher remove ayaka
+```
+An installed theme is someone else's git repo, so only its colors and images are used: Lua, terminal configs (which name the program a terminal runs), `vscode.json` and symlinks are dropped and named on screen, and the terminal configs are generated from its colors instead. Themes that only ship an `alacritty.toml` get their colors from it.
+
 A theme recolors Ghostty, kitty, Alacritty and tmux (including windows that are already open) and sets the desktop picture. The first time, macOS asks to let your terminal control System Events; that is needed for the desktop picture.
 
 Themes come from a theme engine the installer fetches at a pinned commit (`THEME_ENGINE_REF` in `scripts/common`) into `~/.local/share/theme-switcher/.engine`. A theme's wallpapers are downloaded the first time you use it. Your own themes go in `~/.config/theme-switcher/themes/<name>/`, your own templates in `~/.config/theme-switcher/themed/`.
