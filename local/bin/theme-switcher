@@ -13,6 +13,7 @@
 #   theme-switcher current              current theme name
 #   theme-switcher set <name>           render and apply a theme
 #   theme-switcher appearance           re-apply the theme to macOS: Dark/Light, accent and highlight colors
+#   theme-switcher vscode               re-apply the theme to VS Code (waits for an extension install)
 #   theme-switcher bg next              next background of the current theme
 #   theme-switcher bg set <path>        use an image as the background
 #   theme-switcher bg none              solid theme background color
@@ -40,7 +41,7 @@
 #                                 (default ~/.local/share/theme-switcher/.engine)
 #   THEME_SWITCHER_NO_DESKTOP=1   leave macOS alone: no desktop picture, appearance or accent color
 #   THEME_SWITCHER_TERMINALS      process names to repaint (default "ghostty alacritty kitty"; empty = none)
-#   THEME_SWITCHER_APPS           apps to reload after a switch (default "btop nvim"; empty = none)
+#   THEME_SWITCHER_APPS           apps to reload after a switch (default "btop nvim code"; empty = none)
 
 # The engine uses associative arrays; macOS ships bash 3.2.
 if (( BASH_VERSINFO[0] < 5 )); then
@@ -86,7 +87,7 @@ INSTALLED_THEME_DENIED=(alacritty.toml foot.ini ghostty.conf kitty.conf vscode.j
 DROPPED_FILES=()
 LOCK_DIR="${TMPDIR:-/tmp}/theme-switcher.lock"
 
-read -ra APPS <<<"${THEME_SWITCHER_APPS-btop nvim}"
+read -ra APPS <<<"${THEME_SWITCHER_APPS-btop nvim code}"
 read -ra TERMINALS <<<"${THEME_SWITCHER_TERMINALS-ghostty alacritty kitty}"
 IMAGE_PATTERN='\.(jpe?g|png|gif|bmp|webp|heic|tiff?)$'
 
@@ -691,12 +692,121 @@ reload_nvim() {
   fi
 }
 
+# --- VS Code ----------------------------------------------------------------------
+#
+# A theme with a vscode.json names a Marketplace extension and its theme
+# ({"extension": "enkia.tokyo-night", "name": "Tokyo Night"}): install it if
+# missing, then select it. (A theme cloned from a git repo cannot supply one:
+# an extension is arbitrary code.) Otherwise the engine's vscode-theme.json,
+# generated from the palette, is served by a local extension. VS Code watches
+# settings.json, so open windows switch as soon as workbench.colorTheme changes.
+VSCODE_SETTINGS="$HOME/Library/Application Support/Code/User/settings.json"
+VSCODE_EXTENSIONS="$HOME/.vscode/extensions"
+VSCODE_LOCAL_EXTENSION="theme-switcher-theme"
+VSCODE_LOCAL_VERSION="1.0.0"
+# VS Code does not re-read a selected theme's file, so the local extension offers
+# the generated theme under two labels and each switch selects the other one.
+VSCODE_LOCAL_LABELS=("Theme Switcher" "Theme Switcher ·")
+
+# Sets workbench.colorTheme in settings.json, which is JSONC (comments, trailing
+# commas): edited in place, never round-tripped through a strict JSON parser.
+vscode_set_color_theme() {
+  local name="$1" file tmp escaped
+  [[ $name =~ ^[^[:cntrl:]\"\\]+$ ]] || return 0
+  file="$VSCODE_SETTINGS"
+  [[ -L $file ]] && file=$(readlink -f "$file")
+  mkdir -p "$(dirname "$file")"
+  if [[ ! -s $file ]]; then
+    printf '{\n  "workbench.colorTheme": "%s"\n}\n' "$name" >"$file"
+    return 0
+  fi
+
+  tmp=$(mktemp "$file.XXXXXX")
+  if grep -q '"workbench.colorTheme"' "$file"; then
+    escaped=${name//&/\\&}
+    escaped=${escaped//|/\\|}
+    sed -E "s|(\"workbench\\.colorTheme\"[[:space:]]*:[[:space:]]*\")[^\"]*(\")|\\1$escaped\\2|" "$file" >"$tmp"
+  else
+    # Insert after the first "{", before every existing setting.
+    awk -v line="  \"workbench.colorTheme\": \"$name\"," '
+      !done && /\{/ { sub(/\{/, "{\n" line); done = 1 } { print }' "$file" >"$tmp"
+  fi
+  cat "$tmp" >"$file"
+  rm -f "$tmp"
+}
+
+vscode_current_color_theme() {
+  sed -n 's/.*"workbench\.colorTheme"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$VSCODE_SETTINGS" 2>/dev/null | head -n 1
+}
+
+# The local extension: a package.json contributing the generated theme (linked
+# from the active theme) under both labels, registered in extensions.json, the
+# index VS Code reads and watches.
+vscode_install_local_extension() {
+  local dir="$VSCODE_EXTENSIONS/$VSCODE_LOCAL_EXTENSION" ui="vs-dark" index tmp id="local.$VSCODE_LOCAL_EXTENSION"
+  [[ $(jq -r '.type // "dark"' "$THEME_DIR/vscode-theme.json" 2>/dev/null) == "light" ]] && ui="vs"
+
+  mkdir -p "$dir/themes"
+  ln -snf "$THEME_DIR/vscode-theme.json" "$dir/themes/color-theme.json"
+  jq -n --arg ui "$ui" --arg version "$VSCODE_LOCAL_VERSION" --arg name "$VSCODE_LOCAL_EXTENSION" \
+    --arg a "${VSCODE_LOCAL_LABELS[0]}" --arg b "${VSCODE_LOCAL_LABELS[1]}" '{
+      name: $name, displayName: "Theme Switcher", description: "The active theme-switcher theme",
+      publisher: "local", version: $version, engines: { vscode: "^1.70.0" }, categories: ["Themes"],
+      contributes: { themes: [
+        { label: $a, uiTheme: $ui, path: "./themes/color-theme.json" },
+        { label: $b, uiTheme: $ui, path: "./themes/color-theme.json" }
+      ] }
+    }' >"$dir/package.json"
+
+  index="$VSCODE_EXTENSIONS/extensions.json"
+  [[ -s $index ]] || printf '[]\n' >"$index"
+  tmp=$(mktemp)
+  if jq --arg id "$id" --arg version "$VSCODE_LOCAL_VERSION" --arg path "$dir" --arg rel "$VSCODE_LOCAL_EXTENSION" '
+      map(select(.identifier.id != $id)) + [{
+        identifier: { id: $id }, version: $version,
+        location: { "$mid": 1, fsPath: $path, external: ("file://" + $path), path: $path, scheme: "file" },
+        relativeLocation: $rel
+      }]' "$index" >"$tmp"; then
+    mv "$tmp" "$index"
+  else
+    rm -f "$tmp"
+  fi
+}
+
+# wait=1: install a missing extension in the foreground (the installer);
+# otherwise in the background, so a theme switch does not block on it.
+apply_vscode() {
+  local wait="${1:-0}" descriptor="$THEME_DIR/vscode.json" name extension label
+  command -v code >/dev/null 2>&1 || return 0
+
+  if [[ -f $descriptor ]]; then
+    name=$(jq -r '.name // empty' "$descriptor" 2>/dev/null)
+    extension=$(jq -r '.extension // empty' "$descriptor" 2>/dev/null)
+    [[ $name =~ ^[^[:cntrl:]\"\\]+$ && $extension =~ ^[A-Za-z0-9._-]+$ ]] || return 0
+    if code --list-extensions 2>/dev/null | grep -Fxiq -- "$extension"; then
+      vscode_set_color_theme "$name"
+    elif (( wait )); then
+      code --install-extension "$extension" >/dev/null 2>&1 && vscode_set_color_theme "$name"
+    else
+      echo "VS Code: installing $extension in the background; open windows switch when it is ready"
+      (code --install-extension "$extension" >/dev/null 2>&1 && vscode_set_color_theme "$name") </dev/null >/dev/null 2>&1 &
+      disown 2>/dev/null || true
+    fi
+  elif [[ -f $THEME_DIR/vscode-theme.json ]]; then
+    vscode_install_local_extension
+    label="${VSCODE_LOCAL_LABELS[0]}"
+    [[ $(vscode_current_color_theme) != "$label" ]] || label="${VSCODE_LOCAL_LABELS[1]}"
+    vscode_set_color_theme "$label"
+  fi
+}
+
 reload_apps() {
   local app
   for app in "${APPS[@]}"; do
     case "$app" in
       btop) pkill -USR2 -x btop 2>/dev/null || true ;;
       nvim) reload_nvim ;;
+      code) apply_vscode ;;
     esac
   done
 }
@@ -1068,7 +1178,7 @@ pick_theme() {
 }
 
 usage() {
-  sed -n '3,43p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '3,44p' "$0" | sed 's/^# \{0,1\}//'
 }
 
 trap cleanup EXIT
@@ -1085,6 +1195,7 @@ case "${1:-}" in
     ;;
   set) [[ -n ${2:-} ]] || die "usage: theme-switcher set <name>"; set_theme "$2" ;;
   appearance) [[ -f $THEME_DIR/colors.toml ]] || die "no theme set yet"; require_engine; apply_macos_appearance ;;
+  vscode) [[ -f $THEME_DIR/colors.toml ]] || die "no theme set yet"; apply_vscode 1 ;;
   catalog) catalog "${2:-}" ;;
   install) [[ -n ${2:-} ]] || die "usage: theme-switcher install <name|url>"; install_theme "$2" ;;
   remove) [[ -n ${2:-} ]] || die "usage: theme-switcher remove <name>"; remove_theme "$2" ;;
