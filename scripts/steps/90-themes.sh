@@ -5,8 +5,8 @@
 # THEME_ENGINE_REF in scripts/common (a sparse checkout under
 # ~/.local/share/theme-switcher/.engine; rerunning at the same commit is a
 # no-op). Runs after 70-configs: Ghostty, Alacritty, kitty and tmux include the
-# files it generates, and btop and Neovim are pointed at its btop.theme and
-# neovim.lua.
+# files it generates, btop and Neovim are pointed at its btop.theme and
+# neovim.lua, and VS Code selects the theme.
 set -euo pipefail
 # shellcheck source=scripts/common
 source "$(dirname "$0")/../common"
@@ -68,4 +68,14 @@ if [ -d "$nvim_dir/lua/plugins" ]; then
     fi
     echo 'lua/plugins/theme.lua' >>"$nvim_dir/.gitignore"
   fi
+fi
+
+# VS Code: 60-vscode copies settings.json without workbench.colorTheme, so
+# select the active theme again (installing its Marketplace extension, or
+# generating one from the palette).
+if ! command -v code >/dev/null; then
+  pretty_print "${yellow}VS Code's code command not found, skipping its theme ...${neutral}"
+elif [ -f "$state/theme/colors.toml" ]; then
+  pretty_print "${green}Applying the theme to VS Code${neutral}"
+  "$HOME/.local/bin/theme-switcher" vscode
 fi

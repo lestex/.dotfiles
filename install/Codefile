@@ -1,9 +1,3 @@
-EditorConfig.EditorConfig
+anthropic.claude-code
 HashiCorp.terraform
-ms-azuretools.vscode-docker
 ms-python.python
-ms-python.vscode-pylance
-GoogleCloudTools.cloudcode
-GitHub.github-vscode-theme
-tamasfe.even-better-toml
-golang.go
