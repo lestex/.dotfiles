@@ -98,6 +98,9 @@ theme set vantablack >/dev/null
 grep -qx -- 'write -g AppleAccentColor -int -1' "$tmp/defaults" && grep -qx -- 'write -g AppleAquaColorVariant -int 6' "$tmp/defaults" ||
   fail "a gray accent maps to graphite" "$(cat "$tmp/defaults")"
 rm -f "$tmp/appearance" "$tmp/defaults"
+theme set rose-pine >/dev/null
+grep -qx -- 'write -g AppleAccentColor -int -1' "$tmp/defaults" || fail "a muted accent between macOS colors (rose-pine's teal) maps to graphite" "$(cat "$tmp/defaults")"
+rm -f "$tmp/appearance" "$tmp/defaults"
 env -u TMUX TMUX_TMPDIR="$tmp/tmux" HOME="$home" PATH="$tmp/bin:$PATH" THEME_SWITCHER_TERMINALS="" THEME_SWITCHER_NO_DESKTOP=1 "$COMMAND" set nord >/dev/null
 [[ ! -e $tmp/appearance && ! -e $tmp/defaults ]] || fail "THEME_SWITCHER_NO_DESKTOP leaves macOS appearance alone"
 theme set "Tokyo Night" >/dev/null

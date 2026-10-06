@@ -403,6 +403,10 @@ solid_background() {
 #
 # AppleAccentColor: -1 graphite, 0 red, 1 orange, 2 yellow, 3 green, 4 blue,
 # 5 purple, 6 pink. Graphite also needs AppleAquaColorVariant 6 (else 1).
+# macOS's accents are all vivid, so one is used only when the theme's accent
+# really is that color: saturated enough and within 22 degrees of its hue.
+# Anything muted or in between (rose-pine's teal, everforest's sage) gets
+# graphite, which never clashes.
 macos_accent_for() {
   local h="${1#\#}"
   awk -v r=$((16#${h:0:2})) -v g=$((16#${h:2:2})) -v b=$((16#${h:4:2})) '
@@ -412,7 +416,7 @@ macos_accent_for() {
       min = r; if (g < min) min = g; if (b < min) min = b
       d = max - min; l = (max + min) / 2
       s = (d == 0) ? 0 : d / (1 - (2 * l - 1 < 0 ? -(2 * l - 1) : 2 * l - 1))
-      if (s < 0.2 || d < 0.08) { print -1; exit }
+      if (s < 0.25 || d < 0.08) { print -1; exit }
       if (max == r)      hue = 60 * (((g - b) / d) % 6)
       else if (max == g) hue = 60 * ((b - r) / d + 2)
       else               hue = 60 * ((r - g) / d + 4)
@@ -423,7 +427,7 @@ macos_accent_for() {
         dd = hue - ref[i]; if (dd < 0) dd = -dd; if (dd > 180) dd = 360 - dd
         if (dd < bestd) { bestd = dd; best = idx[i] }
       }
-      print best
+      print (bestd <= 22 ? best : -1)
     }'
 }
 
