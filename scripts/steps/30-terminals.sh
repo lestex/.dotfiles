@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Alacritty from its pinned, checksum-verified release.
+# Ghostty, kitty, Alacritty (from its pinned, checksum-verified release) and tmux.
 #
 # Alacritty: no formula, and the cask is disabled for failing Gatekeeper, so
 # install the official release DMG, pinned by version and checksum in
@@ -8,6 +8,10 @@
 set -euo pipefail
 # shellcheck source=scripts/common
 source "$(dirname "$0")/../common"
+require_brew
+
+brew_casks ghostty kitty
+brew_formulae tmux
 
 installed=$(defaults read /Applications/Alacritty.app/Contents/Info.plist CFBundleShortVersionString 2>/dev/null || true)
 if [ "$installed" = "$ALACRITTY_VERSION" ]; then

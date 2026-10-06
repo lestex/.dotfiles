@@ -1,11 +1,27 @@
 #!/usr/bin/env bash
-# font-switcher and the default font (the fonts are casks in install/Caskfile).
+# Nerd Fonts, font-switcher and the default font (Liga SFMono).
 #
 # font-switcher gives the three terminals their font family and size. Runs
 # after 70-configs, whose terminal configs include font-switcher's files.
 set -euo pipefail
 # shellcheck source=scripts/common
 source "$(dirname "$0")/../common"
+require_brew
+
+# Liga SFMono used to be copied into ~/Library/Fonts from this repo; its cask
+# refuses to install over those files, so remove them until the cask is in.
+if ! brew list --cask font-sf-mono-nerd-font-ligaturized >/dev/null 2>&1; then
+  rm -f "$HOME"/Library/Fonts/LigaSFMonoNerdFont-*.otf
+fi
+brew_casks \
+  font-sf-mono-nerd-font-ligaturized \
+  font-jetbrains-mono-nerd-font \
+  font-caskaydia-mono-nerd-font \
+  font-meslo-lg-nerd-font \
+  font-fira-code-nerd-font \
+  font-victor-mono-nerd-font \
+  font-bitstream-vera-sans-mono-nerd-font \
+  font-iosevka-nerd-font
 
 # https://github.com/alacritty/alacritty/releases/tag/v0.11.0
 defaults write -g AppleFontSmoothing -int 2
