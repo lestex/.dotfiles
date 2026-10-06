@@ -36,7 +36,7 @@ themes="$home/.config/theme-switcher/themes"
 
 theme() {
   env -u TMUX TMUX_TMPDIR="$tmp/sock" HOME="$home" THEME_SWITCHER_ENGINE="$ENGINE" \
-    THEME_SWITCHER_CATALOG_URL="file://$tmp/catalog.html" THEME_SWITCHER_NO_DESKTOP=1 THEME_SWITCHER_TERMINALS="" \
+    THEME_SWITCHER_CATALOG_URL="file://$tmp/catalog.html" THEME_SWITCHER_NO_DESKTOP=1 THEME_SWITCHER_TERMINALS="" THEME_SWITCHER_APPS="" \
     "$COMMAND" "$@"
 }
 
