@@ -53,4 +53,4 @@ Each step sources `scripts/common`, which `cd`s to the repo root itself, so step
 
 - Scripts use `set -e` and wrap every install in an existence check with a `pretty_print "${yellow}...already installed, skipping${neutral}"` branch. Follow that pattern so re-running the installer stays cheap and CI-safe.
 - `.editorconfig`: 2-space indent, LF, final newline.
-- `README.md` is hand-maintained. Its software list mirrors the package lists in `scripts/steps/` (and the pinned versions in `scripts/common`); update it in the same change when those lists change. The steps, not the README, are the source of truth.
+- User docs are hand-maintained: `README.md` is short (install, everyday commands, links); the detail is in `docs/` — `installer.md`, `themes.md`, `fonts.md`, `terminals.md`, `shell.md`, `troubleshooting.md`. Update the page a change affects in the same change: a behaviour, command, key or known problem. The software table in `docs/installer.md` mirrors the package lists in `scripts/steps/` (and the pinned versions in `scripts/common`). The steps, not the docs, are the source of truth.
