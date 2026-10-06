@@ -43,6 +43,53 @@ fonts size 16 >/dev/null
 grep -qx 'font-size = 16' "$state/ghostty.conf" && grep -qx 'font-family = "Menlo"' "$state/ghostty.conf" || fail "size keeps the family"
 pass "set and size write all three terminal files"
 
+# --- preview and the fzf picker ----------------------------------------------------
+preview=$(env -u TMUX TERM=xterm-256color HOME="$home" "$COMMAND" preview menlo)
+[[ $preview == "Menlo"* && $preview == *"Styles: Regular"* ]] || fail "a text preview names the font and its styles" "$preview"
+[[ $(env -u TMUX TERM=xterm-256color HOME="$home" "$COMMAND" preview "No Such Mono") == *"not an installed monospace font"* ]] ||
+  fail "an unknown font previews as such"
+
+if command -v fzf >/dev/null; then
+  export TMP="$tmp" HOME_DIR="$home" COMMAND
+  python3 - <<'PY2' || fail "the picker filters and uses the chosen font"
+import fcntl, os, pty, select, struct, sys, termios, time
+home, command = os.environ["HOME_DIR"], os.environ["COMMAND"]
+env = dict(os.environ, HOME=home, FONT_SWITCHER_NO_RELOAD="1", TERM="xterm-256color")
+env.pop("TMUX", None)
+pid, fd = pty.fork()
+if pid == 0:
+    os.execvpe(command, [command, "pick"], env)
+fcntl.ioctl(fd, termios.TIOCSWINSZ, struct.pack("HHHH", 40, 140, 0, 0))
+out = b""
+def drain(seconds):
+    global out
+    end = time.time() + seconds
+    while time.time() < end:
+        if select.select([fd], [], [], 0.1)[0]:
+            try:
+                out += os.read(fd, 65536)
+            except OSError:
+                return
+drain(3)
+os.write(fd, b"^menlo$")
+drain(3)
+if b"Styles:" not in out:
+    sys.exit("the preview pane never showed the highlighted font")
+os.write(fd, b"\r")
+drain(3)
+try:
+    os.waitpid(pid, 0)
+except ChildProcessError:
+    pass
+chosen = open(f"{home}/.local/state/font-switcher/current/font.name").read().strip()
+if chosen != "Menlo":
+    sys.exit(f"chose {chosen!r}, expected 'Menlo'")
+PY2
+  pass "the picker previews fonts and uses the chosen one on Enter"
+else
+  echo "skip - fzf not installed; picker not tested"
+fi
+
 # --- a font installed a moment ago -------------------------------------------------
 if ! curl -fsSL -o "$tmp/FiraMono-Regular.ttf" https://github.com/google/fonts/raw/main/ofl/firamono/FiraMono-Regular.ttf; then
   echo "skip - could not download Fira Mono; just-installed font not tested"

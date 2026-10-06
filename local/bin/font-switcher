@@ -6,6 +6,8 @@
 #   font-switcher current         current font family and size
 #   font-switcher set <family>    use a font family in every terminal
 #   font-switcher size <points>   use a font size in every terminal (default 14)
+#   font-switcher pick            choose a font in fzf with a live sample; Enter uses it
+#   font-switcher preview <family>  the picker's preview: a rendered sample (Ghostty/kitty)
 #
 # Each terminal includes a generated file from ~/.local/state/font-switcher/current/
 # (ghostty.conf, alacritty.toml, kitty.conf), so the choice survives the
@@ -17,6 +19,7 @@
 set -euo pipefail
 
 STATE_DIR="$HOME/.local/state/font-switcher/current"
+CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/font-switcher"
 DEFAULT_SIZE=14
 
 die() {
@@ -192,8 +195,116 @@ reload_terminals() {
   fi
 }
 
+# --- previews and the fzf picker -----------------------------------------------
+
+# The current theme's background and foreground, so a sample looks as it will in
+# the terminals; plain defaults without theme-switcher.
+theme_color() {
+  local key="$1" fallback="$2" value
+  value=$(sed -n "s/^${key}[[:space:]]*=[[:space:]]*\"\(#[0-9A-Fa-f]\{6\}\)\".*/\1/p" \
+    "$HOME/.local/state/theme-switcher/current/theme/colors.toml" 2>/dev/null | head -n 1)
+  printf '%s' "${value:-$fallback}"
+}
+
+# A terminal can only draw text in its own font, so a sample is a PNG rendered
+# by AppKit, cached per family and colors.
+render_sample() {
+  local family="$1" out="$2" bg="$3" fg="$4"
+  osascript -l JavaScript - "$family" "$out" "$bg" "$fg" >/dev/null <<'JS'
+ObjC.import("AppKit");
+function color(hex) {
+  const n = parseInt(hex.replace("#", ""), 16);
+  return $.NSColor.colorWithSRGBRedGreenBlueAlpha(((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255, 1);
+}
+function run(argv) {
+  const [family, out, bg, fg] = argv;
+  const font = $.NSFontManager.sharedFontManager.fontWithFamilyTraitsWeightSize(family, 0, 5, 30);
+  if (!font || font.isNil()) throw new Error("no such font: " + family);
+  const lines = [family, "The quick brown fox jumps over the lazy dog", "0O 1lI | {} [] () <> != => -> === // #",
+                 "fn main() { let answer = 42; }", "     "];
+  const attrs = $.NSMutableDictionary.dictionary;
+  attrs.setObjectForKey(font, $.NSFontAttributeName);
+  attrs.setObjectForKey(color(fg), $.NSForegroundColorAttributeName);
+  const pad = 36, lineH = Math.ceil(font.ascender - font.descender + font.leading) + 10;
+  let width = 0;
+  for (const line of lines) width = Math.max(width, $(line).sizeWithAttributes(attrs).width);
+  const W = Math.ceil(width) + pad * 2, H = pad * 2 + lines.length * lineH;
+  const image = $.NSImage.alloc.initWithSize($.NSMakeSize(W, H));
+  image.lockFocus;
+  color(bg).setFill;
+  $.NSRectFill($.NSMakeRect(0, 0, W, H));
+  lines.forEach((line, i) => $(line).drawAtPointWithAttributes($.NSMakePoint(pad, H - pad - (i + 1) * lineH), attrs));
+  image.unlockFocus;
+  const rep = $.NSBitmapImageRep.imageRepWithData(image.TIFFRepresentation);
+  rep.representationUsingTypeProperties($.NSBitmapImageFileTypePNG, $()).writeToFileAtomically(out, true);
+}
+JS
+}
+
+# Real images only, as theme-switcher's previews: Ghostty and kitty through
+# `kitten icat --unicode-placeholder` (also inside tmux); elsewhere text only.
+can_show_images() {
+  local term="${TERM:-}"
+  if [ -n "${TMUX:-}" ]; then
+    term=$(tmux display -p '#{client_termname}' 2>/dev/null || printf '%s' "$term")
+  fi
+  [[ $term == xterm-ghostty || $term == xterm-kitty ]] && command -v kitten >/dev/null 2>&1
+}
+
+font_styles() {
+  osascript -l JavaScript - "$1" 2>/dev/null <<'JS'
+ObjC.import("AppKit");
+function run(argv) {
+  const members = ObjC.deepUnwrap($.NSFontManager.sharedFontManager.availableMembersOfFontFamily(argv[0])) || [];
+  return [...new Set(members.map(m => m[1]))].join(", ");
+}
+JS
+}
+
+preview_font() {
+  local requested="$1" family bg fg image width height rows
+  family=$(resolve_family "$requested") || { echo "$requested: not an installed monospace font"; return 0; }
+  width="${FZF_PREVIEW_COLUMNS:-80}"
+  height="${FZF_PREVIEW_LINES:-24}"
+
+  if can_show_images; then
+    bg=$(theme_color background "#1e1e2e")
+    fg=$(theme_color foreground "#cdd6f4")
+    mkdir -p "$CACHE_DIR"
+    image="$CACHE_DIR/$(printf '%s' "$family" | tr ' ' '_')-${bg#\#}-${fg#\#}.png"
+    [ -f "$image" ] || render_sample "$family" "$image" "$bg" "$fg" || true
+    if [ -f "$image" ]; then
+      rows=$(( height - 4 ))
+      (( rows <= 16 )) || rows=16
+      kitten icat --clear --transfer-mode=memory --unicode-placeholder --stdin=no \
+        --place="${width}x${rows}@0x0" "$image" 2>/dev/null | sed '$d' | sed $'$s/$/\033[m/'
+      echo
+    fi
+  else
+    echo "$family"
+    echo
+    echo "(a rendered sample needs Ghostty or kitty; this terminal shows its own font)"
+  fi
+  echo "Styles: $(font_styles "$family")"
+  [[ $family != "$(current_font)" ]] || echo "Current font, $(current_size)pt"
+}
+
+pick_font() {
+  local self list current selected pos
+  command -v fzf >/dev/null 2>&1 || die "the picker needs fzf (brew install fzf)"
+  self="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
+  list=$(monospace_families)
+  current=$(current_font)
+  # Start on the current font.
+  pos=$(printf '%s\n' "$list" | grep -nxF -- "$current" | cut -d: -f1 || true)
+  selected=$(printf '%s\n' "$list" | fzf --reverse --height 90% --prompt 'font> ' \
+    --header "Enter: use this font   Esc: cancel   current: ${current:-none} ($(current_size)pt)" \
+    --bind "load:pos(${pos:-1})" --preview "'$self' preview {}" --preview-window 'right,65%,border-left') || return 0
+  set_font "$selected"
+}
+
 usage() {
-  sed -n '3,15p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '3,17p' "$0" | sed 's/^# \{0,1\}//'
 }
 
 case "${1:-}" in
@@ -201,6 +312,8 @@ case "${1:-}" in
   current) echo "$(current_font) $(current_size)pt" ;;
   set) [[ -n ${2:-} ]] || die "usage: font-switcher set <family>"; set_font "$2" ;;
   size) [[ -n ${2:-} ]] || die "usage: font-switcher size <points>"; set_size "$2" ;;
+  pick) pick_font ;;
+  preview) [[ -n ${2:-} ]] || die "usage: font-switcher preview <family>"; preview_font "$2" ;;
   -h | --help | help) usage ;;
   *) usage; exit 1 ;;
 esac

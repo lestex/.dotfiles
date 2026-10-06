@@ -54,6 +54,7 @@ Themes come from a theme engine the installer fetches at a pinned commit (`THEME
 
 ## Fonts
 ```sh
+font-switcher pick                          # choose in fzf with a rendered sample; Enter uses it
 font-switcher list                          # installed monospace fonts, current one marked
 font-switcher set "JetBrainsMono Nerd Font" # change the font in all three terminals
 font-switcher size 14                       # change the size in all three terminals
