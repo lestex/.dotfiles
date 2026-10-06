@@ -91,7 +91,7 @@ Links inside tmux open with **Shift+click** in every terminal, both URLs and the
 - tmux plugin manager (tpm), vifm color schemes
 
 ### VS Code extensions (`install/Codefile`)
-EditorConfig.EditorConfig, HashiCorp.terraform, ms-azuretools.vscode-docker, ms-python.python, ms-python.vscode-pylance, GoogleCloudTools.cloudcode, GitHub.github-vscode-theme, tamasfe.even-better-toml, golang.go
+anthropic.claude-code, HashiCorp.terraform, ms-python.python (which brings Pylance, debugpy and Python Environments). The color theme comes from theme-switcher.
 
 ## Tests
 ```sh
