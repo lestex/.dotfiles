@@ -7,9 +7,12 @@ set -euo pipefail
 source "$(dirname "$0")/../common"
 require_brew
 
+# zsh is not read from ~/.config: 40-shell installs ~/.zshrc and ~/.zshrc.d.
 pretty_print "${green}Copying configs to ~/.config${neutral}"
 mkdir -p "$HOME/.config"
-cp -R .config/* "$HOME/.config"
+for dir in .config/*; do
+  [ "$dir" = .config/zsh ] || cp -R "$dir" "$HOME/.config"
+done
 
 # Ghostty and Alacritty need an absolute path for the command they launch
 # (GUI launches inherit no shell PATH) and the Homebrew prefix differs between

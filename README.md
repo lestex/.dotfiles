@@ -20,7 +20,7 @@ scripts/steps/80-fonts.sh     # or one step directly, from any directory
 
 - `DOTFILES_DIR` changes where the repo is downloaded (default `~/.dotfiles`).
 - `DOTFILES_REPO` installs from a fork.
-- Configs are **copied**, not symlinked: edit them in the repo and re-run the installer. Re-running overwrites local edits under `~/.config` and `~/.zshrc`.
+- Configs are **copied**, not symlinked: edit them in the repo and re-run the installer. Re-running overwrites local edits under `~/.config`, `~/.zshrc` and the repo's files in `~/.zshrc.d`. `~/.zshrc` only sets up oh-my-zsh and then loads `~/.zshrc.d/*.zsh` in name order; put machine-local shell settings in a file of your own there (e.g. `~/.zshrc.d/60-local.zsh`) and the installer leaves it alone.
 
 ## Terminals
 Ghostty, kitty and Alacritty share the same defaults: padding 14, no window decorations, a non-blinking block cursor, no close prompt, Shift/Ctrl+Insert to paste/copy, and Shift+Enter / Alt+Shift+Enter sent as CSI-u so apps such as Claude can tell them apart from Enter. Ghostty and Alacritty start tmux; kitty uses your login shell and its own tabs (Cmd+1…0, Cmd+T, Cmd+N).
