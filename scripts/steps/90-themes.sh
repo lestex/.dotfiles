@@ -5,7 +5,8 @@
 # THEME_ENGINE_REF in scripts/common (a sparse checkout under
 # ~/.local/share/theme-switcher/.engine; rerunning at the same commit is a
 # no-op). Runs after 70-configs: Ghostty, Alacritty, kitty and tmux include the
-# files it generates, and btop is pointed at its btop.theme.
+# files it generates, and btop and Neovim are pointed at its btop.theme and
+# neovim.lua.
 set -euo pipefail
 # shellcheck source=scripts/common
 source "$(dirname "$0")/../common"
@@ -48,5 +49,23 @@ else
   fi
   if pgrep -x btop >/dev/null; then
     pretty_print "${yellow}btop is running and rewrites btop.conf when it quits; quit it and re-run ./install.sh themes${neutral}"
+  fi
+fi
+
+# Neovim (LazyVim): theme-switcher links lua/plugins/theme.lua to the active
+# theme's neovim.lua. Create the link now, and keep it out of the Neovim
+# config's own git repo.
+nvim_dir="$HOME/.config/nvim"
+nvim_link="$nvim_dir/lua/plugins/theme.lua"
+if [ -d "$nvim_dir/lua/plugins" ]; then
+  if [ -f "$state/theme/neovim.lua" ] && { [ -L "$nvim_link" ] || [ ! -e "$nvim_link" ]; }; then
+    ln -snf "$state/theme/neovim.lua" "$nvim_link"
+  fi
+  if [ -d "$nvim_dir/.git" ] && ! grep -qx 'lua/plugins/theme.lua' "$nvim_dir/.gitignore" 2>/dev/null; then
+    pretty_print "${green}Keeping Neovim's theme link out of its git repo${neutral}"
+    if [ -s "$nvim_dir/.gitignore" ] && [ -n "$(tail -c 1 "$nvim_dir/.gitignore")" ]; then
+      echo >>"$nvim_dir/.gitignore"
+    fi
+    echo 'lua/plugins/theme.lua' >>"$nvim_dir/.gitignore"
   fi
 fi
