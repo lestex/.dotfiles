@@ -31,7 +31,7 @@ home="$tmp/home"
 mkdir -p "$home" "$tmp/sock"
 theme() {
   env -u TMUX TMUX_TMPDIR="$tmp/sock" HOME="$home" THEME_SWITCHER_ENGINE="$ENGINE" \
-    THEME_SWITCHER_NO_DESKTOP=1 THEME_SWITCHER_TERMINALS="" "$COMMAND" "$@"
+    THEME_SWITCHER_NO_DESKTOP=1 THEME_SWITCHER_TERMINALS="" THEME_SWITCHER_APPS="" "$COMMAND" "$@"
 }
 
 # --- preview ---------------------------------------------------------------------
@@ -49,7 +49,7 @@ python3 - <<'PY' || fail "the picker filters and applies the chosen theme"
 import fcntl, os, pty, re, select, struct, sys, termios, time
 tmp, home = os.environ["TMP"], os.environ["HOME_DIR"]
 env = dict(os.environ, HOME=home, THEME_SWITCHER_ENGINE=os.environ["ENGINE"], THEME_SWITCHER_NO_DESKTOP="1",
-           THEME_SWITCHER_TERMINALS="", TMUX_TMPDIR=f"{tmp}/sock", TERM="xterm-256color")
+           THEME_SWITCHER_TERMINALS="", THEME_SWITCHER_APPS="", TMUX_TMPDIR=f"{tmp}/sock", TERM="xterm-256color")
 env.pop("TMUX", None)
 pid, fd = pty.fork()
 if pid == 0:

@@ -61,7 +61,7 @@ chmod +x "$tmp/bin/osascript" "$tmp/bin/defaults"
 # tmux a private socket directory, so only the server this test starts is seen.
 mkdir -p "$tmp/tmux"
 theme() {
-  env -u TMUX TMUX_TMPDIR="$tmp/tmux" HOME="$home" PATH="$tmp/bin:$PATH" THEME_SWITCHER_TERMINALS="faketerm" "$COMMAND" "$@"
+  env -u TMUX TMUX_TMPDIR="$tmp/tmux" HOME="$home" PATH="$tmp/bin:$PATH" THEME_SWITCHER_TERMINALS="faketerm" THEME_SWITCHER_APPS="" "$COMMAND" "$@"
 }
 tmx() {
   env -u TMUX TMUX_TMPDIR="$tmp/tmux" tmux "$@"
@@ -76,12 +76,27 @@ done
 grep -q '^background = #1a1b26$' "$state/theme/ghostty.conf" || fail "ghostty.conf carries the palette background"
 ! grep -rIqE '\{\{[^}]*\}\}' "$state/theme" || fail "no placeholder survives rendering"
 [[ ! -e $state/theme/backgrounds ]] || fail "backgrounds are not copied into the state dir"
-[[ $(ls "$home/.local/state") == "theme-switcher" && ! -e $home/.config ]] || fail "the engine writes nothing outside theme-switcher's own dirs" "$(ls "$home/.local/state" "$home/.config" 2>&1)"
+# ~/.config gets only btop's themes/current.theme link.
+[[ $(ls "$home/.local/state") == "theme-switcher" && $(ls "$home/.config") == "btop" ]] || fail "the engine writes nothing outside theme-switcher's own dirs" "$(ls "$home/.local/state" "$home/.config" 2>&1)"
 first=$(head -n 1 "$state/background")
 [[ $first == "$home/.local/share/theme-switcher/tokyo-night/backgrounds/"* && -f $first ]] || fail "set picks an imported background" "$first"
 [[ $first =~ \.(jpe?g|png)$ ]] || fail "the theme ships a jpeg or png background" "$first"
 [[ $(cat "$tmp/desktop") == "$first" ]] || fail "a jpeg or png background reaches the desktop as-is" "$(cat "$tmp/desktop")"
 pass "set renders, imports backgrounds and sets the desktop"
+
+# --- btop ---------------------------------------------------------------------------
+btop_link="$home/.config/btop/themes/current.theme"
+[[ -L $btop_link && $(readlink "$btop_link") == "$state/theme/btop.theme" ]] || fail "btop's current.theme links to the active theme" "$(ls -l "$btop_link" 2>&1)"
+grep -q 'theme\[main_bg\]="#1a1b26"' "$btop_link" || fail "btop's theme has the palette background (tokyo-night)" "$(head -3 "$btop_link")"
+theme set nord >/dev/null
+grep -q 'theme\[main_bg\]="#2e3440"' "$btop_link" || fail "btop's theme follows a switch (nord)"
+rm "$btop_link" && echo 'theme[main_bg]="#000000"' >"$btop_link"
+theme set nord >/dev/null 2>"$tmp/err"
+[[ ! -L $btop_link ]] && grep -q '#000000' "$btop_link" || fail "a real current.theme file is left alone"
+grep -q "leaving btop's theme alone" "$tmp/err" || fail "and the user is told" "$(cat "$tmp/err")"
+rm "$btop_link"
+theme set "Tokyo Night" >/dev/null
+pass "btop's theme follows the active theme"
 
 # --- macOS appearance ------------------------------------------------------------
 rm -f "$tmp/appearance" "$tmp/defaults"
@@ -101,7 +116,7 @@ rm -f "$tmp/appearance" "$tmp/defaults"
 theme set rose-pine >/dev/null
 grep -qx -- 'write -g AppleAccentColor -int -1' "$tmp/defaults" || fail "a muted accent between macOS colors (rose-pine's teal) maps to graphite" "$(cat "$tmp/defaults")"
 rm -f "$tmp/appearance" "$tmp/defaults"
-env -u TMUX TMUX_TMPDIR="$tmp/tmux" HOME="$home" PATH="$tmp/bin:$PATH" THEME_SWITCHER_TERMINALS="" THEME_SWITCHER_NO_DESKTOP=1 "$COMMAND" set nord >/dev/null
+env -u TMUX TMUX_TMPDIR="$tmp/tmux" HOME="$home" PATH="$tmp/bin:$PATH" THEME_SWITCHER_TERMINALS="" THEME_SWITCHER_APPS="" THEME_SWITCHER_NO_DESKTOP=1 "$COMMAND" set nord >/dev/null
 [[ ! -e $tmp/appearance && ! -e $tmp/defaults ]] || fail "THEME_SWITCHER_NO_DESKTOP leaves macOS appearance alone"
 theme set "Tokyo Night" >/dev/null
 pass "set follows the theme in macOS: Dark/Light, accent and highlight"
