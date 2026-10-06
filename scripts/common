@@ -43,12 +43,48 @@ require_brew() {
   }
 }
 
+# Install the Homebrew formulae / casks given that are not installed yet, in one
+# brew call; the steps keep their package lists inline. Installed ones are left
+# as they are: `brew upgrade` is yours to run.
+brew_missing() {
+  local kind="$1" installed name missing=""
+  shift
+  installed=$(brew list "--$kind" -1)
+  for name in "$@"; do
+    # A tapped formula (owner/tap/name) is listed by its plain name.
+    printf '%s\n' "$installed" | grep -qx -- "${name##*/}" || missing="$missing $name"
+  done
+  printf '%s' "$missing"
+}
+brew_formulae() {
+  local missing
+  missing=$(brew_missing formula "$@")
+  if [ -z "$missing" ]; then
+    pretty_print "${yellow}Formulae already installed, skipping: $*${neutral}"
+  else
+    pretty_print "${green}Installing formulae:$missing${neutral}"
+    # shellcheck disable=SC2086 # names never contain spaces
+    brew install --formula $missing
+  fi
+}
+brew_casks() {
+  local missing
+  missing=$(brew_missing cask "$@")
+  if [ -z "$missing" ]; then
+    pretty_print "${yellow}Casks already installed, skipping: $*${neutral}"
+  else
+    pretty_print "${green}Installing casks:$missing${neutral}"
+    # shellcheck disable=SC2086
+    brew install --cask $missing
+  fi
+}
+
 TERRAFORM_VERSION=1.9.5
 PYTHON_VERSION=3.12.5
 GO_VERSION=1.22.6
 
 # Alacritty has no Homebrew formula and its cask was disabled (unsigned, fails
-# Gatekeeper), so steps/30-alacritty installs the official release DMG pinned here.
+# Gatekeeper), so steps/30-terminals installs the official release DMG pinned here.
 ALACRITTY_VERSION=0.17.0
 ALACRITTY_DMG_SHA256=ad8d7de35fb38e43184776cac6dfee05ca325caa0b6639a06a55e54e4b026620
 

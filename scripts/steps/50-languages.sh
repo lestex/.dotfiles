@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
-# The pinned Terraform and Python versions.
+# Language version managers, and the pinned Terraform and Python versions.
 #
-# Installed through tfenv and pyenv (from 20-packages) at the versions pinned in
-# scripts/common.
+# Terraform and Python are installed through tfenv and pyenv at the versions
+# pinned in scripts/common.
 set -euo pipefail
 # shellcheck source=scripts/common
 source "$(dirname "$0")/../common"
 require_brew
+
+brew_formulae tfenv pyenv goenv node nvm
 
 pretty_print "${green}Terraform $TERRAFORM_VERSION (tfenv)${neutral}"
 tfenv install "$TERRAFORM_VERSION"
