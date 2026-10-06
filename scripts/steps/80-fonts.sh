@@ -1,15 +1,11 @@
 #!/usr/bin/env bash
-# Fonts from fonts/, font-switcher and the default font.
+# font-switcher and the default font (the fonts are casks in install/Caskfile).
 #
 # font-switcher gives the three terminals their font family and size. Runs
 # after 70-configs, whose terminal configs include font-switcher's files.
 set -euo pipefail
 # shellcheck source=scripts/common
 source "$(dirname "$0")/../common"
-
-pretty_print "${green}Installing fonts${neutral}"
-mkdir -p "$HOME/Library/Fonts"
-cp fonts/*.ttf fonts/*.otf "$HOME/Library/Fonts"
 
 # https://github.com/alacritty/alacritty/releases/tag/v0.11.0
 defaults write -g AppleFontSmoothing -int 2

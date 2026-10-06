@@ -17,7 +17,8 @@ cask "visual-studio-code"
 cask "slack"
 cask "telegram"
 
-# fonts: Nerd Fonts to choose from with font-switcher
+# fonts: Nerd Fonts to choose from with font-switcher; Liga SFMono is the default
+cask "font-sf-mono-nerd-font-ligaturized"
 cask "font-jetbrains-mono-nerd-font"
 cask "font-caskaydia-mono-nerd-font"
 cask "font-meslo-lg-nerd-font"
