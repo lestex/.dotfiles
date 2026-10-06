@@ -618,10 +618,17 @@ NVIM_APPLY_LUA='return function(spec_path)
       if vim.fn.isdirectory(root .. "/" .. name) == 0 then
         table.insert(missing, name)
       else
-        if has_lazy and lazy_config.plugins[name] then
-          require("lazy").load({ plugins = { name } })
-        else
-          vim.opt.rtp:prepend(root .. "/" .. name)
+        local dir = root .. "/" .. name
+        local known = has_lazy and lazy_config.plugins[name]
+        if known then
+          -- lazy records at startup whether a plugin is installed; one the
+          -- background install added since is still "missing" to it.
+          known._ = known._ or {}
+          known._.installed = true
+          pcall(require("lazy").load, { plugins = { name } })
+        end
+        if not vim.tbl_contains(vim.opt.rtp:get(), dir) then
+          vim.opt.rtp:prepend(dir)
         end
         if type(plugin.opts) == "table" and next(plugin.opts) then
           local module = plugin.main or name:gsub("%.n?vim$", ""):gsub("^n?vim%-", "")

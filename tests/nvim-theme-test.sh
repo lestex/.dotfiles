@@ -46,7 +46,24 @@ nv() { env HOME="$home" TMPDIR="$run/" nvim "$@"; }
 
 # A minimal Neovim (no lazy.nvim): theme-switcher then finds plugins under
 # stdpath("data")/lazy, where a local fake colorscheme plugin lives.
-echo '-- test config' >"$home/.config/nvim/init.lua"
+# With FAKE_LAZY set, a stand-in for lazy.nvim that knows fake-colors.nvim but
+# recorded at startup that it was not installed, as lazy does for a plugin the
+# background install adds later; its load() then does nothing.
+cat >"$home/.config/nvim/init.lua" <<'LUA'
+if vim.env.FAKE_LAZY then
+  local root = vim.fn.stdpath("data") .. "/lazy"
+  local config = { options = { root = root }, plugins = { ["fake-colors.nvim"] = { _ = { installed = false } } } }
+  package.loaded["lazy.core.config"] = config
+  package.loaded["lazy"] = {
+    load = function(opts)
+      for _, name in ipairs(opts.plugins) do
+        local plugin = config.plugins[name]
+        if plugin and plugin._.installed then vim.opt.rtp:prepend(root .. "/" .. name) end
+      end
+    end,
+  }
+end
+LUA
 plugin="$home/.local/share/nvim/lazy/fake-colors.nvim"
 mkdir -p "$plugin/colors" "$plugin/lua/fake-colors"
 for name in fake-dark fake-light; do
@@ -98,6 +115,15 @@ env -u TMUX TMUX_TMPDIR="$tmp/sock" HOME="$home" TMPDIR="$run/" THEME_SWITCHER_E
   THEME_SWITCHER_TERMINALS="" THEME_SWITCHER_APPS="" "$COMMAND" set alpha >/dev/null
 [[ $(colors) == "fake-light" ]] || fail "THEME_SWITCHER_APPS without nvim leaves running Neovims alone" "$(colors)"
 pass "Neovims are only reloaded when nvim is in THEME_SWITCHER_APPS"
+
+# --- a plugin lazy knows but thinks is missing -----------------------------------
+nv --server "$(socket)" --remote-send ':qa!<CR>' >/dev/null 2>&1 || true
+for _ in $(seq 1 50); do [[ -z $(socket) ]] && break; sleep 0.2; done
+env HOME="$home" TMPDIR="$run/" FAKE_LAZY=1 nvim --headless >/dev/null 2>&1 &
+for _ in $(seq 1 50); do [[ -n $(socket) ]] && break; sleep 0.2; done
+theme set alpha >/dev/null
+[[ $(colors) == "fake-dark" ]] || fail "a plugin lazy recorded as not installed at startup is still applied" "$(colors)"
+pass "a theme plugin installed after Neovim started is applied"
 
 # --- a real file is left alone --------------------------------------------------
 rm "$link" && echo 'return {}' >"$link"
