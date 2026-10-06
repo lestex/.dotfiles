@@ -29,6 +29,7 @@ Alacritty has no Homebrew package any more, so the installer downloads the offic
 
 ## Themes
 ```sh
+theme-switcher pick                 # choose in fzf with a live preview; Enter applies
 theme-switcher list                 # available themes, current one marked
 theme-switcher set "Tokyo Night"    # apply a theme
 theme-switcher bg next              # next wallpaper of the current theme
@@ -37,6 +38,7 @@ theme-switcher bg none              # solid background in the theme's color
 ```
 Community themes from the theme engine's gallery install by name or git URL:
 ```sh
+theme-switcher pick --catalog       # browse the gallery in fzf with previews; Enter installs
 theme-switcher catalog              # the gallery's themes, installed ones marked *
 theme-switcher catalog gruv         # search it
 theme-switcher install ayaka        # clone it into ~/.config/theme-switcher/themes and apply it
@@ -71,7 +73,7 @@ Links inside tmux open with **Shift+click** in every terminal, both URLs and the
 
 ## Software installed
 ### Homebrew formulae (`install/Brewfile`)
-- **common:** coreutils, findutils, jq, htop, btop, tree, mole, neovim, vifm, mpv, ssh-copy-id, telnet, tmux
+- **common:** coreutils, findutils, jq, htop, btop, tree, mole, neovim, vifm, mpv, ssh-copy-id, telnet, tmux, fzf
 - **development tools:** bash, git, pyenv, tfenv, goenv, node, helm, gpg, watch, kind, podman, oh-my-posh, kubectx, krew, k9s, ollama, gh, nvm
 
 ### Casks (`install/Caskfile`)
