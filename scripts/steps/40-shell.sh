@@ -1,15 +1,14 @@
 #!/usr/bin/env bash
-# oh-my-zsh, its plugins, oh-my-posh, ~/.zshrc and ~/.zshrc.d.
+# oh-my-zsh, its plugins, the Pure prompt, ~/.zshrc and ~/.zshrc.d.
 #
 # Runs after 20-tools: the oh-my-zsh installer clones with git, which on a
 # fresh Mac is only a stub until Homebrew has installed the Command Line Tools.
-# oh-my-posh comes from its own tap, which 10-homebrew trusts.
 set -euo pipefail
 # shellcheck source=scripts/common
 source "$(dirname "$0")/../common"
 require_brew
 
-brew_formulae jandedobbeleer/oh-my-posh/oh-my-posh
+brew_formulae pure
 
 if [ ! -d "$HOME/.oh-my-zsh" ]; then
   pretty_print "${green}Installing oh-my-zsh...${neutral}"

@@ -77,7 +77,7 @@ Each step installs what it lists (`scripts/steps/`) and skips what is already in
 - **tools:** git, bash, jq, fzf, coreutils, findutils, gnupg, gh, watch, tree, htop, btop, fastfetch, mole, vifm, ssh-copy-id, telnet, mpv, ollama
 - **apps:** google-chrome, bitwarden, rectangle, vlc, telegram (daisydisk and slack are commented out)
 - **terminals:** ghostty, kitty, tmux, and Alacritty from its pinned release (see Terminals)
-- **shell:** oh-my-posh, oh-my-zsh with zsh-autosuggestions and zsh-syntax-highlighting
+- **shell:** the Pure prompt, oh-my-zsh with zsh-autosuggestions and zsh-syntax-highlighting
 - **neovim:** neovim, ripgrep, fd, lazygit, tree-sitter-cli; LazyVim as the config, from its starter, when `~/.config/nvim` doesn't exist yet (an existing config is left alone); it installs its plugins on the first `nvim` start
 - **languages:** tfenv, pyenv, goenv, node, nvm; Terraform 1.9.5 (tfenv) and Python 3.12.5 (pyenv), pinned in `scripts/common`
 - **cloud:** gcloud-cli, kubectx, krew, k9s, helm, kind, podman
