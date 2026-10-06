@@ -748,6 +748,44 @@ catalog_preview_files() {
 hex_fg() { local h="${1#\#}"; printf '\033[38;2;%d;%d;%dm' "0x${h:0:2}" "0x${h:2:2}" "0x${h:4:2}"; }
 hex_bg() { local h="${1#\#}"; printf '\033[48;2;%d;%d;%dm' "0x${h:0:2}" "0x${h:2:2}" "0x${h:4:2}"; }
 
+# How to draw a screenshot in this terminal. Ghostty and kitty speak the kitty
+# graphics protocol, which `kitten icat --unicode-placeholder` uses so the image
+# also survives tmux (allow-passthrough is on in tmux.conf). Inside tmux, TERM
+# is tmux's own, so ask tmux which terminal the client is. Anything else, such
+# as Alacritty, gets chafa's text blocks.
+image_mode() {
+  local term="${TERM:-}"
+  if [[ -n ${TMUX:-} ]]; then
+    term=$(tmux display -p '#{client_termname}' 2>/dev/null || printf '%s' "$term")
+  fi
+  case "$term" in
+    xterm-ghostty | xterm-kitty)
+      if command -v kitten >/dev/null 2>&1; then
+        echo kitty
+        return 0
+      fi
+      ;;
+  esac
+  if command -v chafa >/dev/null 2>&1; then
+    echo symbols
+  fi
+}
+
+draw_image() {
+  local image="$1" cols="$2" rows="$3"
+  case "$(image_mode)" in
+    kitty)
+      # As fzf's own preview script: the last output line is a bare reset that
+      # fzf would show as scrolling, so fold it into the line before.
+      kitten icat --clear --transfer-mode=memory --unicode-placeholder --stdin=no \
+        --place="${cols}x${rows}@0x0" "$image" 2>/dev/null | sed '$d' | sed $'$s/$/\033[m/'
+      ;;
+    symbols)
+      chafa --format symbols --animate off --size "${cols}x${rows}" "$image" 2>/dev/null
+      ;;
+  esac
+}
+
 # The palette as the terminals would show it: the 16 ANSI colors as swatches,
 # then a prompt, some code and a selection on the theme's background.
 render_preview() {
@@ -771,8 +809,9 @@ render_preview() {
     printf '%s%s%s%s%*s%s\n' "$bg" "$fg" "$text" "$bg" $(( width > ${#plain} ? width - ${#plain} : 0 )) "" "$reset"
   }
 
-  if [[ -n $image && -f $image ]] && command -v chafa >/dev/null 2>&1; then
-    chafa --format symbols --animate off --size "${width}x$(( height / 2 ))" "$image" 2>/dev/null || true
+  # The palette and sample below take 14 lines; the screenshot gets the rest.
+  if [[ -n $image && -f $image ]] && (( height - 14 >= 6 )); then
+    draw_image "$image" "$width" $(( height - 14 )) || true
   fi
 
   line "  ${title}  ($(hex_fg "${c[accent]:-${c[blue]}}")${c[mode]:-dark}$fg)"
