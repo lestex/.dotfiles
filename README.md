@@ -81,7 +81,7 @@ Links inside tmux open with **Shift+click** in every terminal, both URLs and the
 - **common:** ghostty, kitty, bitwarden, daisydisk, google-chrome, vlc, rectangle
 - **development tools:** gcloud-cli, visual-studio-code
 - **messaging:** slack, telegram
-- **fonts (Nerd Fonts):** JetBrainsMono, CaskaydiaMono, Meslo LG, FiraCode, VictorMono, Bitstream Vera Sans Mono, Iosevka; plus Liga SFMono and MesloLGS NF from `fonts/`
+- **fonts (Nerd Fonts):** JetBrainsMono, CaskaydiaMono, Meslo LG, FiraCode, VictorMono, Bitstream Vera Sans Mono, Iosevka, Liga SFMono (SF Mono Nerd Font Ligaturized)
 
 ### Also
 - Alacritty, from its pinned release (see Terminals)
