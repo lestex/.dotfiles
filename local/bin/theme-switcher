@@ -40,7 +40,7 @@
 #                                 (default ~/.local/share/theme-switcher/.engine)
 #   THEME_SWITCHER_NO_DESKTOP=1   leave macOS alone: no desktop picture, appearance or accent color
 #   THEME_SWITCHER_TERMINALS      process names to repaint (default "ghostty alacritty kitty"; empty = none)
-#   THEME_SWITCHER_APPS           apps to reload after a switch (default "btop"; empty = none)
+#   THEME_SWITCHER_APPS           apps to reload after a switch (default "btop nvim"; empty = none)
 
 # The engine uses associative arrays; macOS ships bash 3.2.
 if (( BASH_VERSINFO[0] < 5 )); then
@@ -86,7 +86,7 @@ INSTALLED_THEME_DENIED=(alacritty.toml foot.ini ghostty.conf kitty.conf vscode.j
 DROPPED_FILES=()
 LOCK_DIR="${TMPDIR:-/tmp}/theme-switcher.lock"
 
-read -ra APPS <<<"${THEME_SWITCHER_APPS-btop}"
+read -ra APPS <<<"${THEME_SWITCHER_APPS-btop nvim}"
 read -ra TERMINALS <<<"${THEME_SWITCHER_TERMINALS-ghostty alacritty kitty}"
 IMAGE_PATTERN='\.(jpe?g|png|gif|bmp|webp|heic|tiff?)$'
 
@@ -585,11 +585,111 @@ link_btop_theme() {
   ln -snf "$THEME_DIR/btop.theme" "$link"
 }
 
+# Neovim (LazyVim) loads ~/.config/nvim/lua/plugins/theme.lua like any plugin
+# spec; keep it a link to the active theme's neovim.lua, which names the
+# theme's colorscheme plugin (or aether.nvim with the palette). Only for a
+# LazyVim-style config (lua/plugins exists); a real file there is left alone.
+link_nvim_theme() {
+  local link="$HOME/.config/nvim/lua/plugins/theme.lua"
+  [[ -d $HOME/.config/nvim/lua/plugins && -f $THEME_DIR/neovim.lua ]] || return 0
+  if [[ -e $link && ! -L $link ]]; then
+    echo "theme-switcher: $link is a file, not a link; leaving Neovim's theme alone" >&2
+    return 0
+  fi
+  ln -snf "$THEME_DIR/neovim.lua" "$link"
+}
+
+# Applies a theme spec to a running Neovim: loads (or, if lazy.nvim does not
+# know it yet, puts on the runtimepath) each plugin it names, calls setup(opts)
+# where the spec has opts (aether.nvim takes the palette that way), then sets
+# LazyVim's colorscheme. Returns "missing: ..." when a plugin is not installed.
+NVIM_APPLY_LUA='return function(spec_path)
+  local ok, spec = pcall(dofile, spec_path)
+  if not ok or type(spec) ~= "table" then return "error: " .. tostring(spec) end
+  local has_lazy, lazy_config = pcall(require, "lazy.core.config")
+  local root = has_lazy and lazy_config.options.root or (vim.fn.stdpath("data") .. "/lazy")
+  local colorscheme, missing = nil, {}
+  for _, plugin in ipairs(spec) do
+    local repo = type(plugin) == "table" and plugin[1]
+    if repo == "LazyVim/LazyVim" then
+      colorscheme = plugin.opts and plugin.opts.colorscheme
+    elseif type(repo) == "string" then
+      local name = plugin.name or repo:match("[^/]+$")
+      if vim.fn.isdirectory(root .. "/" .. name) == 0 then
+        table.insert(missing, name)
+      else
+        if has_lazy and lazy_config.plugins[name] then
+          require("lazy").load({ plugins = { name } })
+        else
+          vim.opt.rtp:prepend(root .. "/" .. name)
+        end
+        if type(plugin.opts) == "table" and next(plugin.opts) then
+          local module = plugin.main or name:gsub("%.n?vim$", ""):gsub("^n?vim%-", "")
+          local found, mod = pcall(require, module)
+          if found and type(mod) == "table" and type(mod.setup) == "function" then pcall(mod.setup, plugin.opts) end
+        end
+      end
+    end
+  end
+  if #missing > 0 then return "missing: " .. table.concat(missing, " ") end
+  if type(colorscheme) == "function" then
+    colorscheme()
+  elseif type(colorscheme) == "string" then
+    vim.cmd.colorscheme(colorscheme)
+  else
+    return "error: no colorscheme in " .. spec_path
+  end
+  return "ok " .. tostring(vim.g.colors_name)
+end'
+
+# Running Neovims listen on $TMPDIR/nvim.$USER/*/nvim.<pid>.0 (or under
+# $XDG_RUNTIME_DIR when set).
+nvim_sockets() {
+  local base="${XDG_RUNTIME_DIR:-${TMPDIR:-/tmp}}"
+  find "${base%/}" -maxdepth 3 -type s -name 'nvim.*.0' -user "$(id -u)" 2>/dev/null || true
+}
+
+apply_nvim_everywhere() {
+  local apply="$1" spec="$2" socket result missing=0
+  while IFS= read -r socket; do
+    [[ -n $socket ]] || continue
+    result=$(nvim --server "$socket" --remote-expr "luaeval('dofile(\"$apply\")(_A)', '$spec')" 2>/dev/null || true)
+    [[ $result != missing:* ]] || missing=1
+  done < <(nvim_sockets)
+  return "$missing"
+}
+
+# Live: every running Neovim switches now. A plugin the theme needs that is not
+# installed yet is installed in the background (lazy installs a theme.lua
+# plugin on startup), and then applied everywhere again.
+reload_nvim() {
+  local apply="$CACHE_DIR/nvim-apply.lua" spec="$THEME_DIR/neovim.lua"
+  command -v nvim >/dev/null 2>&1 || return 0
+  [[ -f $spec && -L $HOME/.config/nvim/lua/plugins/theme.lua ]] || return 0
+  [[ -n $(nvim_sockets) ]] || return 0
+
+  mkdir -p "$CACHE_DIR"
+  printf '%s\n' "$NVIM_APPLY_LUA" >"$apply"
+  if ! apply_nvim_everywhere "$apply" "$spec"; then
+    echo "Neovim: installing this theme's plugin in the background; open windows switch when it is ready"
+    # The installer is a Neovim too: give it a private TMPDIR so its socket is
+    # not mistaken for an open session.
+    (
+      private=$(mktemp -d)
+      TMPDIR="$private/" nvim --headless "+Lazy! install" +qa >/dev/null 2>&1 || true
+      rm -rf "$private"
+      apply_nvim_everywhere "$apply" "$spec" || true
+    ) </dev/null >/dev/null 2>&1 &
+    disown 2>/dev/null || true
+  fi
+}
+
 reload_apps() {
   local app
   for app in "${APPS[@]}"; do
     case "$app" in
       btop) pkill -USR2 -x btop 2>/dev/null || true ;;
+      nvim) reload_nvim ;;
     esac
   done
 }
@@ -634,6 +734,7 @@ set_theme() {
   repaint_terminals
   repaint_tmux
   link_btop_theme
+  link_nvim_theme
   reload_apps
   apply_desktop
   apply_macos_appearance
