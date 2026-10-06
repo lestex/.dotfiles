@@ -1,2 +1,0 @@
-# pyenv
-eval "$(pyenv init -)"
