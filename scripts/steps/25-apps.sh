@@ -5,6 +5,13 @@ set -euo pipefail
 source "$(dirname "$0")/../common"
 require_brew
 
-brew_casks \
-  google-chrome bitwarden rectangle daisydisk vlc \
-  slack telegram
+apps=(
+  google-chrome
+  bitwarden
+  rectangle
+  # daisydisk
+  vlc
+  # slack
+  telegram
+)
+brew_casks "${apps[@]}"

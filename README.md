@@ -75,7 +75,7 @@ Links inside tmux open with **Shift+click** in every terminal, both URLs and the
 ## Software installed
 Each step installs what it lists (`scripts/steps/`) and skips what is already installed; `brew upgrade` updates them:
 - **tools:** git, bash, jq, fzf, coreutils, findutils, gnupg, gh, watch, tree, htop, btop, fastfetch, mole, vifm, ssh-copy-id, telnet, mpv, ollama
-- **apps:** google-chrome, bitwarden, rectangle, daisydisk, vlc, slack, telegram
+- **apps:** google-chrome, bitwarden, rectangle, vlc, telegram (daisydisk and slack are commented out)
 - **terminals:** ghostty, kitty, tmux, and Alacritty from its pinned release (see Terminals)
 - **shell:** oh-my-posh, oh-my-zsh with zsh-autosuggestions and zsh-syntax-highlighting
 - **neovim:** neovim, ripgrep, fd, lazygit, tree-sitter-cli; LazyVim as the config, from its starter, when `~/.config/nvim` doesn't exist yet (an existing config is left alone); it installs its plugins on the first `nvim` start
