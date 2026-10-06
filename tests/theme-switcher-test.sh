@@ -40,12 +40,22 @@ home="$tmp/home"
 state="$home/.local/state/theme-switcher/current"
 mkdir -p "$home" "$tmp/bin"
 
-# osascript stub: records the picture path it was asked to set.
+# osascript stub: records the desktop picture it was asked to set (a script on
+# stdin, path as \$2) and any one-line script (Dark/Light mode); JavaScript (the
+# color-change notification) is ignored. defaults stub: records writes, so the
+# test never changes the real macOS accent or highlight colors.
 cat >"$tmp/bin/osascript" <<SH
 #!/bin/sh
-printf '%s\n' "\$2" >"$tmp/desktop"
+case "\$1" in
+  -) printf '%s\n' "\$2" >"$tmp/desktop" ;;
+  -e) printf '%s\n' "\$2" >>"$tmp/appearance" ;;
+esac
 SH
-chmod +x "$tmp/bin/osascript"
+cat >"$tmp/bin/defaults" <<SH
+#!/bin/sh
+printf '%s\n' "\$*" >>"$tmp/defaults"
+SH
+chmod +x "$tmp/bin/osascript" "$tmp/bin/defaults"
 
 # Never the real tmux: drop $TMUX (set when the test runs inside tmux) and give
 # tmux a private socket directory, so only the server this test starts is seen.
@@ -72,6 +82,26 @@ first=$(head -n 1 "$state/background")
 [[ $first =~ \.(jpe?g|png)$ ]] || fail "the theme ships a jpeg or png background" "$first"
 [[ $(cat "$tmp/desktop") == "$first" ]] || fail "a jpeg or png background reaches the desktop as-is" "$(cat "$tmp/desktop")"
 pass "set renders, imports backgrounds and sets the desktop"
+
+# --- macOS appearance ------------------------------------------------------------
+rm -f "$tmp/appearance" "$tmp/defaults"
+theme set nord >/dev/null 2>"$tmp/err" || fail "set applies nord" "$(cat "$tmp/err")"
+grep -q 'set dark mode to true' "$tmp/appearance" || fail "a dark theme turns on Dark mode" "$(cat "$tmp/appearance" 2>&1)"
+grep -qx -- 'write -g AppleAccentColor -int 4' "$tmp/defaults" || fail "nord's blue accent maps to macOS blue" "$(cat "$tmp/defaults")"
+grep -qx -- 'write -g AppleAquaColorVariant -int 1' "$tmp/defaults" || fail "a colored accent uses the blue aqua variant"
+grep -q -- '^write -g AppleHighlightColor -string 0\.[0-9]* 0\.[0-9]* 0\.[0-9]* Other$' "$tmp/defaults" || fail "the highlight is set from the accent" "$(cat "$tmp/defaults")"
+rm -f "$tmp/appearance" "$tmp/defaults"
+theme set catppuccin-latte >/dev/null
+grep -q 'set dark mode to false' "$tmp/appearance" || fail "a light theme turns on Light mode"
+rm -f "$tmp/appearance" "$tmp/defaults"
+theme set vantablack >/dev/null
+grep -qx -- 'write -g AppleAccentColor -int -1' "$tmp/defaults" && grep -qx -- 'write -g AppleAquaColorVariant -int 6' "$tmp/defaults" ||
+  fail "a gray accent maps to graphite" "$(cat "$tmp/defaults")"
+rm -f "$tmp/appearance" "$tmp/defaults"
+env -u TMUX TMUX_TMPDIR="$tmp/tmux" HOME="$home" PATH="$tmp/bin:$PATH" THEME_SWITCHER_TERMINALS="" THEME_SWITCHER_NO_DESKTOP=1 "$COMMAND" set nord >/dev/null
+[[ ! -e $tmp/appearance && ! -e $tmp/defaults ]] || fail "THEME_SWITCHER_NO_DESKTOP leaves macOS appearance alone"
+theme set "Tokyo Night" >/dev/null
+pass "set follows the theme in macOS: Dark/Light, accent and highlight"
 
 # --- refusal -----------------------------------------------------------------
 mkdir -p "$home/.config/theme-switcher/themed"

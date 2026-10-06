@@ -12,6 +12,7 @@
 #   theme-switcher list                 themes, current one marked
 #   theme-switcher current              current theme name
 #   theme-switcher set <name>           render and apply a theme
+#   theme-switcher appearance           re-apply the theme to macOS: Dark/Light, accent and highlight colors
 #   theme-switcher bg next              next background of the current theme
 #   theme-switcher bg set <path>        use an image as the background
 #   theme-switcher bg none              solid theme background color
@@ -37,7 +38,7 @@
 # Environment:
 #   THEME_SWITCHER_ENGINE         engine checkout to use instead of the managed one
 #                                 (default ~/.local/share/theme-switcher/.engine)
-#   THEME_SWITCHER_NO_DESKTOP=1   skip setting the macOS desktop picture
+#   THEME_SWITCHER_NO_DESKTOP=1   leave macOS alone: no desktop picture, appearance or accent color
 #   THEME_SWITCHER_TERMINALS      process names to repaint (default "ghostty alacritty kitty"; empty = none)
 
 # The engine uses associative arrays; macOS ships bash 3.2.
@@ -393,6 +394,75 @@ solid_background() {
   echo "$out"
 }
 
+# macOS's own colors follow the theme: Dark or Light from its mode, the
+# closest of macOS's eight accent colors to its accent, and the selected-text
+# highlight as a light tint of its exact accent (any RGB works there). The
+# tint, as macOS derives its own highlights, keeps selected text readable on
+# white pages too, which a theme's dark selection color would not. The menu
+# bar itself cannot be colored; it follows Dark/Light and the wallpaper.
+#
+# AppleAccentColor: -1 graphite, 0 red, 1 orange, 2 yellow, 3 green, 4 blue,
+# 5 purple, 6 pink. Graphite also needs AppleAquaColorVariant 6 (else 1).
+macos_accent_for() {
+  local h="${1#\#}"
+  awk -v r=$((16#${h:0:2})) -v g=$((16#${h:2:2})) -v b=$((16#${h:4:2})) '
+    BEGIN {
+      r /= 255; g /= 255; b /= 255
+      max = r; if (g > max) max = g; if (b > max) max = b
+      min = r; if (g < min) min = g; if (b < min) min = b
+      d = max - min; l = (max + min) / 2
+      s = (d == 0) ? 0 : d / (1 - (2 * l - 1 < 0 ? -(2 * l - 1) : 2 * l - 1))
+      if (s < 0.2 || d < 0.08) { print -1; exit }
+      if (max == r)      hue = 60 * (((g - b) / d) % 6)
+      else if (max == g) hue = 60 * ((b - r) / d + 2)
+      else               hue = 60 * ((r - g) / d + 4)
+      if (hue < 0) hue += 360
+      split("0 1 2 3 4 5 6", idx, " "); split("0 30 55 120 215 275 330", ref, " ")
+      best = 0; bestd = 999
+      for (i = 1; i <= 7; i++) {
+        dd = hue - ref[i]; if (dd < 0) dd = -dd; if (dd > 180) dd = 360 - dd
+        if (dd < bestd) { bestd = dd; best = idx[i] }
+      }
+      print best
+    }'
+}
+
+apply_macos_appearance() {
+  local colors="$THEME_DIR/colors.toml" mode accent dark=true index h
+
+  [[ ${THEME_SWITCHER_NO_DESKTOP:-} == "1" ]] && return 0
+  command -v osascript >/dev/null || return 0
+
+  mode=$(engine "$ENGINE_COLOR" --file "$colors" mode 2>/dev/null || echo dark)
+  accent=$(engine "$ENGINE_COLOR" --file "$colors" accent 2>/dev/null || true)
+  [[ $mode != light ]] || dark=false
+
+  osascript -e "tell application \"System Events\" to tell appearance preferences to set dark mode to $dark" >/dev/null 2>&1 ||
+    echo "theme-switcher: could not set Dark/Light mode (allow your terminal to control System Events)" >&2
+
+  if [[ $accent =~ ^#[0-9A-Fa-f]{6}$ ]]; then
+    index=$(macos_accent_for "$accent")
+    defaults write -g AppleAccentColor -int "$index"
+    if (( index == -1 )); then
+      defaults write -g AppleAquaColorVariant -int 6
+    else
+      defaults write -g AppleAquaColorVariant -int 1
+    fi
+    h="${accent#\#}"
+    defaults write -g AppleHighlightColor -string "$(awk -v r=$((16#${h:0:2})) -v g=$((16#${h:2:2})) -v b=$((16#${h:4:2})) \
+      'BEGIN { t = 0.6; printf "%.6f %.6f %.6f Other", (r + (255 - r) * t) / 255, (g + (255 - g) * t) / 255, (b + (255 - b) * t) / 255 }')"
+  fi
+
+  # Running apps redraw with the new accent and highlight when told; without
+  # this, most only pick them up when relaunched.
+  osascript -l JavaScript -e '
+    ObjC.import("Foundation");
+    const center = $.NSDistributedNotificationCenter.defaultCenter;
+    for (const name of ["AppleColorPreferencesChangedNotification", "AppleAquaColorVariantChanged"]) {
+      center.postNotificationNameObjectUserInfoDeliverImmediately(name, $(), $(), true);
+    }' >/dev/null 2>&1 || true
+}
+
 apply_desktop() {
   local path image
 
@@ -533,6 +603,7 @@ set_theme() {
   repaint_terminals
   repaint_tmux
   apply_desktop
+  apply_macos_appearance
   echo "Theme: $name"
 }
 
@@ -856,7 +927,7 @@ pick_theme() {
 }
 
 usage() {
-  sed -n '3,41p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '3,42p' "$0" | sed 's/^# \{0,1\}//'
 }
 
 trap cleanup EXIT
@@ -872,6 +943,7 @@ case "${1:-}" in
     esac
     ;;
   set) [[ -n ${2:-} ]] || die "usage: theme-switcher set <name>"; set_theme "$2" ;;
+  appearance) [[ -f $THEME_DIR/colors.toml ]] || die "no theme set yet"; require_engine; apply_macos_appearance ;;
   catalog) catalog "${2:-}" ;;
   install) [[ -n ${2:-} ]] || die "usage: theme-switcher install <name|url>"; install_theme "$2" ;;
   remove) [[ -n ${2:-} ]] || die "usage: theme-switcher remove <name>"; remove_theme "$2" ;;
