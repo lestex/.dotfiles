@@ -98,6 +98,31 @@ rm "$btop_link"
 theme set "Tokyo Night" >/dev/null
 pass "btop's theme follows the active theme"
 
+# --- torrnado -------------------------------------------------------------------------
+# The repo ships the template in .config/theme-switcher/themed (the installer
+# copies it into ~/.config). No torrnado config dir yet: nothing is linked.
+mkdir -p "$home/.config/theme-switcher/themed"
+cp "$ROOT/.config/theme-switcher/themed/torrnado.toml.tpl" "$home/.config/theme-switcher/themed/"
+torrnado_link="$home/.config/torrnado/themes/current.toml"
+theme set "Tokyo Night" >/dev/null
+[[ -f $state/theme/torrnado.toml && ! -e $home/.config/torrnado ]] || fail "torrnado.toml is generated, and nothing is linked without torrnado's config dir"
+mkdir -p "$home/.config/torrnado"
+theme set "Tokyo Night" >/dev/null
+[[ -L $torrnado_link && $(readlink "$torrnado_link") == "$state/theme/torrnado.toml" ]] || fail "torrnado's current.toml links to the active theme" "$(ls -l "$torrnado_link" 2>&1)"
+for key in background foreground muted accent success warning error border selected_bg selected_fg; do
+  grep -qE "^$key +\= \"#[0-9a-fA-F]{6}\"$" "$torrnado_link" || fail "torrnado.toml sets $key to a hex color" "$(cat "$torrnado_link")"
+done
+grep -q '^background  = "#1a1b26"$' "$torrnado_link" || fail "torrnado's theme has the palette background (tokyo-night)"
+theme set nord >/dev/null
+grep -q '^background  = "#2e3440"$' "$torrnado_link" || fail "torrnado's theme follows a switch (nord)"
+rm "$torrnado_link" && echo 'background = "#000000"' >"$torrnado_link"
+theme set nord >/dev/null 2>"$tmp/err"
+[[ ! -L $torrnado_link ]] && grep -q '#000000' "$torrnado_link" || fail "a real current.toml is left alone"
+grep -q "leaving torrnado's theme alone" "$tmp/err" || fail "and the user is told" "$(cat "$tmp/err")"
+rm -rf "$home/.config/torrnado" "$home/.config/theme-switcher"
+theme set "Tokyo Night" >/dev/null
+pass "torrnado's theme follows the active theme"
+
 # --- macOS appearance ------------------------------------------------------------
 rm -f "$tmp/appearance" "$tmp/defaults"
 theme set nord >/dev/null 2>"$tmp/err" || fail "set applies nord" "$(cat "$tmp/err")"

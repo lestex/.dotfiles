@@ -79,3 +79,32 @@ elif [ -f "$state/theme/colors.toml" ]; then
   pretty_print "${green}Applying the theme to VS Code${neutral}"
   "$HOME/.local/bin/theme-switcher" vscode
 fi
+
+# torrnado follows the theme through themes/current.toml, which theme-switcher
+# links to the active theme's torrnado.toml. Point an existing config.toml at
+# it: change only the value of its top-level theme key, keeping the comment,
+# or add the key at the top (a key appended at the end would land in the last
+# [table]). No config.toml means torrnado runs on its defaults; leave it be.
+torrnado_conf="$HOME/.config/torrnado/config.toml"
+if [ -f "$torrnado_conf" ]; then
+  # A theme set before the torrnado template existed has no torrnado.toml yet:
+  # render the current theme again, quietly (files only).
+  if [ -f "$state/theme.name" ] && [ ! -f "$state/theme/torrnado.toml" ]; then
+    THEME_SWITCHER_NO_DESKTOP=1 THEME_SWITCHER_TERMINALS="" THEME_SWITCHER_APPS="" \
+      "$HOME/.local/bin/theme-switcher" set "$(cat "$state/theme.name")" >/dev/null
+  fi
+  torrnado_theme="$HOME/.config/torrnado/themes/current.toml"
+  if [ -f "$state/theme/torrnado.toml" ] && { [ -L "$torrnado_theme" ] || [ ! -e "$torrnado_theme" ]; }; then
+    mkdir -p "$(dirname "$torrnado_theme")"
+    ln -snf "$state/theme/torrnado.toml" "$torrnado_theme"
+  fi
+  if grep -Eq '^theme[[:space:]]*=[[:space:]]*"current"' "$torrnado_conf"; then
+    pretty_print "${yellow}torrnado already uses the theme-switcher theme, skipping ...${neutral}"
+  elif grep -Eq '^theme[[:space:]]*=' "$torrnado_conf"; then
+    pretty_print "${green}Pointing torrnado at the theme-switcher theme${neutral}"
+    sed -i '' -E 's/^(theme[[:space:]]*=[[:space:]]*)"[^"]*"/\1"current"/' "$torrnado_conf"
+  else
+    pretty_print "${green}Pointing torrnado at the theme-switcher theme${neutral}"
+    { printf 'theme = "current"\n'; cat "$torrnado_conf"; } >"$torrnado_conf.tmp" && mv "$torrnado_conf.tmp" "$torrnado_conf"
+  fi
+fi

@@ -586,6 +586,21 @@ link_btop_theme() {
   ln -snf "$THEME_DIR/btop.theme" "$link"
 }
 
+# torrnado reads user themes from ~/.config/torrnado/themes/<name>.toml; keep
+# current.toml a link to the active theme's torrnado.toml (rendered from the
+# repo's template in ~/.config/theme-switcher/themed). Only once torrnado has a
+# config dir; a real file there is left alone.
+link_torrnado_theme() {
+  local link="$HOME/.config/torrnado/themes/current.toml"
+  [[ -d $HOME/.config/torrnado && -f $THEME_DIR/torrnado.toml ]] || return 0
+  if [[ -e $link && ! -L $link ]]; then
+    echo "theme-switcher: $link is a file, not a link; leaving torrnado's theme alone" >&2
+    return 0
+  fi
+  mkdir -p "$(dirname "$link")"
+  ln -snf "$THEME_DIR/torrnado.toml" "$link"
+}
+
 # Neovim (LazyVim) loads ~/.config/nvim/lua/plugins/theme.lua like any plugin
 # spec; keep it a link to the active theme's neovim.lua, which names the
 # theme's colorscheme plugin (or aether.nvim with the palette). Only for a
@@ -851,6 +866,7 @@ set_theme() {
   repaint_terminals
   repaint_tmux
   link_btop_theme
+  link_torrnado_theme
   link_nvim_theme
   reload_apps
   apply_desktop
