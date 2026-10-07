@@ -22,11 +22,13 @@ The picker shows each theme's palette, and in Ghostty and kitty also its screens
 | btop | `~/.config/btop/themes/current.theme` points at the theme | right away |
 | Neovim (LazyVim) | `~/.config/nvim/lua/plugins/theme.lua` points at the theme | right away; a missing colorscheme plugin is installed in the background first |
 | VS Code | the theme's Marketplace extension, or one generated from the palette | right away; an extension being installed applies when it's ready |
+| torrnado | `~/.config/torrnado/themes/current.toml` points at the theme | right away with torrnado's live reload ([#128](https://github.com/lestex/torrnado/pull/128)); otherwise on its next start |
 | Pure prompt | uses the terminal's color names | right away |
 | macOS | Dark/Light mode, accent and highlight color, desktop picture | right away |
 
 What each one changes, so you know what to expect:
 - **btop**: the installer only sets `color_theme = "current"` in your `btop.conf`; your own btop themes stay selectable. btop rewrites `btop.conf` when it quits, so quit it before re-running `./install.sh themes`.
+- **torrnado**: only once it has a `~/.config/torrnado` folder. The installer changes only the value of the `theme` line in its `config.toml` to `"current"`, keeping your comment. The ten colors come from a template this repo ships in `.config/theme-switcher/themed/torrnado.toml.tpl`; success, warning and error are the theme's green, yellow and red.
 - **Neovim**: the link is kept out of your Neovim config's git repo with `.gitignore`. A hand-written `theme.lua` is never replaced.
 - **VS Code**: only `workbench.colorTheme` in `settings.json` changes. Themes installed from git repos never install a VS Code extension (an extension is code), so they get the generated theme.
 - **macOS accent**: the closest of macOS's accent colors when the theme's accent is vivid; Graphite when it's muted or between colors (e.g. rose-pine's teal). The highlight (selected text) is a light tint of the accent, readable on light pages too. The menu bar can't be colored; it follows Dark/Light and the wallpaper.
