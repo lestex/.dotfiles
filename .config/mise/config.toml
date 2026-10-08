@@ -13,6 +13,6 @@ node = "lts"
 aws-cli = "latest"
 
 [settings]
-# Honour the version files projects already have, as pyenv, goenv, tfenv and
+# Honor the version files projects already have, as pyenv, goenv, tfenv and
 # nvm did.
 idiomatic_version_file_enable_tools = ["python", "go", "terraform", "node"]
