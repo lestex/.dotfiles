@@ -713,15 +713,26 @@ reload_nvim() {
 # ({"extension": "enkia.tokyo-night", "name": "Tokyo Night"}): install it if
 # missing, then select it. (A theme cloned from a git repo cannot supply one:
 # an extension is arbitrary code.) Otherwise the engine's vscode-theme.json,
-# generated from the palette, is served by a local extension. VS Code watches
-# settings.json, so open windows switch as soon as workbench.colorTheme changes.
+# generated from the palette, is applied as color overrides on VS Code's own
+# Light Modern or Dark Modern, matching the theme's mode.
+#
+# Overrides rather than a theme of our own: VS Code loads a theme's colors once
+# per window and keeps them until the window reloads, so a generated theme
+# could never change under an open window. Settings it applies live, and it
+# watches settings.json, so open windows switch either way without a signal.
 VSCODE_SETTINGS="$HOME/Library/Application Support/Code/User/settings.json"
 VSCODE_EXTENSIONS="$HOME/.vscode/extensions"
-VSCODE_LOCAL_EXTENSION="theme-switcher-theme"
-VSCODE_LOCAL_VERSION="1.0.0"
-# VS Code does not re-read a selected theme's file, so the local extension offers
-# the generated theme under two labels and each switch selects the other one.
-VSCODE_LOCAL_LABELS=("Theme Switcher" "Theme Switcher ·")
+# The settings theme-switcher owns while a generated theme is in use, each
+# scoped to the base theme ("[Dark Modern]": {...}) and kept on one line, which
+# is how they are recognised and replaced. A key of your own, written over
+# several lines, is left alone.
+VSCODE_OVERRIDE_KEYS=(workbench.colorCustomizations editor.tokenColorCustomizations editor.semanticTokenColorCustomizations)
+
+vscode_settings_file() {
+  local file="$VSCODE_SETTINGS"
+  [[ -L $file ]] && file=$(readlink -f "$file")
+  printf '%s' "$file"
+}
 
 # Sets workbench.colorTheme in settings.json, which is JSONC (comments, trailing
 # commas): edited in place, never round-tripped through a strict JSON parser.
@@ -744,44 +755,76 @@ vscode_set_color_theme() {
   else
     # Insert after the first "{", before every existing setting.
     awk -v line="  \"workbench.colorTheme\": \"$name\"," '
-      !done && /\{/ { sub(/\{/, "{\n" line); done = 1 } { print }' "$file" >"$tmp"
+      !done && (pos = index($0, "{")) { print substr($0, 1, pos); print line; rest = substr($0, pos + 1)
+        if (rest ~ /[^ \t]/) print rest; done = 1; next }
+      { print }' "$file" >"$tmp"
   fi
   cat "$tmp" >"$file"
   rm -f "$tmp"
 }
 
-vscode_current_color_theme() {
-  sed -n 's/.*"workbench\.colorTheme"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$VSCODE_SETTINGS" 2>/dev/null | head -n 1
+# Sets one override key to a one-line JSON value read from a file, or removes it
+# when the file is empty. Edited in place like workbench.colorTheme.
+vscode_set_override() {
+  local key="$1" value_file="$2" file tmp
+  file=$(vscode_settings_file)
+  mkdir -p "$(dirname "$file")"
+  [[ -s $file ]] || printf '{\n}\n' >"$file"
+
+  if grep -q "\"$key\"" "$file" &&
+    ! grep -Eq "^[[:space:]]*\"$key\"[[:space:]]*:[[:space:]]*\{.*\}[[:space:]]*,?[[:space:]]*\$" "$file"; then
+    echo "theme-switcher: $key in VS Code's settings.json is your own; leaving it alone" >&2
+    return 0
+  fi
+
+  tmp=$(mktemp "$file.XXXXXX")
+  # The value is read with getline: awk -v would expand its backslashes.
+  awk -v key="\"$key\"" -v value_file="$value_file" '
+    BEGIN { if ((getline value < value_file) > 0 && value != "") line = "  " key ": " value "," }
+    { t = $0; sub(/^[ \t]+/, "", t) }
+    index(t, key) == 1 && substr(t, length(key) + 1) ~ /^[ \t]*:/ { next }
+    !done && line != "" && (pos = index($0, "{")) { print substr($0, 1, pos); print line; rest = substr($0, pos + 1)
+      if (rest ~ /[^ \t]/) print rest; done = 1; next }
+    { print }' "$file" >"$tmp"
+  cat "$tmp" >"$file"
+  rm -f "$tmp"
 }
 
-# The local extension: a package.json contributing the generated theme (linked
-# from the active theme) under both labels, registered in extensions.json, the
-# index VS Code reads and watches.
-vscode_install_local_extension() {
-  local dir="$VSCODE_EXTENSIONS/$VSCODE_LOCAL_EXTENSION" ui="vs-dark" index tmp id="local.$VSCODE_LOCAL_EXTENSION"
-  [[ $(jq -r '.type // "dark"' "$THEME_DIR/vscode-theme.json" 2>/dev/null) == "light" ]] && ui="vs"
+# Applies the generated theme as overrides on its base, then selects the base.
+vscode_apply_generated() {
+  local theme="$THEME_DIR/vscode-theme.json" base="Dark Modern" value key filter
+  [[ $(jq -r '.type // "dark"' "$theme" 2>/dev/null) == "light" ]] && base="Light Modern"
+  value=$(mktemp)
+  for key in "${VSCODE_OVERRIDE_KEYS[@]}"; do
+    case "$key" in
+      workbench.colorCustomizations) filter='.colors // {}' ;;
+      editor.tokenColorCustomizations) filter='{ textMateRules: (.tokenColors // []) }' ;;
+      editor.semanticTokenColorCustomizations) filter='{ enabled: (.semanticHighlighting // true), rules: (.semanticTokenColors // {}) }' ;;
+    esac
+    jq -c --arg base "[$base]" "{ (\$base): ($filter) }" "$theme" >"$value" || { rm -f "$value"; return 0; }
+    vscode_set_override "$key" "$value"
+  done
+  rm -f "$value"
+  vscode_set_color_theme "$base"
+}
 
-  mkdir -p "$dir/themes"
-  ln -snf "$THEME_DIR/vscode-theme.json" "$dir/themes/color-theme.json"
-  jq -n --arg ui "$ui" --arg version "$VSCODE_LOCAL_VERSION" --arg name "$VSCODE_LOCAL_EXTENSION" \
-    --arg a "${VSCODE_LOCAL_LABELS[0]}" --arg b "${VSCODE_LOCAL_LABELS[1]}" '{
-      name: $name, displayName: "Theme Switcher", description: "The active theme-switcher theme",
-      publisher: "local", version: $version, engines: { vscode: "^1.70.0" }, categories: ["Themes"],
-      contributes: { themes: [
-        { label: $a, uiTheme: $ui, path: "./themes/color-theme.json" },
-        { label: $b, uiTheme: $ui, path: "./themes/color-theme.json" }
-      ] }
-    }' >"$dir/package.json"
+vscode_clear_overrides() {
+  local key empty
+  empty=$(mktemp)
+  for key in "${VSCODE_OVERRIDE_KEYS[@]}"; do
+    vscode_set_override "$key" "$empty"
+  done
+  rm -f "$empty"
+}
 
-  index="$VSCODE_EXTENSIONS/extensions.json"
-  [[ -s $index ]] || printf '[]\n' >"$index"
+# Earlier versions served the generated theme from a local extension; remove it.
+vscode_remove_local_extension() {
+  local dir="$VSCODE_EXTENSIONS/theme-switcher-theme" index="$VSCODE_EXTENSIONS/extensions.json" tmp
+  [[ -d $dir ]] || return 0
+  rm -rf "$dir"
+  [[ -f $index ]] || return 0
   tmp=$(mktemp)
-  if jq --arg id "$id" --arg version "$VSCODE_LOCAL_VERSION" --arg path "$dir" --arg rel "$VSCODE_LOCAL_EXTENSION" '
-      map(select(.identifier.id != $id)) + [{
-        identifier: { id: $id }, version: $version,
-        location: { "$mid": 1, fsPath: $path, external: ("file://" + $path), path: $path, scheme: "file" },
-        relativeLocation: $rel
-      }]' "$index" >"$tmp"; then
+  if jq 'map(select(.identifier.id != "local.theme-switcher-theme"))' "$index" >"$tmp"; then
     mv "$tmp" "$index"
   else
     rm -f "$tmp"
@@ -791,13 +834,15 @@ vscode_install_local_extension() {
 # wait=1: install a missing extension in the foreground (the installer);
 # otherwise in the background, so a theme switch does not block on it.
 apply_vscode() {
-  local wait="${1:-0}" descriptor="$THEME_DIR/vscode.json" name extension label
+  local wait="${1:-0}" descriptor="$THEME_DIR/vscode.json" name extension
   command -v code >/dev/null 2>&1 || return 0
+  vscode_remove_local_extension
 
   if [[ -f $descriptor ]]; then
     name=$(jq -r '.name // empty' "$descriptor" 2>/dev/null)
     extension=$(jq -r '.extension // empty' "$descriptor" 2>/dev/null)
     [[ $name =~ ^[^[:cntrl:]\"\\]+$ && $extension =~ ^[A-Za-z0-9._-]+$ ]] || return 0
+    vscode_clear_overrides
     if code --list-extensions 2>/dev/null | grep -Fxiq -- "$extension"; then
       vscode_set_color_theme "$name"
     elif (( wait )); then
@@ -808,10 +853,7 @@ apply_vscode() {
       disown 2>/dev/null || true
     fi
   elif [[ -f $THEME_DIR/vscode-theme.json ]]; then
-    vscode_install_local_extension
-    label="${VSCODE_LOCAL_LABELS[0]}"
-    [[ $(vscode_current_color_theme) != "$label" ]] || label="${VSCODE_LOCAL_LABELS[1]}"
-    vscode_set_color_theme "$label"
+    vscode_apply_generated
   fi
 }
 

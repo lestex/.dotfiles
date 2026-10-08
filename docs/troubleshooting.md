@@ -35,7 +35,7 @@ macOS asked to let your terminal control System Events, and it wasn't allowed. T
 btop rewrites `btop.conf` when it quits. Quit btop, then run `./install.sh themes`.
 
 **VS Code didn't switch**
-The theme's extension is installing in the background, and VS Code switches when it's ready. To wait for it: `theme-switcher vscode`.
+The theme's extension is installing in the background, and VS Code switches when it's ready. To wait for it: `theme-switcher vscode`. If you customize VS Code's colors yourself, theme-switcher leaves that setting alone and says so, and the theme's colors for it don't apply.
 
 **Neovim kept its colors**
 The theme's colorscheme plugin is being installed in the background, and Neovim switches when it's done. A hand-written `~/.config/nvim/lua/plugins/theme.lua` is never replaced (you're told so).
