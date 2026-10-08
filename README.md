@@ -24,7 +24,9 @@ theme-switcher pick --catalog # browse and install community themes
 theme-switcher bg next        # next wallpaper of the current theme
 font-switcher pick            # choose the terminal font
 font-switcher size 14         # change the terminal font size
+terminal-switcher kitty       # the terminal Cmd+Ctrl+T opens (ghostty, alacritty, kitty)
 exec zsh                      # pick up shell config changes in an open terminal
+# Cmd+Ctrl+T terminal, Cmd+Ctrl+B browser, from anywhere
 ```
 
 ## Documentation
@@ -35,6 +37,7 @@ exec zsh                      # pick up shell config changes in an open terminal
 | [Fonts](docs/fonts.md) | font-switcher and how each terminal picks up a change |
 | [Terminals and tmux](docs/terminals.md) | shared defaults, keys, opening links |
 | [Shell](docs/shell.md) | `.zshrc`, `~/.zshrc.d`, the Pure prompt |
+| [Hotkeys](docs/hotkeys.md) | Cmd+Ctrl+T terminal, Cmd+Ctrl+B browser, terminal-switcher, other apps |
 | [Troubleshooting](docs/troubleshooting.md) | known errors and their fixes |
 
 ## Tests
