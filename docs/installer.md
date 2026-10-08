@@ -21,7 +21,7 @@ If a step fails, the run stops and tells you how to resume it, e.g. `./install.s
 | `terminals` | Ghostty, kitty, tmux, and Alacritty from its official release |
 | `shell` | oh-my-zsh with zsh-autosuggestions and zsh-syntax-highlighting, the Pure prompt, `~/.zshrc` and `~/.zshrc.d` ([Shell](shell.md)) |
 | `neovim` | Neovim, ripgrep, fd, lazygit, tree-sitter-cli; LazyVim as the config if `~/.config/nvim` doesn't exist yet |
-| `languages` | tfenv, pyenv, goenv, node, nvm; Terraform 1.9.5 and Python 3.12.5 |
+| `languages` | [mise](https://mise.jdx.dev), and with it Python 3.14, Go 1.26, Terraform 1.15, Node LTS and the AWS CLI (from `.config/mise/config.toml`) |
 | `cloud` | gcloud-cli, kubectx, krew, k9s, helm, kind, podman |
 | `vscode` | VS Code, the extensions Claude Code, Terraform and Python (which brings Pylance, debugpy and Python Environments), and its settings |
 | `configs` | everything in `.config/` into `~/.config`, tmux plugin manager, the tmux link opener, vifm color schemes |
@@ -33,7 +33,7 @@ The order matters in places: `tools` brings the real `git` the later steps clone
 
 The package lists live in the steps themselves: to add or drop a package, edit the list in its step. A Homebrew package is installed only when `brew list` doesn't show it; **nothing is ever upgraded**, so run `brew upgrade` yourself. Write a formula under the name `brew list` shows (`gnupg`, not its alias `gpg`), or it is reinstalled with a warning on every run.
 
-Versions that are pinned on purpose sit in `scripts/common`: Terraform, Python and Go, Alacritty (version and the checksum of its download), and the theme engine's commit.
+Language and tool versions are in `.config/mise/config.toml` (see [Shell](shell.md#languages-and-tools)). Other pinned versions sit in `scripts/common`: Alacritty (version and the checksum of its download) and the theme engine's commit.
 
 ## Re-running
 

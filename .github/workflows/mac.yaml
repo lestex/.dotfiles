@@ -25,6 +25,10 @@ jobs:
 
     - name: Run installer
       run: ./install.sh
+      env:
+        # mise looks some versions up on GitHub; authenticated, a shared
+        # runner's anonymous rate limit cannot fail the install.
+        GITHUB_TOKEN: ${{ github.token }}
 
     # The installer fetches the theme engine pinned in scripts/common; test theme-switcher
     # against it, so a pin bump that breaks the engine interface fails here.

@@ -79,9 +79,8 @@ brew_casks() {
   fi
 }
 
-TERRAFORM_VERSION=1.9.5
-PYTHON_VERSION=3.12.5
-GO_VERSION=1.22.6
+# Language and tool versions (Python, Go, Terraform, Node, AWS CLI) live in
+# .config/mise/config.toml, which mise reads; steps/50-languages installs them.
 
 # Alacritty has no Homebrew formula and its cask was disabled (unsigned, fails
 # Gatekeeper), so steps/30-terminals installs the official release DMG pinned here.

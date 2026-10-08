@@ -522,7 +522,7 @@ repaint_terminals() {
   done
 
   # OSC carries colors only; kitty re-reads the rest of its config on SIGUSR1.
-  # Alacritty watches its imports itself. Ghostty is not signalled: on macOS it
+  # Alacritty watches its imports itself. Ghostty is not signaled: on macOS it
   # has no documented external reload, and an unhandled signal would quit it.
   if pgrep -x kitty >/dev/null; then
     pkill -USR1 -x kitty || true

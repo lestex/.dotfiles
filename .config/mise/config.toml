@@ -1,0 +1,18 @@
+# Global tool versions, managed by mise (https://mise.jdx.dev). Installed from
+# the dotfiles repo (.config/mise); edit it there and run ./install.sh languages.
+#
+# A version like "3.14" means the newest 3.14.x when it is installed. A project
+# pins its own in a mise.toml, or in the files it already has: .python-version,
+# .go-version, .terraform-version, .nvmrc.
+
+[tools]
+python = "3.14"
+go = "1.26"
+terraform = "1.15"
+node = "lts"
+aws-cli = "latest"
+
+[settings]
+# Honor the version files projects already have, as pyenv, goenv, tfenv and
+# nvm did.
+idiomatic_version_file_enable_tools = ["python", "go", "terraform", "node"]
