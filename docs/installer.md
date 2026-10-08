@@ -11,27 +11,34 @@ scripts/steps/80-fonts.sh     # one step directly, from any directory
 
 If a step fails, the run stops and tells you how to resume it, e.g. `./install.sh fonts`.
 
-## The steps
+## Base and packages
 
-| Step | Installs and sets up |
-|---|---|
-| `homebrew` | Homebrew, then `brew update` |
-| `tools` | git, bash, jq, fzf, coreutils, findutils, gnupg, gh, watch, tree, htop, btop, fastfetch, mole, vifm, ssh-copy-id, telnet, mpv, ollama |
-| `apps` | Google Chrome, Bitwarden, Rectangle, VLC, Telegram (DaisyDisk and Slack are listed but commented out) |
-| `terminals` | Ghostty, kitty, tmux, and Alacritty from its official release |
-| `shell` | oh-my-zsh with zsh-autosuggestions and zsh-syntax-highlighting, the Pure prompt, `~/.zshrc` and `~/.zshrc.d` ([Shell](shell.md)) |
-| `neovim` | Neovim, ripgrep, fd, lazygit, tree-sitter-cli; LazyVim as the config if `~/.config/nvim` doesn't exist yet |
-| `languages` | [mise](https://mise.jdx.dev), and with it Python 3.14, Go 1.26, Terraform 1.15, Node LTS and the AWS CLI (from `.config/mise/config.toml`) |
-| `cloud` | gcloud-cli, kubectx, krew, k9s, helm, kind, podman |
-| `vscode` | VS Code, the extensions Claude Code, Terraform and Python (which brings Pylance, debugpy and Python Environments), and its settings |
-| `configs` | everything in `.config/` into `~/.config`, tmux plugin manager, the tmux link opener, vifm color schemes |
-| `hotkeys` | Hammerspoon, for Cmd+Ctrl+T (terminal) and Cmd+Ctrl+B (browser), and terminal-switcher ([Hotkeys](hotkeys.md)) |
-| `fonts` | the Nerd Fonts, font-switcher, and Liga SFMono at 14pt on first run ([Fonts](fonts.md)) |
-| `themes` | theme-switcher, the theme engine, tokyo-night on first run, btop/Neovim/VS Code wiring ([Themes](themes.md)) |
+The steps are of two kinds, and `./install.sh --list` says which each one is:
+
+- **Base** is the framework itself: Homebrew, the terminals and tmux, the shell, the configs, the hotkeys, the default font, the switchers and the themes. It also covers the few tools they run on: git, bash, jq, fzf and mise. Leave these in.
+- **Packages** is the software on top, chosen per person. Each list has one package per line under a `# Comment out what you don't want.` note. To skip a package, comment out its line; to add one, add a line.
+
+| Step | Kind | Installs and sets up |
+|---|---|---|
+| `homebrew` | base | Homebrew, then `brew update` |
+| `tools` | packages | coreutils, findutils, gnupg, gh, watch, tree, htop, btop, fastfetch, mole, vifm, ssh-copy-id, telnet, mpv, ollama; plus git, bash, jq, fzf (base) |
+| `apps` | packages | Google Chrome, Bitwarden, Rectangle, VLC, Telegram (DaisyDisk and Slack are commented out) |
+| `terminals` | base | Ghostty, kitty, tmux, and Alacritty from its official release |
+| `shell` | base | oh-my-zsh with zsh-autosuggestions and zsh-syntax-highlighting, the Pure prompt, `~/.zshrc` and `~/.zshrc.d` ([Shell](shell.md)) |
+| `neovim` | packages | Neovim, ripgrep, fd, lazygit, tree-sitter-cli; LazyVim as the config if Neovim is in and `~/.config/nvim` doesn't exist yet |
+| `languages` | base + packages | [mise](https://mise.jdx.dev) (base), and the tools in `.config/mise/config.toml`: Python 3.14, Go 1.26, Terraform 1.15, Node LTS, the AWS CLI |
+| `cloud` | packages | gcloud-cli, kubectx, krew, k9s, helm, kind, podman |
+| `vscode` | packages | VS Code, the extensions Claude Code, Terraform and Python (which brings Pylance, debugpy and Python Environments), and its settings |
+| `configs` | base | everything in `.config/` into `~/.config`, tmux plugin manager, the tmux link opener, vifm color schemes |
+| `hotkeys` | base | Hammerspoon, for Cmd+Ctrl+T (terminal) and Cmd+Ctrl+B (browser), and terminal-switcher ([Hotkeys](hotkeys.md)) |
+| `fonts` | base + packages | Liga SFMono at 14pt and font-switcher (base); JetBrainsMono, Caskaydia, Meslo, FiraCode, VictorMono, Bitstream Vera, Iosevka ([Fonts](fonts.md)) |
+| `themes` | base | theme-switcher, the theme engine, tokyo-night on first run, btop/Neovim/VS Code/torrnado wiring ([Themes](themes.md)) |
+
+Commenting out a package only stops the installer from installing it. It doesn't uninstall anything already on the Mac; `brew uninstall` does that. Apps that follow the theme are wired up only when they're installed, so dropping Neovim, VS Code or btop is safe.
 
 The order matters in places: `tools` brings the real `git` the later steps clone with, and `fonts` and `themes` run after `configs` because the terminal configs include files they generate.
 
-The package lists live in the steps themselves: to add or drop a package, edit the list in its step. A Homebrew package is installed only when `brew list` doesn't show it; **nothing is ever upgraded**, so run `brew upgrade` yourself. Write a formula under the name `brew list` shows (`gnupg`, not its alias `gpg`), or it is reinstalled with a warning on every run.
+A Homebrew package is installed only when `brew list` doesn't show it; **nothing is ever upgraded**, so run `brew upgrade` yourself. Write a formula under the name `brew list` shows (`gnupg`, not its alias `gpg`), or it is reinstalled with a warning on every run.
 
 Language and tool versions are in `.config/mise/config.toml` (see [Shell](shell.md#languages-and-tools)). Other pinned versions sit in `scripts/common`: Alacritty (version and the checksum of its download) and the theme engine's commit.
 

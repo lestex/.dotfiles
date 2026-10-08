@@ -5,6 +5,7 @@
 # pins its own in a mise.toml, or in the files it already has: .python-version,
 # .go-version, .terraform-version, .nvmrc.
 
+# Comment out what you don't want; mise itself is part of the base.
 [tools]
 python = "3.14"
 go = "1.26"

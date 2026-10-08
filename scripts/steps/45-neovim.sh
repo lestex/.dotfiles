@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Neovim, with LazyVim as its config unless there already is one.
+# Packages: Neovim, with LazyVim as its config unless there already is one.
 #
 # ripgrep, fd, lazygit and tree-sitter-cli are what LazyVim uses (pickers, git
 # UI, treesitter parsers; without the CLI nvim-treesitter fetches it through
@@ -14,7 +14,20 @@ set -euo pipefail
 source "$(dirname "$0")/../common"
 require_brew
 
-brew_formulae neovim ripgrep fd lazygit tree-sitter-cli
+# Comment out what you don't want; without neovim, LazyVim is not set up.
+packages=(
+  neovim
+  ripgrep
+  fd
+  lazygit
+  tree-sitter-cli
+)
+brew_formulae ${packages[@]+"${packages[@]}"}
+
+if ! command -v nvim >/dev/null; then
+  pretty_print "${yellow}Neovim is not installed, skipping LazyVim ...${neutral}"
+  exit 0
+fi
 
 nvim_dir="$HOME/.config/nvim"
 if [ -e "$nvim_dir" ]; then

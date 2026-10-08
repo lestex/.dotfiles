@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# oh-my-zsh, its plugins, the Pure prompt, ~/.zshrc and ~/.zshrc.d.
+# Base: oh-my-zsh, its plugins, the Pure prompt, ~/.zshrc and ~/.zshrc.d.
 #
 # Runs after 20-tools: the oh-my-zsh installer clones with git, which on a
 # fresh Mac is only a stub until Homebrew has installed the Command Line Tools.

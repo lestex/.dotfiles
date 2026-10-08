@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Ghostty, kitty, Alacritty (from its pinned, checksum-verified release) and tmux.
+# Base: Ghostty, kitty, Alacritty (pinned, checksum-verified release) and tmux.
 #
 # Alacritty: no formula, and the cask is disabled for failing Gatekeeper, so
 # install the official release DMG, pinned by version and checksum in
