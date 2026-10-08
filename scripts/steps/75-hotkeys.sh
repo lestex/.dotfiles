@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# App hotkeys with Hammerspoon: Cmd+Ctrl+T terminal, Cmd+Ctrl+B browser.
+# Base: app hotkeys with Hammerspoon: Cmd+Ctrl+T terminal, Cmd+Ctrl+B browser.
 #
 # The config is .config/hammerspoon/init.lua, copied by 70-configs; Hammerspoon
 # is pointed at ~/.config/hammerspoon instead of its default ~/.hammerspoon.

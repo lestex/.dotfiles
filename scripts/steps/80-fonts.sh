@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Nerd Fonts, font-switcher and the default font (Liga SFMono).
+# Base: font-switcher and the default font (Liga SFMono); packages: more Nerd Fonts.
 #
 # font-switcher gives the three terminals their font family and size. Runs
 # after 70-configs, whose terminal configs include font-switcher's files.
@@ -13,15 +13,20 @@ require_brew
 if ! brew list --cask font-sf-mono-nerd-font-ligaturized >/dev/null 2>&1; then
   rm -f "$HOME"/Library/Fonts/LigaSFMonoNerdFont-*.otf
 fi
-brew_casks \
-  font-sf-mono-nerd-font-ligaturized \
-  font-jetbrains-mono-nerd-font \
-  font-caskaydia-mono-nerd-font \
-  font-meslo-lg-nerd-font \
-  font-fira-code-nerd-font \
-  font-victor-mono-nerd-font \
-  font-bitstream-vera-sans-mono-nerd-font \
+# Base: the default font.
+brew_casks font-sf-mono-nerd-font-ligaturized
+
+# More fonts to choose from with font-switcher. Comment out what you don't want.
+fonts=(
+  font-jetbrains-mono-nerd-font
+  font-caskaydia-mono-nerd-font
+  font-meslo-lg-nerd-font
+  font-fira-code-nerd-font
+  font-victor-mono-nerd-font
+  font-bitstream-vera-sans-mono-nerd-font
   font-iosevka-nerd-font
+)
+brew_casks ${fonts[@]+"${fonts[@]}"}
 
 # https://github.com/alacritty/alacritty/releases/tag/v0.11.0
 defaults write -g AppleFontSmoothing -int 2

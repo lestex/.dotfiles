@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Homebrew, up to date.
+# Base: Homebrew, up to date.
 set -euo pipefail
 # shellcheck source=scripts/common
 source "$(dirname "$0")/../common"

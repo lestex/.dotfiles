@@ -45,7 +45,9 @@ require_brew() {
 
 # Install the Homebrew formulae / casks given that are not installed yet, in one
 # brew call; the steps keep their package lists inline. Installed ones are left
-# as they are: `brew upgrade` is yours to run.
+# as they are: `brew upgrade` is yours to run. An empty list (everything
+# commented out) installs nothing. Pass an array as ${list[@]+"${list[@]}"}:
+# bash 3.2 calls "${list[@]}" of an empty array unbound under set -u.
 brew_missing() {
   local kind="$1" installed name missing=""
   shift
@@ -58,6 +60,7 @@ brew_missing() {
 }
 brew_formulae() {
   local missing
+  [ $# -gt 0 ] || return 0
   missing=$(brew_missing formula "$@")
   if [ -z "$missing" ]; then
     pretty_print "${yellow}Formulae already installed, skipping: $*${neutral}"
@@ -69,6 +72,7 @@ brew_formulae() {
 }
 brew_casks() {
   local missing
+  [ $# -gt 0 ] || return 0
   missing=$(brew_missing cask "$@")
   if [ -z "$missing" ]; then
     pretty_print "${yellow}Casks already installed, skipping: $*${neutral}"

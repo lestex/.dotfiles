@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# mise, and the languages and tools in .config/mise/config.toml.
+# Base: mise; packages: the languages and tools in .config/mise/config.toml.
 #
 # mise manages Python, Go, Terraform, Node and the AWS CLI in place of pyenv,
 # goenv, tfenv and nvm. The versions live in .config/mise/config.toml, which

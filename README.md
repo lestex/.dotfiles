@@ -15,7 +15,7 @@ This downloads the repo into `~/.dotfiles` and sets the Mac up. From a checkout,
 ./install.sh --list           # the steps
 ./install.sh fonts themes     # run only these
 ```
-Configs are **copied**, not linked: edit them in the repo, then re-run the installer. See [the installer](docs/installer.md).
+Configs are **copied**, not linked: edit them in the repo, then re-run the installer. The installer is a **base** (the framework: terminals, shell, themes, fonts, hotkeys) plus **packages** you choose by commenting lines in or out of the steps' lists. See [the installer](docs/installer.md).
 
 ## Everyday commands
 ```sh
