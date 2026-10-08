@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Configs into ~/.config, tmux plugin manager and link opener, vifm colors.
+# Base: configs into ~/.config, tmux plugin manager and link opener, vifm colors.
 #
 # Configs are copied, not linked: edit them in the repo and re-run this step.
 set -euo pipefail

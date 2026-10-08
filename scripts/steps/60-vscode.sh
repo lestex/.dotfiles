@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
-# VS Code, its extensions and settings.
+# Packages: VS Code, its extensions and settings.
 set -euo pipefail
 # shellcheck source=scripts/common
 source "$(dirname "$0")/../common"
 require_brew
 
+# Comment out what you don't want; without the cask, the step does nothing.
+casks=(
+  visual-studio-code
+)
 # ms-python.python brings Pylance, debugpy and Python Environments. The color
 # theme comes from theme-switcher (90-themes).
 extensions=(
@@ -13,7 +17,7 @@ extensions=(
   ms-python.python
 )
 
-brew_casks visual-studio-code
+brew_casks ${casks[@]+"${casks[@]}"}
 
 if ! command -v code >/dev/null; then
   pretty_print "${yellow}VS Code's code command not found, skipping VS Code setup ...${neutral}"
@@ -21,7 +25,7 @@ if ! command -v code >/dev/null; then
 fi
 
 installed=$(code --list-extensions)
-for extension in "${extensions[@]}"; do
+for extension in ${extensions[@]+"${extensions[@]}"}; do
   if grep -Fxiq -- "$extension" <<<"$installed"; then
     pretty_print "${yellow}VS Code extension $extension already installed, skipping ...${neutral}"
   else

@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
-# Desktop apps.
+# Packages: desktop apps.
 set -euo pipefail
 # shellcheck source=scripts/common
 source "$(dirname "$0")/../common"
 require_brew
 
+# Comment out what you don't want.
 apps=(
   google-chrome
   bitwarden
@@ -14,4 +15,4 @@ apps=(
   # slack
   telegram
 )
-brew_casks "${apps[@]}"
+brew_casks ${apps[@]+"${apps[@]}"}
