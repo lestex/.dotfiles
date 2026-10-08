@@ -1,12 +1,6 @@
-# Language version managers: pyenv, goenv, and cargo if Rust is installed.
-
-# pyenv
-eval "$(pyenv init -)"
-
-# goenv
-export GOENV_ROOT="$HOME/.goenv"
-export PATH="$GOENV_ROOT/bin:$PATH"
-eval "$(goenv init -)"
+# Language versions from mise: ~/.config/mise/config.toml, or a project's own
+# mise.toml, .python-version, .go-version, .terraform-version or .nvmrc.
+eval "$(mise activate zsh)"
 
 # Rust is not installed by these dotfiles; load cargo only if it is there.
 if [ -f "$HOME/.cargo/env" ]; then

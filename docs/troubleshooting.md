@@ -5,12 +5,11 @@
 **`_omp_get_prompt: no such file or directory: …/oh-my-posh` after every command**
 That shell started before the switch to Pure. Run `exec zsh` in it, or open a new one. The same goes for any shell config change: open shells keep the old config.
 
-**`goenv: version '1.24.13' is not installed (set by ~/.go-version)`**
-Your global Go version isn't installed. Use one you have, or install it:
-```sh
-goenv versions
-goenv global 1.26.8      # or: goenv install 1.24.13
-```
+**`mise WARN missing: go@1.24.13`** (or another tool)
+A version file in this folder or one above it (`.go-version`, `.python-version`, `mise.toml`, ...) pins a version that isn't installed. Install it with `mise install`, or change the file. A stray file in your home folder applies everywhere under it.
+
+**`python`, `go` or `node` is not the version you expect**
+`mise ls` shows which version is in use and which file set it. A terminal opened before the switch to mise still uses pyenv or goenv: run `exec zsh`. The old `~/.pyenv`, `~/.goenv` and `~/.nvm` folders aren't used any more and can be deleted.
 
 ## Homebrew
 
