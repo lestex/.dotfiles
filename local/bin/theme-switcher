@@ -724,7 +724,7 @@ VSCODE_SETTINGS="$HOME/Library/Application Support/Code/User/settings.json"
 VSCODE_EXTENSIONS="$HOME/.vscode/extensions"
 # The settings theme-switcher owns while a generated theme is in use, each
 # scoped to the base theme ("[Dark Modern]": {...}) and kept on one line, which
-# is how they are recognised and replaced. A key of your own, written over
+# is how they are recognized and replaced. A key of your own, written over
 # several lines, is left alone.
 VSCODE_OVERRIDE_KEYS=(workbench.colorCustomizations editor.tokenColorCustomizations editor.semanticTokenColorCustomizations)
 
