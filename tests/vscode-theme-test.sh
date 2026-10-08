@@ -72,30 +72,63 @@ theme set tokyo-night >/dev/null
 pass "an installed extension is reused"
 
 # --- a theme generated from the palette ----------------------------------------------
+# settings.json as strict JSON: comment lines and trailing commas dropped.
+settings_json() { sed '/^[[:space:]]*\/\//d' "$settings" | perl -0pe 's/,(\s*[}\]])/$1/g'; }
+generated="$home/.local/state/theme-switcher/current/theme/vscode-theme.json"
+
+# A local extension left by an earlier version is removed.
+mkdir -p "$home/.vscode/extensions/theme-switcher-theme"
+echo '[{"identifier":{"id":"local.theme-switcher-theme"}},{"identifier":{"id":"someone.else"}}]' >"$home/.vscode/extensions/extensions.json"
+
 mkdir -p "$home/.config/theme-switcher/themes/plain"
 cp "$ENGINE/themes/nord/colors.toml" "$home/.config/theme-switcher/themes/plain/"
 theme set plain >/dev/null 2>"$tmp/err" || fail "set applies a theme without vscode.json" "$(cat "$tmp/err")"
-local_ext="$home/.vscode/extensions/theme-switcher-theme"
-[[ -L $local_ext/themes/color-theme.json && -f $local_ext/themes/color-theme.json ]] ||
-  fail "the local extension links the generated theme" "$(ls -l "$local_ext/themes" 2>&1)"
-jq -e '.contributes.themes | length == 2' "$local_ext/package.json" >/dev/null || fail "the local extension contributes the theme"
-jq -e 'map(select(.identifier.id == "local.theme-switcher-theme")) | length == 1' "$home/.vscode/extensions/extensions.json" >/dev/null ||
-  fail "the local extension is registered" "$(cat "$home/.vscode/extensions/extensions.json")"
-first=$(color_theme)
-[[ $first == "Theme Switcher"* ]] || fail "the generated theme is selected" "$first"
-pass "a theme without an extension is generated and selected"
+[[ $(color_theme) == "Dark Modern" ]] || fail "a dark generated theme selects Dark Modern" "$(color_theme)"
+for key in workbench.colorCustomizations editor.tokenColorCustomizations editor.semanticTokenColorCustomizations; do
+  [[ $(grep -c "\"$key\"" "$settings") == 1 ]] || fail "$key is written once, on one line" "$(grep -n "$key" "$settings" | cut -c1-120)"
+done
+settings_json | jq -e --slurpfile g "$generated" '
+  .["workbench.colorCustomizations"]["[Dark Modern]"] == $g[0].colors and
+  .["editor.tokenColorCustomizations"]["[Dark Modern]"].textMateRules == $g[0].tokenColors and
+  .["editor.semanticTokenColorCustomizations"]["[Dark Modern]"].rules == $g[0].semanticTokenColors' >/dev/null ||
+  fail "the generated colors, token and semantic colors are overrides on Dark Modern"
+grep -q '// comments and trailing commas survive' "$settings" || fail "the rest of settings.json is kept"
+[[ ! -e $home/.vscode/extensions/theme-switcher-theme ]] &&
+  jq -e 'map(.identifier.id) == ["someone.else"]' "$home/.vscode/extensions/extensions.json" >/dev/null ||
+  fail "the old local extension is removed, other extensions kept" "$(cat "$home/.vscode/extensions/extensions.json")"
+pass "a dark theme without an extension becomes overrides on Dark Modern"
 
-theme set plain >/dev/null
-second=$(color_theme)
-[[ $second == "Theme Switcher"* && $second != "$first" ]] || fail "each switch selects the other label" "$first / $second"
-jq -e 'map(select(.identifier.id == "local.theme-switcher-theme")) | length == 1' "$home/.vscode/extensions/extensions.json" >/dev/null ||
-  fail "the local extension is registered once"
-pass "re-applying swaps labels, so VS Code re-reads the theme"
+theme set lupine >/dev/null
+[[ $(color_theme) == "Light Modern" ]] || fail "a light generated theme selects Light Modern" "$(color_theme)"
+for key in workbench.colorCustomizations editor.tokenColorCustomizations editor.semanticTokenColorCustomizations; do
+  [[ $(grep -c "\"$key\"" "$settings") == 1 ]] || fail "$key is replaced, not added again"
+done
+settings_json | jq -e --slurpfile g "$generated" '
+  (.["workbench.colorCustomizations"] | keys) == ["[Light Modern]"] and
+  .["workbench.colorCustomizations"]["[Light Modern]"]["editor.background"] == $g[0].colors["editor.background"]' >/dev/null ||
+  fail "switching replaces the overrides with the light theme's"
+pass "a light theme replaces them, on Light Modern"
+
+theme set tokyo-night >/dev/null
+[[ $(color_theme) == "$name" ]] || fail "a Marketplace theme is selected again" "$(color_theme)"
+! grep -qE 'workbench.colorCustomizations|editor.tokenColorCustomizations|editor.semanticTokenColorCustomizations' "$settings" ||
+  fail "a Marketplace theme removes the overrides" "$(grep -n Customizations "$settings" | cut -c1-120)"
+settings_json | jq -e . >/dev/null || fail "settings.json stays valid" "$(cat "$settings")"
+pass "a Marketplace theme removes the overrides"
+
+# Overrides of your own, over several lines, are left alone.
+awk 'NR==1 { print; print "  \"workbench.colorCustomizations\": {"; print "    \"editor.background\": \"#123456\""; print "  },"; next } { print }' "$settings" >"$tmp/s" && cat "$tmp/s" >"$settings"
+theme set plain >/dev/null 2>"$tmp/err"
+grep -q '"editor.background": "#123456"' "$settings" || fail "your own colorCustomizations are kept"
+grep -q "workbench.colorCustomizations in VS Code's settings.json is your own" "$tmp/err" || fail "and you are told" "$(cat "$tmp/err")"
+[[ $(grep -c '"editor.tokenColorCustomizations"' "$settings") == 1 ]] || fail "the other overrides are still applied"
+pass "overrides of your own are left alone"
 
 # --- an empty settings.json, VS Code off THEME_SWITCHER_APPS, and the subcommand -----
 rm "$settings"
 theme vscode >/dev/null
-[[ $(color_theme) == "Theme Switcher"* ]] && jq -e . "$settings" >/dev/null || fail "a missing settings.json is created" "$(cat "$settings" 2>&1)"
+[[ $(color_theme) == "Dark Modern" ]] && settings_json | jq -e '.["workbench.colorCustomizations"]["[Dark Modern]"] | length > 100' >/dev/null ||
+  fail "a missing settings.json is created" "$(head -c 300 "$settings" 2>&1)"
 pass "theme-switcher vscode creates settings.json"
 
 before=$(cat "$settings")
