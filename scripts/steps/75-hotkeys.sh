@@ -3,13 +3,18 @@
 #
 # The config is .config/hammerspoon/init.lua, copied by 70-configs; Hammerspoon
 # is pointed at ~/.config/hammerspoon instead of its default ~/.hammerspoon.
-# ~/.config/hammerspoon/local.lua (never in the repo) picks other apps.
+# terminal-switcher picks the terminal; ~/.config/hammerspoon/local.lua (never in
+# the repo) picks other apps.
 set -euo pipefail
 # shellcheck source=scripts/common
 source "$(dirname "$0")/../common"
 require_brew
 
 brew_casks hammerspoon
+
+# Chooses the terminal Cmd+Ctrl+T opens.
+mkdir -p "$HOME/.local/bin"
+cp local/bin/terminal-switcher "$HOME/.local/bin/terminal-switcher"
 
 config="$HOME/.config/hammerspoon/init.lua"
 if [ "$(defaults read org.hammerspoon.Hammerspoon MJConfigFile 2>/dev/null)" = "$config" ]; then

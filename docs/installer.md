@@ -25,7 +25,7 @@ If a step fails, the run stops and tells you how to resume it, e.g. `./install.s
 | `cloud` | gcloud-cli, kubectx, krew, k9s, helm, kind, podman |
 | `vscode` | VS Code, the extensions Claude Code, Terraform and Python (which brings Pylance, debugpy and Python Environments), and its settings |
 | `configs` | everything in `.config/` into `~/.config`, tmux plugin manager, the tmux link opener, vifm color schemes |
-| `hotkeys` | Hammerspoon, for Cmd+Ctrl+T (terminal) and Cmd+Ctrl+B (browser) ([Hotkeys](hotkeys.md)) |
+| `hotkeys` | Hammerspoon, for Cmd+Ctrl+T (terminal) and Cmd+Ctrl+B (browser), and terminal-switcher ([Hotkeys](hotkeys.md)) |
 | `fonts` | the Nerd Fonts, font-switcher, and Liga SFMono at 14pt on first run ([Fonts](fonts.md)) |
 | `themes` | theme-switcher, the theme engine, tokyo-night on first run, btop/Neovim/VS Code wiring ([Themes](themes.md)) |
 

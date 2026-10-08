@@ -7,10 +7,11 @@
 -- Each opens the app, or brings it to the front if it is already running.
 -- Cmd+Ctrl, because Cmd+T (new tab) and Cmd+B (bold) belong to the apps.
 --
--- Choose other apps in ~/.config/hammerspoon/local.lua, which the installer
--- never touches, e.g.:
+-- The terminal is chosen with `terminal-switcher ghostty|alacritty|kitty`,
+-- read on every press. Other apps go in ~/.config/hammerspoon/local.lua,
+-- which the installer never touches, e.g.:
 --
---   return { terminal = "kitty", browser = "Safari" }
+--   return { browser = "Safari" }
 --
 -- Saving any file here reloads the config.
 
@@ -31,10 +32,30 @@ if hs.fs.attributes(localFile) then
   end
 end
 
+-- terminal-switcher's choice, by its lowercase name; local.lua's terminal
+-- (or Ghostty) when there is none.
+local terminalApps = { ghostty = "Ghostty", alacritty = "Alacritty", kitty = "kitty" }
+local terminalChoice = os.getenv("HOME") .. "/.local/state/terminal-switcher/current"
+
+local function appFor(name)
+  if name == "terminal" then
+    local f = io.open(terminalChoice)
+    if f then
+      local choice = (f:read("*l") or ""):match("^%s*(.-)%s*$")
+      f:close()
+      if terminalApps[choice] then
+        return terminalApps[choice]
+      end
+    end
+  end
+  return apps[name]
+end
+
 local function open(name)
   return function()
-    if not hs.application.launchOrFocus(apps[name]) then
-      hs.alert.show("Can't open " .. tostring(apps[name]) .. " (" .. name .. ")", 3)
+    local app = appFor(name)
+    if not hs.application.launchOrFocus(app) then
+      hs.alert.show("Can't open " .. tostring(app) .. " (" .. name .. ")", 3)
     end
   end
 end
