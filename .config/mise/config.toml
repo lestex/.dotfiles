@@ -17,3 +17,6 @@ aws-cli = "latest"
 # Honor the version files projects already have, as pyenv, goenv, tfenv and
 # nvm did.
 idiomatic_version_file_enable_tools = ["python", "go", "terraform", "node"]
+# Skip minimum versions such as go.mod's `go` directive (deprecated in mise,
+# with a warning in every Go project); a `toolchain` line still counts.
+idiomatic_version_file_ignore_minimum_versions = true
