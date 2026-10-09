@@ -36,7 +36,7 @@ mise use python@3.13         # pin a version for this project (writes mise.toml)
 mise upgrade                 # move to the newest version each pin allows
 ```
 
-A project can also pin a version with the files it already has: `.python-version`, `.go-version`, `.terraform-version` or `.nvmrc`. mise switches as you `cd` into it. To change the global versions, edit the repo's config and run `./install.sh languages configs`. Like other configs, `~/.config/mise/config.toml` is overwritten by the installer, so `mise use -g` changes there don't last.
+A project can also pin a version with the files it already has: `.python-version`, `.go-version`, `.terraform-version` or `.nvmrc`, or a `toolchain` line in `go.mod` (the `go` line is only a minimum and is ignored). mise switches as you `cd` into it. To change the global versions, edit the repo's config and run `./install.sh languages configs`. Like other configs, `~/.config/mise/config.toml` is overwritten by the installer, so `mise use -g` changes there don't last.
 
 ## Prompt
 
