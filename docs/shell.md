@@ -11,7 +11,7 @@ zsh with oh-my-zsh, set up from `.config/zsh/` in the repo.
 | `10-path.zsh` | `/usr/local/bin` and `/usr/local/sbin`, `PLATFORM` |
 | `20-languages.zsh` | mise, and cargo if Rust is installed |
 | `30-cloud.zsh` | gcloud path and completion, krew, k9s, the `kcb` alias (a kind cluster) |
-| `40-tools.zsh` | `ls` is [eza](https://eza.rocks) when installed (directories first, icons); oh-my-zsh's `l`, `la`, `ll`, `lsa` use it too. `command ls` runs the macOS one |
+| `40-tools.zsh` | [eza](https://eza.rocks) when installed, as omarchy has it: `ls` is a long listing (directories first, icons), `lsa` adds hidden files, `lt` is a two-level tree with git status, `lta` adds hidden files. `command ls` runs the macOS one |
 | `50-tmux.zsh` | tmux shortcuts: `t`, `tdl`, `tdlm`, `tsl` (see [below](#tmux-shortcuts)) |
 | `90-prompt.zsh` | the Pure prompt, last |
 
