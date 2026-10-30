@@ -11,6 +11,8 @@ zsh with oh-my-zsh, set up from `.config/zsh/` in the repo.
 | `10-path.zsh` | `/usr/local/bin` and `/usr/local/sbin`, `PLATFORM` |
 | `20-languages.zsh` | mise, and cargo if Rust is installed |
 | `30-cloud.zsh` | gcloud path and completion, krew, k9s, the `kcb` alias (a kind cluster) |
+| `40-tools.zsh` | `ls` is [eza](https://eza.rocks) when installed (directories first, icons); oh-my-zsh's `l`, `la`, `ll`, `lsa` use it too. `command ls` runs the macOS one |
+| `50-tmux.zsh` | tmux shortcuts: `t`, `tdl`, `tdlm`, `tsl` (see [below](#tmux-shortcuts)) |
 | `90-prompt.zsh` | the Pure prompt, last |
 
 **Your own settings** go in a file of your own in `~/.zshrc.d`, e.g. `60-local.zsh`. The installer only replaces its own files there. It also removes a file it installed earlier that the repo has since dropped or renamed, so it isn't sourced twice. It knows which files are its own from `~/.local/state/dotfiles/zshrc.d`.
@@ -37,6 +39,19 @@ mise upgrade                 # move to the newest version each pin allows
 ```
 
 A project can also pin a version with the files it already has: `.python-version`, `.go-version`, `.terraform-version` or `.nvmrc`, or a `toolchain` line in `go.mod` (the `go` line is only a minimum and is ignored). mise switches as you `cd` into it. To change the global versions, edit the repo's config and run `./install.sh languages configs`. Like other configs, `~/.config/mise/config.toml` is overwritten by the installer, so `mise use -g` changes there don't last.
+
+## tmux shortcuts
+
+From [omarchy](https://github.com/basecamp/omarchy)'s shell config. The layouts only work inside tmux, and work in the current folder.
+
+| | |
+|---|---|
+| `t` | attach to the last tmux session, or start one called `Work` (Ghostty and Alacritty already open in tmux; this is for kitty and SSH) |
+| `tdl <ai> [<ai2>]` | dev layout: `$EDITOR .` (or `nvim .`) on the left, `<ai>` on the right 30% (stacked with `<ai2>` if given), a shell along the bottom 15%; the window is named after the folder |
+| `tdlm <ai> [<ai2>]` | a `tdl` window for each subfolder, the session renamed after the current folder |
+| `tsl <n> <command>` | tile the window into `n` panes, each running `<command>` |
+
+`<ai>` is any command, e.g. `tdl claude` or `tdl claude codex`; quote one with arguments: `tdl "claude --continue"`.
 
 ## Prompt
 

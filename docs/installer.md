@@ -21,7 +21,7 @@ The steps are of two kinds, and `./install.sh --list` says which each one is:
 | Step | Kind | Installs and sets up |
 |---|---|---|
 | `homebrew` | base | Homebrew, then `brew update` |
-| `tools` | packages | coreutils, findutils, gnupg, gh, watch, tree, htop, btop, fastfetch, mole, vifm, ssh-copy-id, telnet, mpv, ollama; plus git, bash, jq, fzf (base) |
+| `tools` | packages | coreutils, findutils, gnupg, gh, watch, tree, eza, htop, btop, fastfetch, mole, vifm, ssh-copy-id, telnet, mpv, ollama; plus git, bash, jq, fzf (base) |
 | `apps` | packages | Google Chrome, Bitwarden, Rectangle, VLC, Telegram (DaisyDisk and Slack are commented out) |
 | `terminals` | base | Ghostty, kitty, tmux, and Alacritty from its official release |
 | `shell` | base | oh-my-zsh with zsh-autosuggestions and zsh-syntax-highlighting, the Pure prompt, `~/.zshrc` and `~/.zshrc.d` ([Shell](shell.md)) |

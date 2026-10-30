@@ -21,6 +21,7 @@ packages=(
   gh
   watch
   tree
+  eza # ls, in .zshrc.d/40-tools.zsh
   htop
   btop
   fastfetch
