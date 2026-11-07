@@ -22,7 +22,7 @@ The steps are of two kinds, and `./install.sh --list` says which each one is:
 |---|---|---|
 | `homebrew` | base | Homebrew, then `brew update` |
 | `tools` | packages | coreutils, findutils, gnupg, gh, watch, tree, eza, htop, btop, fastfetch, mole, vifm, ssh-copy-id, telnet, mpv, ollama; plus git, bash, jq, fzf (base) |
-| `apps` | packages | Google Chrome, Bitwarden, Rectangle, VLC, Telegram (DaisyDisk and Slack are commented out) |
+| `apps` | packages | Google Chrome, Bitwarden, Rectangle, Hidden Bar, VLC, Telegram (Slack is commented out) |
 | `terminals` | base | Ghostty, kitty, tmux, and Alacritty from its official release |
 | `shell` | base | oh-my-zsh with zsh-autosuggestions and zsh-syntax-highlighting, the Pure prompt, `~/.zshrc` and `~/.zshrc.d` ([Shell](shell.md)) |
 | `neovim` | packages | Neovim, ripgrep, fd, lazygit, tree-sitter-cli; LazyVim as the config if Neovim is in and `~/.config/nvim` doesn't exist yet |
