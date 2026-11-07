@@ -10,7 +10,7 @@ apps=(
   google-chrome
   bitwarden
   rectangle
-  # daisydisk
+  hiddenbar
   vlc
   # slack
   telegram
