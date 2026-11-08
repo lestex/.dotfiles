@@ -71,4 +71,4 @@ An installed theme is someone else's git repo, so only its colors and images are
 | `~/.local/share/theme-switcher/<theme>/backgrounds/` | wallpapers, downloaded the first time a theme is used |
 | `~/.config/theme-switcher/themes/` | your own and installed themes |
 
-The engine is pinned so an upstream change can't break theme switching unnoticed: CI tests against the pin. Bump `THEME_ENGINE_REF` deliberately.
+The engine is pinned so an upstream change can't break theme switching unnoticed: CI tests against the pin. Bump `THEME_ENGINE_REF` deliberately. The pin is the engine's v4.5.0 release, whose renderer needs GNU awk: `gawk` is a base tool, and theme-switcher stops with "brew install gawk" without it.

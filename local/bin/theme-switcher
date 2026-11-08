@@ -68,6 +68,8 @@ ENGINE_COLOR="$ENGINE_NAME-theme-color"
 ENGINE_OSC="$ENGINE_NAME-theme-osc"
 ENGINE_RENDER="$ENGINE_NAME-theme-set-templates"
 ENGINE_FROM_ALACRITTY="$ENGINE_NAME-theme-colors-from-alacritty"
+# Called by the renderer for Hyprland's glassy windows, which macOS has not.
+ENGINE_GLASS="$ENGINE_NAME-theme-set-glass"
 STATE_DIR="$HOME/.local/state/theme-switcher/current"
 THEME_DIR="$STATE_DIR/theme"
 NEXT_THEME_DIR="$STATE_DIR/next-theme"
@@ -99,6 +101,7 @@ die() {
 require_engine() {
   [[ -f $ENGINE_PATH/bin/$ENGINE_RENDER ]] ||
     die "no theme engine at $ENGINE_PATH (run: theme-switcher engine install <sha>, or set THEME_SWITCHER_ENGINE)"
+  command -v gawk >/dev/null || die "the theme engine needs GNU awk (run: brew install gawk)"
 }
 
 # Fetch only what theme-switcher reads (the engine's scripts, templates and
@@ -151,6 +154,10 @@ engine() {
       printf '#!/bin/sh\nexec "%s" "%s/bin/%s" "$@"\n' "$BASH" "$ENGINE_PATH" "$name" >"$ENGINE_SHIMS/$name"
       chmod +x "$ENGINE_SHIMS/$name"
     done
+    printf '#!/bin/sh\nexit 0\n' >"$ENGINE_SHIMS/$ENGINE_GLASS"
+    chmod +x "$ENGINE_SHIMS/$ENGINE_GLASS"
+    # The renderer uses gawk's RT; macOS awk has none and drops every newline.
+    ln -s "$(command -v gawk)" "$ENGINE_SHIMS/awk"
 
     mkdir -p "$ENGINE_SHIMS/home/.local/state/$ENGINE_NAME/current" "$ENGINE_SHIMS/home/.config/$ENGINE_NAME"
     ln -s "$NEXT_THEME_DIR" "$ENGINE_SHIMS/home/.local/state/$ENGINE_NAME/current/next-theme"
@@ -329,7 +336,9 @@ engine_backgrounds() {
   if [[ -d $dir ]]; then
     find "$dir" -maxdepth 1 -type f -exec basename {} \; | LC_ALL=C sort
   elif git -C "$ENGINE_PATH" rev-parse --git-dir >/dev/null 2>&1; then
-    git -C "$ENGINE_PATH" ls-tree --name-only HEAD "themes/$theme/backgrounds/" 2>/dev/null | sed 's|.*/||'
+    # Files only: some themes keep videos in backgrounds/intros/.
+    git -C "$ENGINE_PATH" ls-tree HEAD "themes/$theme/backgrounds/" 2>/dev/null |
+      awk -F '\t' '$1 ~ / blob / { sub(/.*\//, "", $2); print $2 }'
   fi
 }
 

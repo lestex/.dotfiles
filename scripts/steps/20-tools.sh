@@ -1,17 +1,18 @@
 #!/usr/bin/env bash
-# Packages: command-line tools (git, bash, jq and fzf are base).
+# Packages: command-line tools (git, bash, jq, gawk and fzf are base).
 #
 # The base tools are what the framework itself runs on: git (oh-my-zsh, tpm and
 # LazyVim clone with it; on a fresh Mac it is only a stub until Homebrew has
 # installed the Command Line Tools), bash 5 and jq (theme-switcher, its engine
-# and VS Code support), fzf (the theme, font and terminal pickers).
+# and VS Code support), gawk (the engine's renderer needs GNU awk), fzf (the
+# theme, font and terminal pickers).
 set -euo pipefail
 # shellcheck source=scripts/common
 source "$(dirname "$0")/../common"
 require_brew
 
 # Base: keep these.
-brew_formulae git bash jq fzf
+brew_formulae git bash jq gawk fzf
 
 # Comment out what you don't want.
 packages=(

@@ -80,8 +80,13 @@ grep -q '^background = #1a1b26$' "$state/theme/ghostty.conf" || fail "ghostty.co
 [[ $(ls "$home/.local/state") == "theme-switcher" && $(ls "$home/.config") == "btop" ]] || fail "the engine writes nothing outside theme-switcher's own dirs" "$(ls "$home/.local/state" "$home/.config" 2>&1)"
 first=$(head -n 1 "$state/background")
 [[ $first == "$home/.local/share/theme-switcher/tokyo-night/backgrounds/"* && -f $first ]] || fail "set picks an imported background" "$first"
-[[ $first =~ \.(jpe?g|png)$ ]] || fail "the theme ships a jpeg or png background" "$first"
-[[ $(cat "$tmp/desktop") == "$first" ]] || fail "a jpeg or png background reaches the desktop as-is" "$(cat "$tmp/desktop")"
+desktop=$(cat "$tmp/desktop")
+if [[ $first =~ \.(jpe?g|png|heic)$ ]]; then
+  [[ $desktop == "$first" ]] || fail "a jpeg or png background reaches the desktop as-is" "$desktop"
+else
+  # The engine ships .webp since 4.5; the desktop gets a PNG converted from it.
+  [[ $desktop == *.png && -f $desktop && $desktop != "$first" ]] || fail "a webp background reaches the desktop as a png" "$desktop"
+fi
 pass "set renders, imports backgrounds and sets the desktop"
 
 # --- btop ---------------------------------------------------------------------------
