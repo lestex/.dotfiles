@@ -25,6 +25,10 @@ theme-switcher bg next        # next wallpaper of the current theme
 font-switcher pick            # choose the terminal font
 font-switcher size 14         # change the terminal font size
 terminal-switcher kitty       # the terminal Cmd+Ctrl+T opens (ghostty, alacritty, kitty)
+t                             # attach to tmux, or start a session
+tdl claude                    # in tmux: editor, claude and a shell, side by side
+lt                            # a two-level tree with git status (ls is eza too)
+mise use python@3.13          # pin a language version for this project
 exec zsh                      # pick up shell config changes in an open terminal
 # Cmd+Ctrl+T terminal, Cmd+Ctrl+B browser, from anywhere
 ```
@@ -36,7 +40,7 @@ exec zsh                      # pick up shell config changes in an open terminal
 | [Themes](docs/themes.md) | theme-switcher, what follows the theme and how, community themes, limits |
 | [Fonts](docs/fonts.md) | font-switcher and how each terminal picks up a change |
 | [Terminals and tmux](docs/terminals.md) | shared defaults, keys, opening links |
-| [Shell](docs/shell.md) | `.zshrc`, `~/.zshrc.d`, the Pure prompt |
+| [Shell](docs/shell.md) | `.zshrc`, `~/.zshrc.d`, languages with mise, eza, tmux shortcuts, the Pure prompt |
 | [Hotkeys](docs/hotkeys.md) | Cmd+Ctrl+T terminal, Cmd+Ctrl+B browser, terminal-switcher, other apps |
 | [Troubleshooting](docs/troubleshooting.md) | known errors and their fixes |
 
