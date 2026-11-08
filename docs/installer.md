@@ -15,13 +15,13 @@ If a step fails, the run stops and tells you how to resume it, e.g. `./install.s
 
 The steps are of two kinds, and `./install.sh --list` says which each one is:
 
-- **Base** is the framework itself: Homebrew, the terminals and tmux, the shell, the configs, the hotkeys, the default font, the switchers and the themes. It also covers the few tools they run on: git, bash, jq, fzf and mise. Leave these in.
+- **Base** is the framework itself: Homebrew, the terminals and tmux, the shell, the configs, the hotkeys, the default font, the switchers and the themes. It also covers the few tools they run on: git, bash, jq, gawk, fzf and mise. Leave these in.
 - **Packages** is the software on top, chosen per person. Each list has one package per line under a `# Comment out what you don't want.` note. To skip a package, comment out its line; to add one, add a line.
 
 | Step | Kind | Installs and sets up |
 |---|---|---|
 | `homebrew` | base | Homebrew, then `brew update` |
-| `tools` | packages | coreutils, findutils, gnupg, gh, watch, tree, eza, htop, btop, fastfetch, mole, vifm, ssh-copy-id, telnet, mpv, ollama; plus git, bash, jq, fzf (base) |
+| `tools` | packages | coreutils, findutils, gnupg, gh, watch, tree, eza, htop, btop, fastfetch, mole, vifm, ssh-copy-id, telnet, mpv, ollama; plus git, bash, jq, gawk, fzf (base) |
 | `apps` | packages | Google Chrome, Bitwarden, Rectangle, Hidden Bar, VLC, Telegram (Slack is commented out) |
 | `terminals` | base | Ghostty, kitty, tmux, and Alacritty from its official release |
 | `shell` | base | oh-my-zsh with zsh-autosuggestions and zsh-syntax-highlighting, the Pure prompt, `~/.zshrc` and `~/.zshrc.d` ([Shell](shell.md)) |
